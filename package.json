@@ -2,15 +2,12 @@
   "name": "biztrack",
   "version": "2.0.0",
   "description": "BizTrack – Small Business Management System",
-{
   "dependencies": {
+    "@vercel/speed-insights": "^2.0.0",
     "@supabase/supabase-js": "^2.39.0",
     "bcryptjs": "^2.4.3",
-    "jsonwebtoken": "^9.0.2",
-    "pdfkit": "^0.15.0",
-    "@vercel/speed-insights": "^2.0.0"
-  }
-}
+    "jsonwebtoken": "^9.0.2"
+  },
   "engines": {
     "node": ">=18.0.0"
   }
