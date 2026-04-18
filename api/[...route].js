@@ -2,13 +2,13 @@ const { createClient } = require('@supabase/supabase-js');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 
-// ─── FIX #7 & #8: Use correct env var names, guard against missing values ───
-const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_ANON_KEY;
-const JWT_SECRET   = process.env.SUPABASE_JWT_SECRET;
+// ─── BULLETPROOF ENV VARS ───
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY;
+const JWT_SECRET   = process.env.SUPABASE_JWT_SECRET || process.env.JWT_SECRET;
 
 if (!supabaseUrl || !supabaseKey || !JWT_SECRET) {
-  console.error('[BizTrack] FATAL: Missing env vars. Required: SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_JWT_SECRET');
+  console.error('[BizTrack] FATAL: Missing env vars.');
 }
 
 const supabase = createClient(supabaseUrl, supabaseKey);
