@@ -589,16 +589,7 @@ const DB={
 // ═══════════════════════════ SEED ═══════════════════════════
 function seed(){
   if(DB.g('seeded')) return;
-  DB.s('employees',[
-    {id:'EMP001',name:'James Mensah',roleTitle:'Sales Manager',dept:'Sales',hourlyRate:25,joinDate:'2022-01-15',active:true,email:'james@biztrack.com'},
-    {id:'EMP002',name:'Abena Owusu',roleTitle:'Accountant',dept:'Finance',hourlyRate:22,joinDate:'2021-06-10',active:true,email:'abena@biztrack.com'},
-    {id:'EMP003',name:'Kofi Asante',roleTitle:'Warehouse Staff',dept:'Logistics',hourlyRate:18,joinDate:'2023-03-01',active:true,email:'kofi@biztrack.com'},
-    {id:'EMP004',name:'Esi Boateng',roleTitle:'HR Officer',dept:'Human Resources',hourlyRate:20,joinDate:'2020-11-20',active:true,email:'esi@biztrack.com'},
-    {id:'EMP005',name:'Kwame Osei',roleTitle:'Marketing Officer',dept:'Marketing',hourlyRate:21,joinDate:'2023-07-15',active:true,email:'kwame@biztrack.com'},
-    {id:'EMP006',name:'Akosua Darko',roleTitle:'Customer Service Rep',dept:'Operations',hourlyRate:17,joinDate:'2024-01-08',active:true,email:'akosua@biztrack.com'},
-    {id:'EMP007',name:'Yaw Amponsah',roleTitle:'IT Support',dept:'Technology',hourlyRate:23,joinDate:'2023-11-01',active:true,email:'yaw@biztrack.com'},
-    {id:'EMP008',name:'Adwoa Frimpong',roleTitle:'Operations Analyst',dept:'Operations',hourlyRate:19,joinDate:'2024-03-20',active:true,email:'adwoa@biztrack.com'},
-  ]);
+  DB.s('employees', []);
   DB.s('costs',[
     {id:1,cat:'Rent',desc:'Office rent – March',amount:2500,date:'2025-03-01'},
     {id:2,cat:'Utilities',desc:'Electricity & Water',amount:340,date:'2025-03-10'},
@@ -690,42 +681,30 @@ function setRole(r){
   loginRole=r;
   document.querySelectorAll('.login-tab').forEach((t,i)=>t.classList.toggle('active',(i===0&&r==='employer')||(i===1&&r==='employee')));
   document.getElementById('id-lbl').textContent=r==='employer'?'Username':'Employee ID';
-  document.getElementById('l-id').value=r==='employer'?'admin':'EMP001';
-  document.getElementById('l-pw').value=r==='employer'?'admin123':'emp123';
-  document.getElementById('l-hint').innerHTML=r==='employer'
-    ?'Demo · <strong>admin</strong> / <strong>admin123</strong>'
-    :'Demo · EMP001–EMP008 / <strong>emp123</strong> (EMP003–EMP008: emp456/emp789/emp321)';
+  document.getElementById('l-id').value=''; 
+  document.getElementById('l-pw').value='';
+  document.getElementById('l-hint').innerHTML=''; 
 }
 
-async function doLogin(){
+async function doLogin(){async function doLogin(){
   const id=document.getElementById('l-id').value.trim();
   const pw=document.getElementById('l-pw').value;
   const err=document.getElementById('l-err');
   const btn=document.getElementById('l-btn');
   err.style.display='none'; btn.textContent='Signing in…'; btn.disabled=true;
 
-  // Try backend first
   let user=null;
+  // ONLY fetch from the real database
   try{
     const res=await fetch(`${API}/auth`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id,password:pw,role:loginRole})});
     const data=await res.json();
     if(res.ok){JWT=data.token; user=data.user; localStorage.setItem('bt_jwt',JWT);}
-  }catch(e){/* network unavailable — fall through to local */}
+  }catch(e){ console.error("Database connection error"); }
 
-  // Fallback: local credential check (works offline / before deploy)
-  if(!user){
-    if(loginRole==='employer'&&id==='admin'&&pw==='admin123'){
-      user={id:'admin',role:'employer',name:'Admin User',email:'admin@biztrack.com',initials:'AD'};
-    } else if(loginRole==='employee'){
-      const passwds={'EMP001':'emp123','EMP002':'emp123','EMP003':'emp456','EMP004':'emp456','EMP005':'emp789','EMP006':'emp789','EMP007':'emp321','EMP008':'emp321'};
-      if(passwds[id]===pw){
-        const emps=DB.g('employees')||[];
-        const emp=emps.find(e=>e.id===id);
-        if(emp) user={...emp,role:'employee',initials:emp.name.split(' ').map(n=>n[0]).join('').toUpperCase()};
-      }
-    }
-  }
-
+  if(!user){err.textContent='Invalid credentials. Please try again.';err.style.display='block';}
+  else{CU=user; ROLE=user.role; localStorage.setItem('bt_cu',JSON.stringify(CU)); launchApp();}
+  btn.textContent='Sign In'; btn.disabled=false;
+}
   if(!user){err.textContent='Invalid credentials. Please try again.';err.style.display='block';}
   else{CU=user; ROLE=user.role; localStorage.setItem('bt_cu',JSON.stringify(CU)); launchApp();}
   btn.textContent='Sign In'; btn.disabled=false;
@@ -1747,13 +1726,12 @@ function changeAdminPw(){
 }
 function showCredentials(){
   const emps=DB.g('employees')||[];
-  const pwMap={'EMP001':'emp123','EMP002':'emp123','EMP003':'emp456','EMP004':'emp456','EMP005':'emp789','EMP006':'emp789','EMP007':'emp321','EMP008':'emp321'};
   document.getElementById('creds-table').innerHTML=`
-  <div class="tw" style="margin-top:14px"><table><thead><tr><th>Employee ID</th><th>Name</th><th>Password</th></tr></thead><tbody>
-    ${emps.map(e=>`<tr><td><span class="b bn">${e.id}</span></td><td>${e.name}</td><td><span style="font-family:'DM Mono',monospace;font-size:12px">${pwMap[e.id]||'emp123'}</span></td></tr>`).join('')}
-  </tbody></table></div>`;
+  <div class="tw" style="margin-top:14px"><table><thead><tr><th>Employee ID</th><th>Name</th><th>Email</th></tr></thead><tbody>
+    ${emps.map(e=>`<tr><td><span class="b bn">${e.id}</span></td><td>${e.name}</td><td>${e.email || '—'}</td></tr>`).join('')}
+  </tbody></table></div>
+  <div class="al al-b" style="margin-top:10px">Passwords are securely hidden. If an employee forgets their password, reset it in the database.</div>`;
 }
-
 // ═══════════════════════════════════════════════
 // ══════════ EMPLOYEE PAGES ════════════════════
 // ═══════════════════════════════════════════════
@@ -2273,12 +2251,11 @@ function changeEmpPw(){
   const msg=document.getElementById('pp-msg');
   const cp=document.getElementById('pp-cp').value;
   const np=document.getElementById('pp-np').value;
-  const pwMap={'EMP001':'emp123','EMP002':'emp123','EMP003':'emp456','EMP004':'emp456','EMP005':'emp789','EMP006':'emp789','EMP007':'emp321','EMP008':'emp321'};
-  if(cp!==pwMap[CU.id]&&cp!=='emp123'){msg.innerHTML='<div class="al al-r">Current password is incorrect.</div>';return;}
-  if(!np){msg.innerHTML='<div class="al al-r">Enter a new password.</div>';return;}
-  msg.innerHTML='<div class="al al-g">Password updated successfully.</div>';
+  if(!cp || !np){msg.innerHTML='<div class="al al-r">Please fill all fields.</div>';return;}
+  // NOTE: For a full-stack app, this would trigger an API call to update Supabase
+  msg.innerHTML='<div class="al al-g">Request submitted. (Requires backend update route).</div>';
 }
-
+  
 // ═══════════════════════════════════════════════
 // ══════════ APPLICANT PORTAL LOGIC ════════════
 // ═══════════════════════════════════════════════
