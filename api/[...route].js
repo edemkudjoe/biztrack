@@ -7,75 +7,19 @@ const jwt = require('jsonwebtoken');
 const JWT_SECRET = process.env.JWT_SECRET || 'biztrack_jwt_secret_2025_change_me';
 
 // ───────────────────────────── SEEDED STORE ─────────────────────────────────
-let _seeded = false;
-const store = { users: [] };
+const { createClient } = require('@supabase/supabase-js');
+const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
 
-function seed() {
-  if (_seeded) return;
-  _seeded = true;
-
-  store.users = [
-    // ── EMPLOYER ──
-    {
-      id: process.env.ADMIN_USER || 'admin',
-      role: 'employer',
-      name: 'Admin User',
-      email: 'admin@biztrack.com',
-      password: process.env.ADMIN_PASS || 'admin123',
-      initials: 'AD',
-      active: true,
-    },
-
-    // ── EMPLOYEES ──
-    {
-      id: 'EMP001', role: 'employee', name: 'James Mensah',
-      email: 'james@biztrack.com', password: 'emp123', initials: 'JM',
-      roleTitle: 'Sales Manager', dept: 'Sales', hourlyRate: 25,
-      joinDate: '2022-01-15', active: true,
-    },
-    {
-      id: 'EMP002', role: 'employee', name: 'Abena Owusu',
-      email: 'abena@biztrack.com', password: 'emp123', initials: 'AO',
-      roleTitle: 'Accountant', dept: 'Finance', hourlyRate: 22,
-      joinDate: '2021-06-10', active: true,
-    },
-    {
-      id: 'EMP003', role: 'employee', name: 'Kofi Asante',
-      email: 'kofi@biztrack.com', password: 'emp456', initials: 'KA',
-      roleTitle: 'Warehouse Staff', dept: 'Logistics', hourlyRate: 18,
-      joinDate: '2023-03-01', active: true,
-    },
-    {
-      id: 'EMP004', role: 'employee', name: 'Esi Boateng',
-      email: 'esi@biztrack.com', password: 'emp456', initials: 'EB',
-      roleTitle: 'HR Officer', dept: 'Human Resources', hourlyRate: 20,
-      joinDate: '2020-11-20', active: true,
-    },
-    {
-      id: 'EMP005', role: 'employee', name: 'Kwame Osei',
-      email: 'kwame@biztrack.com', password: 'emp789', initials: 'KO',
-      roleTitle: 'Marketing Officer', dept: 'Marketing', hourlyRate: 21,
-      joinDate: '2023-07-15', active: true,
-    },
-    {
-      id: 'EMP006', role: 'employee', name: 'Akosua Darko',
-      email: 'akosua@biztrack.com', password: 'emp789', initials: 'AD',
-      roleTitle: 'Customer Service Rep', dept: 'Operations', hourlyRate: 17,
-      joinDate: '2024-01-08', active: true,
-    },
-    {
-      id: 'EMP007', role: 'employee', name: 'Yaw Amponsah',
-      email: 'yaw@biztrack.com', password: 'emp321', initials: 'YA',
-      roleTitle: 'IT Support', dept: 'Technology', hourlyRate: 23,
-      joinDate: '2023-11-01', active: true,
-    },
-    {
-      id: 'EMP008', role: 'employee', name: 'Adwoa Frimpong',
-      email: 'adwoa@biztrack.com', password: 'emp321', initials: 'AF',
-      roleTitle: 'Operations Analyst', dept: 'Operations', hourlyRate: 19,
-      joinDate: '2024-03-20', active: true,
-    },
-  ];
+async function findUser(id, password, role) {
+  const { data, error } = await supabase
+    .from('users')
+    .select('*')
+    .eq('id', id)
+    .eq('password', password)
+    .eq('role', role)
+    .single();
+    
+  return data;
 }
 
 // ───────────────────────────── HELPERS ──────────────────────────────────────
