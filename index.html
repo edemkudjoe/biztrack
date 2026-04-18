@@ -440,8 +440,21 @@ footer{background:#1b2e4b;color:rgba(255,255,255,.42);text-align:center;
     </div>
   </div>
   <div class="main">
-    <div class="topbar">
-      <div class="tb-title" id="tb-title">Dashboard</div>
+<div class="topbar">
+      <div style="display:flex; align-items:center; gap:16px;">
+        <div style="display:flex; gap:4px;">
+          <button class="nb" onclick="history.back()" title="Go Back">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+          </button>
+          <button class="nb" onclick="history.forward()" title="Go Forward">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+          <button class="nb" onclick="location.reload()" title="Refresh">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+          </button>
+        </div>
+        <div class="tb-title" id="tb-title">Dashboard</div>
+      </div>
       <div class="tb-right">
         <div class="tb-clock" id="tb-clock"></div>
         <button class="nb" id="notif-btn" onclick="showPage('notifications')">
@@ -734,7 +747,7 @@ function buildNav(){
     ${s.items.map(it=>`<div class="nav-item" id="n-${it.id}" onclick="showPage('${it.id}')">${ic(it.ic,16)}<span>${it.l}</span></div>`).join('')}
   `).join('');
 }
-function showPage(pid){
+function showPage(pid, skipHistory = false){
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   const nav=document.getElementById('n-'+pid); if(nav) nav.classList.add('active');
   document.getElementById('tb-title').textContent=PT[pid]||'BizTrack';
@@ -751,6 +764,11 @@ function showPage(pid){
     emp_leave:pMyLeave,emp_complaints:pMyComplaints,emp_profile:pProfile,
   };
   if(R[pid]) R[pid](pg); else pg.innerHTML='<p style="color:var(--text-muted)">Page not found.</p>';
+  
+  // This is the new part: It creates a history trail!
+  if (!skipHistory) {
+    history.pushState({ page: pid }, '', '#' + pid);
+  }
 }
 function updNotif(){
   const cnt=(DB.g('advances')||[]).filter(a=>a.status==='pending').length
@@ -2421,6 +2439,14 @@ if(params.get('offer')){
   loadOfferPortal(email);
   document.getElementById('offer-portal').classList.add('open');
 }
+
+// Listen for Back/Forward button clicks
+window.addEventListener('popstate', (event) => {
+  if (event.state && event.state.page) {
+    // The 'true' stops it from infinitely looping the history
+    showPage(event.state.page, true); 
+  }
+});
 </script>
 </body>
 </html>
