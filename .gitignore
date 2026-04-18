@@ -1,0 +1,23 @@
+# Dependency directories
+node_modules/
+
+# Vercel internal files
+.vercel/
+
+# Environment variables (keeps your secrets safe!)
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Mac OS folder attributes (if you use a Mac)
+.DS_Store
+
+# Windows thumbnail cache (if you use Windows)
+Thumbs.db
+
+# npm and yarn logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*

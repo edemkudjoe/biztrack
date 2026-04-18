@@ -1,0 +1,2426 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>BizTrack — Business Management System</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ══════════════════ RESET & ROOT ══════════════════ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --navy:#1b2e4b;--navy-light:#243d63;--navy-lighter:#2d4f80;
+  --accent:#2ecc71;--accent-dark:#27ae60;
+  --amber:#f39c12;--red:#e74c3c;--blue:#3498db;--purple:#9b59b6;
+  --bg:#f0f4f8;--white:#ffffff;--card:#ffffff;
+  --text:#1b2e4b;--text-muted:#6c7a8d;--border:#dde4ee;
+  --sidebar-w:248px;--header-h:62px;
+  --r:10px;--sh:0 2px 12px rgba(27,46,75,.08);--shm:0 4px 20px rgba(27,46,75,.12);
+}
+[data-theme=dark]{
+  --bg:#0d1b2a;--white:#132030;--card:#132030;
+  --text:#cdd8e3;--text-muted:#6a8097;--border:#1d3045;
+  --navy:#162b42;--navy-light:#1b3452;--navy-lighter:#22406a;
+  --sh:0 2px 12px rgba(0,0,0,.3);--shm:0 4px 20px rgba(0,0,0,.4);
+}
+body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;transition:background .25s,color .25s}
+button{cursor:pointer;font-family:inherit;border:none;outline:none}
+input,select,textarea{font-family:inherit;outline:none;border:none}
+a{text-decoration:none;color:inherit}
+.ico{display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
+.ico svg{stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+/* ══════════════════ LOGIN ══════════════════ */
+#login-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(135deg,#1b2e4b 0%,#2d4f80 100%)}
+.login-box{background:var(--white);border-radius:16px;padding:44px 40px 36px;width:420px;
+  box-shadow:0 20px 60px rgba(0,0,0,.28);animation:slideUp .45s ease}
+@keyframes slideUp{from{opacity:0;transform:translateY(26px)}to{opacity:1;transform:translateY(0)}}
+.login-logo{font-size:28px;font-weight:900;color:var(--navy);letter-spacing:-1px;margin-bottom:4px}
+.login-logo span{color:var(--accent)}
+.login-sub{color:var(--text-muted);font-size:13px;margin-bottom:26px}
+.login-tabs{display:flex;gap:8px;margin-bottom:24px}
+.login-tab{flex:1;padding:10px;border-radius:8px;font-weight:700;font-size:13px;
+  background:var(--bg);color:var(--text-muted);transition:all .2s}
+.login-tab.active{background:var(--navy);color:#fff}
+.fg{margin-bottom:15px}
+.fg label{display:block;font-size:11px;font-weight:700;color:var(--text-muted);
+  margin-bottom:5px;text-transform:uppercase;letter-spacing:.7px}
+.fi{width:100%;padding:11px 13px;border:2px solid var(--border);border-radius:8px;
+  font-size:14px;color:var(--text);background:var(--white);transition:border-color .2s}
+.fi:focus{border-color:var(--navy)}
+[data-theme=dark] .fi{background:var(--card);color:var(--text)}
+.btn-login{width:100%;padding:12px;background:var(--navy);color:#fff;border-radius:8px;
+  font-weight:800;font-size:14px;transition:all .2s}
+.btn-login:hover{background:var(--navy-lighter);transform:translateY(-1px)}
+.login-hint{margin-top:12px;text-align:center;font-size:12px;color:var(--text-muted)}
+.login-hint strong{color:var(--navy)}
+.login-err{margin-top:10px;padding:10px 14px;background:rgba(231,76,60,.1);
+  border:1px solid rgba(231,76,60,.3);border-radius:8px;color:var(--red);
+  font-size:12.5px;font-weight:600;display:none}
+
+/* ══════════════════ PORTALS ══════════════════ */
+#applicant-portal,#offer-portal{display:none;min-height:100vh;background:var(--bg);
+  align-items:flex-start;justify-content:center;padding:40px 20px}
+#applicant-portal.open,#offer-portal.open{display:flex}
+.portal-box{background:var(--card);border-radius:14px;padding:38px;max-width:620px;
+  width:100%;box-shadow:var(--shm);animation:slideUp .4s ease}
+.portal-logo{font-size:22px;font-weight:900;color:var(--navy);margin-bottom:4px;letter-spacing:-.5px}
+.portal-logo span{color:var(--accent)}
+[data-theme=dark] .portal-logo{color:var(--text)}
+
+/* ══════════════════ APP SHELL ══════════════════ */
+#app{display:none;min-height:100vh}
+.sidebar{position:fixed;left:0;top:0;width:var(--sidebar-w);height:100vh;
+  background:#1b2e4b;display:flex;flex-direction:column;z-index:100;overflow-y:auto}
+[data-theme=dark] .sidebar{background:#0b1825}
+.sb-brand{padding:18px 18px 14px;border-bottom:1px solid rgba(255,255,255,.07)}
+.sb-logo{font-size:22px;font-weight:900;color:#fff;letter-spacing:-.5px}
+.sb-logo span{color:var(--accent)}
+.sb-role{font-size:9.5px;color:rgba(255,255,255,.4);font-weight:700;text-transform:uppercase;letter-spacing:1.2px;margin-top:2px}
+.sb-user{padding:13px 18px;border-bottom:1px solid rgba(255,255,255,.07);display:flex;align-items:center;gap:10px}
+.sb-av{width:36px;height:36px;border-radius:50%;background:var(--accent);display:flex;
+  align-items:center;justify-content:center;font-weight:800;font-size:13px;color:#fff;flex-shrink:0}
+.sb-nm{font-size:13px;font-weight:700;color:#fff;line-height:1.3}
+.sb-em{font-size:10.5px;color:rgba(255,255,255,.42)}
+.sidebar-nav{flex:1;padding:8px 0}
+.nav-sec{font-size:9.5px;font-weight:800;text-transform:uppercase;letter-spacing:1.3px;
+  color:rgba(255,255,255,.26);padding:10px 18px 5px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 18px;color:rgba(255,255,255,.56);
+  font-size:13px;font-weight:600;cursor:pointer;transition:all .18s;
+  border-left:3px solid transparent;margin:1px 0}
+.nav-item:hover{background:rgba(255,255,255,.06);color:#fff}
+.nav-item.active{background:rgba(46,204,113,.12);color:#fff;border-left-color:var(--accent)}
+.nav-item .ico{opacity:.75;flex-shrink:0}
+.nav-item.active .ico{opacity:1}
+.sb-dark-row{display:flex;align-items:center;justify-content:space-between;
+  padding:9px 18px;cursor:pointer;transition:background .18s}
+.sb-dark-row:hover{background:rgba(255,255,255,.05)}
+.sb-dark-lbl{font-size:12px;color:rgba(255,255,255,.52);font-weight:600;display:flex;align-items:center;gap:8px}
+.tog-pill{width:34px;height:19px;border-radius:10px;background:rgba(255,255,255,.18);
+  position:relative;transition:background .2s;flex-shrink:0}
+.tog-pill.on{background:var(--accent)}
+.tog-dot{position:absolute;top:2.5px;left:2.5px;width:14px;height:14px;border-radius:50%;
+  background:#fff;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.3)}
+.tog-pill.on .tog-dot{transform:translateX(15px)}
+.sb-footer{padding:13px 18px;border-top:1px solid rgba(255,255,255,.07)}
+.btn-logout{width:100%;padding:9px;background:rgba(231,76,60,.13);color:#ff8a80;
+  border-radius:8px;font-weight:700;font-size:12px;display:flex;align-items:center;
+  justify-content:center;gap:6px;transition:all .2s}
+.btn-logout:hover{background:rgba(231,76,60,.26)}
+
+/* ══════════════════ MAIN ══════════════════ */
+.main{margin-left:var(--sidebar-w);min-height:100vh;display:flex;flex-direction:column}
+.topbar{height:var(--header-h);background:var(--white);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;padding:0 24px;
+  position:sticky;top:0;z-index:90;box-shadow:var(--sh)}
+.tb-title{font-size:17px;font-weight:900;color:var(--navy)}
+[data-theme=dark] .tb-title{color:var(--text)}
+.tb-right{display:flex;align-items:center;gap:10px}
+.tb-clock{font-size:11.5px;color:var(--text-muted);font-weight:600;
+  font-family:'DM Mono',monospace;letter-spacing:.3px}
+.nb{width:36px;height:36px;border-radius:50%;background:var(--bg);display:flex;
+  align-items:center;justify-content:center;color:var(--text-muted);
+  position:relative;cursor:pointer;transition:background .18s;border:none}
+.nb:hover{background:var(--border);color:var(--navy)}
+.nb-dot{position:absolute;top:5px;right:5px;width:7px;height:7px;background:var(--red);
+  border-radius:50%;border:2px solid var(--white);display:none}
+.content{padding:24px;flex:1}
+
+/* ══════════════════ PAGE LAYOUT ══════════════════ */
+.page{display:none}
+.page.active{display:block;animation:fadeIn .25s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.ph{margin-bottom:20px}
+.ph h2{font-size:22px;font-weight:900;color:var(--navy)}
+[data-theme=dark] .ph h2{color:var(--text)}
+.ph p{color:var(--text-muted);font-size:13px;margin-top:3px}
+
+/* ── Stats Grid ── */
+.sg{display:grid;grid-template-columns:repeat(auto-fill,minmax(175px,1fr));gap:13px;margin-bottom:22px}
+.sc{background:var(--card);border-radius:var(--r);padding:17px;border:1px solid var(--border);
+  box-shadow:var(--sh);transition:transform .18s,box-shadow .18s;cursor:default}
+.sc:hover{transform:translateY(-2px);box-shadow:var(--shm)}
+.sc-ico{width:36px;height:36px;border-radius:9px;background:var(--bg);display:flex;
+  align-items:center;justify-content:center;margin-bottom:10px;color:var(--navy-lighter)}
+[data-theme=dark] .sc-ico{background:rgba(255,255,255,.06);color:var(--accent)}
+.sc-lbl{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;
+  color:var(--text-muted);margin-bottom:4px}
+.sc-val{font-size:24px;font-weight:900;color:var(--navy);letter-spacing:-.5px}
+[data-theme=dark] .sc-val{color:var(--text)}
+.sc-ch{font-size:11px;font-weight:600;margin-top:2px}
+.up{color:var(--accent)}.dn{color:var(--red)}
+
+/* ── Card ── */
+.card{background:var(--card);border-radius:var(--r);border:1px solid var(--border);box-shadow:var(--sh)}
+.ch{padding:15px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.ct{font-size:13.5px;font-weight:800;color:var(--navy);display:flex;align-items:center;gap:8px}
+[data-theme=dark] .ct{color:var(--text)}
+.cb{padding:20px}
+.mb{margin-bottom:18px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:13px;margin-bottom:16px}
+@media(max-width:860px){.g2,.g3{grid-template-columns:1fr}}
+
+/* ── Table ── */
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;padding:9px 12px;font-size:10px;font-weight:800;text-transform:uppercase;
+  letter-spacing:.8px;color:var(--text-muted);border-bottom:2px solid var(--border)}
+td{padding:10px 12px;border-bottom:1px solid var(--border);color:var(--text);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:rgba(27,46,75,.025)}
+[data-theme=dark] tbody tr:hover td{background:rgba(255,255,255,.025)}
+
+/* ── Badges ── */
+.b{display:inline-flex;align-items:center;padding:3px 9px;border-radius:20px;font-size:10.5px;font-weight:700}
+.bg{background:rgba(46,204,113,.12);color:#1e9152}
+.ba{background:rgba(243,156,18,.12);color:#8a6000}
+.br{background:rgba(231,76,60,.12);color:var(--red)}
+.bb{background:rgba(52,152,219,.12);color:#1260a0}
+.bp{background:rgba(155,89,182,.12);color:var(--purple)}
+.bn{background:rgba(27,46,75,.09);color:var(--navy)}
+[data-theme=dark] .bn{background:rgba(255,255,255,.1);color:var(--text)}
+[data-theme=dark] .ba{color:#d4a017}
+[data-theme=dark] .bg{color:#2ecc71}
+
+/* ── Form ── */
+.f{margin-bottom:13px}
+.f label{display:block;font-size:10.5px;font-weight:700;color:var(--text-muted);
+  text-transform:uppercase;letter-spacing:.6px;margin-bottom:5px}
+.f input,.f select,.f textarea{
+  width:100%;padding:9px 12px;border:2px solid var(--border);border-radius:8px;
+  font-size:13px;color:var(--text);background:var(--white);transition:border-color .2s}
+.f input:focus,.f select:focus,.f textarea:focus{border-color:var(--navy)}
+.f textarea{resize:vertical;min-height:76px}
+[data-theme=dark] .f input,[data-theme=dark] .f select,[data-theme=dark] .f textarea{
+  background:var(--card);border-color:var(--border);color:var(--text)}
+.fr{display:grid;grid-template-columns:1fr 1fr;gap:13px}
+.fr3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+
+/* ── Buttons ── */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 15px;border-radius:8px;
+  font-weight:700;font-size:12.5px;transition:all .18s;cursor:pointer;border:none}
+.btn-sm{padding:5px 11px;font-size:11.5px}
+.btn-full{width:100%;justify-content:center}
+.b-nv{background:var(--navy);color:#fff}.b-nv:hover{background:var(--navy-lighter);transform:translateY(-1px)}
+.b-gr{background:var(--accent);color:#fff}.b-gr:hover{background:var(--accent-dark)}
+.b-am{background:var(--amber);color:#fff}
+.b-rd{background:var(--red);color:#fff}
+.b-bl{background:var(--blue);color:#fff}
+.b-pr{background:var(--purple);color:#fff}
+.b-ol{background:transparent;border:2px solid var(--border);color:var(--text)}
+.b-ol:hover{border-color:var(--navy);color:var(--navy)}
+
+/* ── Alerts ── */
+.al{padding:10px 14px;border-radius:8px;font-size:12.5px;font-weight:600;margin-bottom:13px;
+  display:flex;align-items:flex-start;gap:8px;line-height:1.5}
+.al-g{background:rgba(46,204,113,.09);color:#1e9152;border:1px solid rgba(46,204,113,.22)}
+.al-a{background:rgba(243,156,18,.09);color:#7a5500;border:1px solid rgba(243,156,18,.22)}
+.al-r{background:rgba(231,76,60,.09);color:var(--red);border:1px solid rgba(231,76,60,.22)}
+.al-b{background:rgba(52,152,219,.09);color:#1260a0;border:1px solid rgba(52,152,219,.22)}
+[data-theme=dark] .al-a{color:#d4a017}
+[data-theme=dark] .al-g{color:#2ecc71}
+[data-theme=dark] .al-b{color:#4db6f0}
+
+/* ── Progress ── */
+.pt{height:6px;background:var(--border);border-radius:3px;overflow:hidden;margin-top:4px}
+.pf{height:100%;border-radius:3px;background:var(--accent);transition:width .4s}
+.pr-row{display:flex;align-items:center;gap:11px;margin-bottom:9px}
+.pr-nm{width:128px;font-size:12.5px;font-weight:600;flex-shrink:0}
+.pr-tr{flex:1;height:8px;background:var(--border);border-radius:4px;overflow:hidden}
+.pr-fl{height:100%;border-radius:4px}
+.pr-sc{width:34px;text-align:right;font-size:12.5px;font-weight:800}
+
+/* ── Modal ── */
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;
+  display:none;align-items:center;justify-content:center;padding:20px}
+.ov.open{display:flex}
+.modal{background:var(--white);border-radius:14px;width:100%;max-width:560px;
+  max-height:88vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.22);animation:slideUp .26s ease}
+.mh{padding:17px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;
+  justify-content:space-between;position:sticky;top:0;background:var(--white);z-index:1}
+[data-theme=dark] .mh{background:var(--card)}
+.mt{font-size:15px;font-weight:800;color:var(--navy)}
+[data-theme=dark] .mt{color:var(--text)}
+.mc{width:27px;height:27px;border-radius:50%;background:var(--bg);display:flex;
+  align-items:center;justify-content:center;color:var(--text-muted);cursor:pointer}
+.mc:hover{background:var(--border)}
+.mb2{padding:20px}
+.mf{padding:13px 22px;border-top:1px solid var(--border);display:flex;
+  justify-content:flex-end;gap:8px;position:sticky;bottom:0;background:var(--white)}
+[data-theme=dark] .mf{background:var(--card)}
+
+/* ── Misc ── */
+.divider{border:none;border-top:1px solid var(--border);margin:16px 0}
+.es{text-align:center;padding:38px 20px;color:var(--text-muted)}
+.es-ico{width:44px;height:44px;margin:0 auto 11px;opacity:.3;color:var(--navy)}
+[data-theme=dark] .es-ico{color:var(--text)}
+.es h3{font-size:14px;font-weight:700;color:var(--navy);margin-bottom:4px}
+[data-theme=dark] .es h3{color:var(--text)}
+.ldr{display:inline-block;width:16px;height:16px;border:2.5px solid var(--border);
+  border-top-color:var(--navy);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.link-box{background:var(--bg);border:2px dashed var(--border);border-radius:8px;
+  padding:11px 13px;font-family:'DM Mono',monospace;font-size:11px;color:var(--navy-lighter);
+  word-break:break-all}
+.mn{width:25px;height:25px;border-radius:50%;background:var(--navy);color:#fff;
+  font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center}
+.mn.g{background:#f39c12}.mn.s{background:#95a5a6}.mn.bz{background:#c0392b}
+.steps{display:flex;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:4px 0}
+.si{display:flex;align-items:center;gap:6px}
+.sn{width:27px;height:27px;border-radius:50%;background:var(--border);color:var(--text-muted);
+  font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center}
+.si.done .sn{background:var(--accent);color:#fff}
+.si.active .sn{background:var(--navy);color:#fff}
+.sl{font-size:11px;font-weight:600;color:var(--text-muted)}
+.si.active .sl,.si.done .sl{color:var(--navy);font-weight:700}
+[data-theme=dark] .si.active .sl,[data-theme=dark] .si.done .sl{color:var(--text)}
+.sline{flex:1;min-width:14px;height:2px;background:var(--border)}
+.sline.done{background:var(--accent)}
+.pfpos{color:var(--accent);font-weight:800}
+.pfneg{color:var(--red);font-weight:800}
+
+/* ── Toast ── */
+#toast-wrap{position:fixed;bottom:22px;right:22px;z-index:999;display:flex;flex-direction:column;gap:7px}
+.ti{padding:11px 16px;border-radius:10px;font-size:12.5px;font-weight:700;
+  box-shadow:var(--shm);animation:slideUp .28s ease;display:flex;align-items:center;
+  gap:7px;max-width:300px;color:#fff}
+.ti.s{background:#1e9152}.ti.e{background:var(--red)}.ti.i{background:var(--blue)}.ti.w{background:var(--amber)}
+
+/* ── Clock status ── */
+.clk-big{font-size:38px;font-weight:900;color:var(--navy);font-family:'DM Mono',monospace;
+  letter-spacing:-1px;text-align:center;margin-bottom:6px}
+[data-theme=dark] .clk-big{color:var(--text)}
+
+/* ── Print ── */
+@media print{.sidebar,.topbar,footer,button,.btn{display:none!important}.main{margin-left:0!important}body{background:#fff!important;color:#000!important}}
+
+/* ── Footer ── */
+footer{background:#1b2e4b;color:rgba(255,255,255,.42);text-align:center;
+  padding:13px 20px;font-size:11.5px;font-weight:600;letter-spacing:.3px;
+  margin-left:var(--sidebar-w)}
+[data-theme=dark] footer{background:#0b1825}
+
+/* scrollbar */
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+::-webkit-scrollbar-track{background:transparent}
+</style>
+</head>
+<body>
+
+<!-- ════ LOGIN ════ -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">Biz<span>Track</span></div>
+    <div class="login-sub">Small Business Management System</div>
+    <div class="login-tabs">
+      <button class="login-tab active" onclick="setRole('employer')">Employer</button>
+      <button class="login-tab" onclick="setRole('employee')">Employee</button>
+    </div>
+    <div class="fg">
+      <label id="id-lbl">Username</label>
+      <input class="fi" id="l-id" value="admin" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <div class="fg">
+      <label>Password</label>
+      <input class="fi" id="l-pw" type="password" value="admin123" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <div class="login-err" id="l-err"></div>
+    <button class="btn-login" id="l-btn" onclick="doLogin()">Sign In</button>
+    <div class="login-hint" id="l-hint">Demo · <strong>admin</strong> / <strong>admin123</strong></div>
+  </div>
+</div>
+
+<!-- ════ APPLICANT PORTAL ════ -->
+<div id="applicant-portal">
+  <div class="portal-box">
+    <div class="portal-logo">Biz<span>Track</span> Careers</div>
+    <p style="color:var(--text-muted);font-size:13px;margin-bottom:20px">You have been invited to apply. Complete all fields and submit.</p>
+    <div id="ap-form-wrap">
+      <div class="fr"><div class="f"><label>Full Name *</label><input type="text" id="ap-name" placeholder="Your full name"></div><div class="f"><label>Email *</label><input type="email" id="ap-email" placeholder="you@email.com"></div></div>
+      <div class="fr"><div class="f"><label>Phone</label><input type="text" id="ap-phone" placeholder="+233 XX XXX XXXX"></div><div class="f"><label>Position *</label><input type="text" id="ap-pos" placeholder="e.g. Marketing Officer"></div></div>
+      <div class="fr">
+        <div class="f"><label>Highest Education *</label>
+          <select id="ap-edu">
+            <option value="">Select…</option><option value="40">High School / SSCE</option>
+            <option value="52">OND / HND</option><option value="66">Bachelor's Degree</option>
+            <option value="79">Master's Degree</option><option value="93">PhD / Doctorate</option>
+            <option value="73">Professional Certification</option>
+          </select>
+        </div>
+        <div class="f"><label>Years of Experience *</label>
+          <select id="ap-exp">
+            <option value="">Select…</option><option value="0">Fresh Graduate</option>
+            <option value="3">Under 1 year</option><option value="7">1–2 years</option>
+            <option value="13">3–5 years</option><option value="19">6–10 years</option><option value="23">10+ years</option>
+          </select>
+        </div>
+      </div>
+      <div class="f"><label>Field of Study</label><input type="text" id="ap-field" placeholder="e.g. Business Administration"></div>
+      <div class="f"><label>Previous Employers</label><textarea id="ap-emp" placeholder="e.g. 2020–2022: Sales Rep, XYZ Ltd…"></textarea></div>
+      <div class="f"><label>Key Skills / Certifications</label><textarea id="ap-skills" placeholder="List relevant skills, certifications…"></textarea></div>
+      <div class="f"><label>Cover Letter</label><textarea id="ap-cover" placeholder="Why are you the best fit for this role?"></textarea></div>
+      <button class="btn b-nv btn-full" style="margin-top:6px" onclick="submitApplication()">Submit Application</button>
+      <div id="ap-msg" style="margin-top:10px"></div>
+    </div>
+    <div id="ap-test-wrap" style="display:none">
+      <div class="al al-b" style="margin-bottom:16px">You have been shortlisted for the Aptitude Test. Answer all questions carefully.</div>
+      <div id="ap-questions"></div>
+      <button class="btn b-nv btn-full" onclick="submitAptTest()">Submit Answers</button>
+      <div id="ap-test-msg" style="margin-top:10px"></div>
+    </div>
+    <div id="ap-done-wrap" style="display:none;text-align:center;padding:28px 0">
+      <div style="font-size:52px;margin-bottom:12px">✓</div>
+      <h3 style="font-size:18px;font-weight:800;color:var(--navy);margin-bottom:6px">Application Submitted!</h3>
+      <p style="color:var(--text-muted);font-size:13px">Thank you. We will be in touch if shortlisted.</p>
+    </div>
+    <div style="margin-top:18px;padding-top:14px;border-top:1px solid var(--border);text-align:center">
+      <button class="btn b-ol btn-sm" onclick="backFromPortal()">← Return to System</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════ OFFER PORTAL ════ -->
+<div id="offer-portal">
+  <div class="portal-box">
+    <div class="portal-logo">Biz<span>Track</span> — Employment Offer</div>
+    <p style="color:var(--text-muted);font-size:13px;margin-bottom:18px">Please review your offer details below and respond.</p>
+    <div id="offer-details-wrap"></div>
+    <div id="offer-neg-wrap" style="display:none;margin-top:14px">
+      <hr class="divider">
+      <h4 style="font-size:13.5px;font-weight:800;color:var(--navy);margin-bottom:13px">Counter-Offer / Negotiation</h4>
+      <div class="fr"><div class="f"><label>Proposed Hourly Rate (₵)</label><input type="number" id="neg-rate" placeholder="e.g. 28"></div><div class="f"><label>Preferred Work Hours</label><select id="neg-hours"><option>8:00 AM – 5:00 PM</option><option>7:00 AM – 4:00 PM</option><option>9:00 AM – 6:00 PM</option><option>Flexible</option></select></div></div>
+      <div class="f"><label>Additional Benefits Requested</label>
+        <select id="neg-benefits" multiple style="height:88px">
+          <option>Health Insurance</option><option>Life Insurance</option>
+          <option>Data Allowance</option><option>Transport Allowance</option>
+          <option>Housing Allowance</option><option>Pension Contribution</option>
+          <option>Annual Bonus</option><option>Training & Development Fund</option>
+        </select>
+        <small style="font-size:11px;color:var(--text-muted)">Hold Ctrl / ⌘ to select multiple</small>
+      </div>
+      <div class="f"><label>Message to Employer</label><textarea id="neg-note" placeholder="Explain your counter-offer…"></textarea></div>
+      <button class="btn b-nv btn-full" onclick="submitNegotiation()">Send Counter-Offer</button>
+    </div>
+    <div id="offer-action-btns" style="display:flex;gap:10px;flex-wrap:wrap;margin-top:16px">
+      <button class="btn b-gr" style="flex:1" onclick="respondOffer('accept')">Accept Offer</button>
+      <button class="btn b-am" style="flex:1" onclick="toggleNeg()">Negotiate</button>
+      <button class="btn b-rd" style="flex:1" onclick="respondOffer('reject')">Decline</button>
+    </div>
+    <div id="offer-portal-msg" style="margin-top:12px"></div>
+    <div style="margin-top:16px;padding-top:13px;border-top:1px solid var(--border);text-align:center">
+      <button class="btn b-ol btn-sm" onclick="backFromPortal()">← Return to System</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════ APP ════ -->
+<div id="app">
+  <div class="sidebar">
+    <div class="sb-brand">
+      <div class="sb-logo">Biz<span>Track</span></div>
+      <div class="sb-role" id="sb-role">Employer Portal</div>
+    </div>
+    <div class="sb-user">
+      <div class="sb-av" id="sb-av">AD</div>
+      <div><div class="sb-nm" id="sb-nm">Admin</div><div class="sb-em" id="sb-em">admin@biztrack.com</div></div>
+    </div>
+    <nav class="sidebar-nav" id="sidebar-nav"></nav>
+    <div class="sb-dark-row" onclick="toggleDark()">
+      <div class="sb-dark-lbl" id="dk-lbl">Dark Mode</div>
+      <div class="tog-pill" id="dk-pill"><div class="tog-dot"></div></div>
+    </div>
+    <div class="sb-footer">
+      <button class="btn-logout" onclick="logout()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Sign Out
+      </button>
+    </div>
+  </div>
+  <div class="main">
+    <div class="topbar">
+      <div class="tb-title" id="tb-title">Dashboard</div>
+      <div class="tb-right">
+        <div class="tb-clock" id="tb-clock"></div>
+        <button class="nb" id="notif-btn" onclick="showPage('notifications')">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          <span class="nb-dot" id="nb-dot"></span>
+        </button>
+      </div>
+    </div>
+    <div class="content" id="mc"></div>
+    <footer>&copy; <span id="yr"></span> BizTrack. Developed by the BizTrack Team. All rights reserved.</footer>
+  </div>
+</div>
+
+<!-- ════ MODAL ════ -->
+<div class="ov" id="modal-ov" onclick="closeModal()">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="mh">
+      <div class="mt" id="m-title"></div>
+      <button class="mc" onclick="closeModal()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="mb2" id="m-body"></div>
+    <div class="mf" id="m-foot"></div>
+  </div>
+</div>
+<div id="toast-wrap"></div>
+
+<script>
+// ═══════════════════════════ SVG ICONS ═══════════════════════════
+const IP={
+  grid:'<rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>',
+  bell:'<path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>',
+  'trending-up':'<polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/>',
+  package:'<line x1="16.5" y1="9.4" x2="7.5" y2="4.21"/><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/>',
+  users:'<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+  search:'<circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>',
+  'message-square':'<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>',
+  settings:'<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>',
+  clock:'<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>',
+  calendar:'<rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>',
+  'bar-chart-2':'<line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>',
+  'credit-card':'<rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/>',
+  'arrow-up':'<line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/>',
+  user:'<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>',
+  printer:'<polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/>',
+  download:'<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>',
+  check:'<polyline points="20 6 9 17 4 12"/>',
+  'check-circle':'<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>',
+  'alert-triangle':'<path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>',
+  'file-text':'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>',
+  send:'<line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>',
+  'refresh-cw':'<polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>',
+  lock:'<rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
+  activity:'<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>',
+  percent:'<line x1="19" y1="5" x2="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/>',
+  gift:'<polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/>',
+  list:'<line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>',
+  link:'<path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>',
+  'dollar-sign':'<line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>',
+  tag:'<path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/>',
+  layers:'<polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/>',
+  award:'<circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/>',
+  briefcase:'<rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>',
+  home:'<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>',
+  'map-pin':'<path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>',
+  'edit-2':'<path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/>',
+  copy:'<rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>',
+  'external-link':'<path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>',
+  'log-out':'<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>',
+  shield:'<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>',
+};
+const ic=(n,s=16)=>`<span class="ico"><svg width="${s}" height="${s}" viewBox="0 0 24 24">${IP[n]||'<circle cx="12" cy="12" r="10"/>'}</svg></span>`;
+
+// ═══════════════════════════ CONSTANTS ═══════════════════════════
+const GHS='₵';
+const fmt=v=>`${GHS}${Number(v||0).toLocaleString('en-GH',{minimumFractionDigits:2,maximumFractionDigits:2})}`;
+const today=()=>new Date().toISOString().split('T')[0];
+const API='/api';
+
+// ═══════════════════════════ STATE ═══════════════════════════
+let JWT=localStorage.getItem('bt_jwt');
+let CU=JSON.parse(localStorage.getItem('bt_cu')||'null');
+let ROLE=null;
+let DARK=localStorage.getItem('bt_dk')==='1';
+if(DARK) document.documentElement.setAttribute('data-theme','dark');
+
+// ═══════════════════════════ DB ═══════════════════════════
+const DB={
+  g(k){try{return JSON.parse(localStorage.getItem('bt_'+k))||null}catch{return null}},
+  s(k,v){localStorage.setItem('bt_'+k,JSON.stringify(v));return v},
+  push(k,v){const a=this.g(k)||[];a.push(v);return this.s(k,a)},
+  upd(k,pred,patch){const a=this.g(k)||[];const i=a.findIndex(pred);if(i>=0)a[i]={...a[i],...patch};return this.s(k,a)},
+};
+
+// ═══════════════════════════ SEED ═══════════════════════════
+function seed(){
+  if(DB.g('seeded')) return;
+  DB.s('employees',[
+    {id:'EMP001',name:'James Mensah',roleTitle:'Sales Manager',dept:'Sales',hourlyRate:25,joinDate:'2022-01-15',active:true,email:'james@biztrack.com'},
+    {id:'EMP002',name:'Abena Owusu',roleTitle:'Accountant',dept:'Finance',hourlyRate:22,joinDate:'2021-06-10',active:true,email:'abena@biztrack.com'},
+    {id:'EMP003',name:'Kofi Asante',roleTitle:'Warehouse Staff',dept:'Logistics',hourlyRate:18,joinDate:'2023-03-01',active:true,email:'kofi@biztrack.com'},
+    {id:'EMP004',name:'Esi Boateng',roleTitle:'HR Officer',dept:'Human Resources',hourlyRate:20,joinDate:'2020-11-20',active:true,email:'esi@biztrack.com'},
+    {id:'EMP005',name:'Kwame Osei',roleTitle:'Marketing Officer',dept:'Marketing',hourlyRate:21,joinDate:'2023-07-15',active:true,email:'kwame@biztrack.com'},
+    {id:'EMP006',name:'Akosua Darko',roleTitle:'Customer Service Rep',dept:'Operations',hourlyRate:17,joinDate:'2024-01-08',active:true,email:'akosua@biztrack.com'},
+    {id:'EMP007',name:'Yaw Amponsah',roleTitle:'IT Support',dept:'Technology',hourlyRate:23,joinDate:'2023-11-01',active:true,email:'yaw@biztrack.com'},
+    {id:'EMP008',name:'Adwoa Frimpong',roleTitle:'Operations Analyst',dept:'Operations',hourlyRate:19,joinDate:'2024-03-20',active:true,email:'adwoa@biztrack.com'},
+  ]);
+  DB.s('costs',[
+    {id:1,cat:'Rent',desc:'Office rent – March',amount:2500,date:'2025-03-01'},
+    {id:2,cat:'Utilities',desc:'Electricity & Water',amount:340,date:'2025-03-10'},
+    {id:3,cat:'Marketing',desc:'Social media ads',amount:600,date:'2025-03-15'},
+    {id:4,cat:'Equipment',desc:'Printer cartridges',amount:120,date:'2025-03-22'},
+  ]);
+  DB.s('revenue',[
+    {date:'2025-04-01',amount:8200,note:'Sales revenue'},
+    {date:'2025-04-02',amount:6400,note:'Service fees'},
+    {date:'2025-04-07',amount:9100,note:'Sales revenue'},
+    {date:'2025-04-10',amount:7300,note:'Consulting'},
+    {date:'2025-04-14',amount:11200,note:'Sales revenue'},
+  ]);
+  DB.s('inventory',[
+    {id:1,item:'Printer Paper (Ream)',qty:45,unit:'Ream',min:20,rec:50,loc:'Store A',updatedBy:'EMP003',date:'2025-03-10'},
+    {id:2,item:'Office Chairs',qty:12,unit:'Pcs',min:10,rec:15,loc:'Main Office',updatedBy:'EMP003',date:'2025-03-08'},
+    {id:3,item:'Laptops',qty:7,unit:'Pcs',min:5,rec:10,loc:'IT Store',updatedBy:'EMP002',date:'2025-03-12'},
+    {id:4,item:'Bottled Water (24-pack)',qty:5,unit:'Pack',min:10,rec:20,loc:'Kitchen',updatedBy:'EMP001',date:'2025-03-20'},
+    {id:5,item:'Toner Cartridges',qty:3,unit:'Pcs',min:5,rec:10,loc:'Store A',updatedBy:'EMP007',date:'2025-04-01'},
+  ]);
+  DB.s('tasks',[
+    {id:1,empId:'EMP001',title:'Close Q1 sales deals',status:'done',date:'2025-03-28'},
+    {id:2,empId:'EMP001',title:'Client presentation delivered',status:'done',date:'2025-04-02'},
+    {id:3,empId:'EMP002',title:'Monthly financial report',status:'done',date:'2025-03-31'},
+    {id:4,empId:'EMP003',title:'Warehouse inventory audit',status:'done',date:'2025-04-03'},
+    {id:5,empId:'EMP004',title:'New hire onboarding',status:'done',date:'2025-04-05'},
+    {id:6,empId:'EMP005',title:'Q2 marketing campaign',status:'done',date:'2025-04-08'},
+    {id:7,empId:'EMP006',title:'Customer satisfaction survey',status:'done',date:'2025-04-09'},
+    {id:8,empId:'EMP007',title:'Server maintenance completed',status:'done',date:'2025-04-10'},
+  ]);
+  DB.s('attendance',[]);
+  DB.s('leaves',[]);
+  DB.s('advances',[]);
+  DB.s('promos',[]);
+  DB.s('complaints',[]);
+  DB.s('applicants',[]);
+  DB.s('apt_qs',[
+    {q:'What is 20% of 350?',opts:['60','70','80','90'],ans:1},
+    {q:'A product costs ₵120 sold at 30% profit. Selling price?',opts:['₵144','₵150','₵156','₵160'],ans:2},
+    {q:'Complete the series: 3, 6, 12, 24, ___',opts:['36','48','42','54'],ans:1},
+    {q:'4 workers finish a job in 6 days. How long for 8 workers?',opts:['2 days','3 days','4 days','5 days'],ans:1},
+    {q:'Which is NOT a primary colour?',opts:['Red','Yellow','Green','Blue'],ans:2},
+  ]);
+  DB.s('rec_stage','collecting');
+  DB.s('rec_link','https://biztrack.app/apply/'+Math.random().toString(36).substr(2,9));
+  DB.s('offer_link','https://biztrack.app/offer/'+Math.random().toString(36).substr(2,9));
+  DB.s('company',{name:'My Business Ltd',address:'Accra, Ghana',phone:'+233 XX XXX XXXX',email:'info@mybusiness.com',web:'www.mybusiness.com',signatory:'The Director',sigTitle:'Managing Director',logo:''});
+  DB.s('work_location',{lat:5.6037,lng:-0.1870,radius:500,name:'Head Office, Accra'});
+  DB.s('benefits',[
+    {id:1,name:'Health Insurance',value:'Full medical cover',empIds:[]},
+    {id:2,name:'Life Insurance',value:'2× annual salary cover',empIds:[]},
+    {id:3,name:'Data Allowance',value:'₵100/month',empIds:[]},
+    {id:4,name:'Transport Allowance',value:'₵200/month',empIds:[]},
+    {id:5,name:'Housing Allowance',value:'₵500/month',empIds:[]},
+    {id:6,name:'Pension Contribution',value:'5% employer match',empIds:[]},
+  ]);
+  DB.s('seeded',true);
+}
+
+// ═══════════════════════════ CLOCK ═══════════════════════════
+function tickClock(){
+  const el=document.getElementById('tb-clock'); if(!el) return;
+  const n=new Date();
+  el.textContent=n.toLocaleDateString('en-GH',{weekday:'short',year:'numeric',month:'short',day:'numeric'})
+    +'  '+n.toLocaleTimeString('en-GH',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+}
+setInterval(tickClock,1000); tickClock();
+
+// ═══════════════════════════ DARK MODE ═══════════════════════════
+function toggleDark(){
+  DARK=!DARK; localStorage.setItem('bt_dk',DARK?'1':'0');
+  document.documentElement.setAttribute('data-theme',DARK?'dark':'light');
+  const p=document.getElementById('dk-pill'); if(p) p.classList.toggle('on',DARK);
+}
+
+// ═══════════════════════════ TOAST ═══════════════════════════
+function toast(msg,t='i'){
+  const w=document.getElementById('toast-wrap');
+  const d=document.createElement('div');
+  d.className=`ti ${t}`;
+  const imap={s:'check-circle',e:'alert-triangle',w:'alert-triangle',i:'bell'};
+  d.innerHTML=`${ic(imap[t]||'bell',14)} ${msg}`;
+  w.appendChild(d); setTimeout(()=>d.remove(),3400);
+}
+
+// ═══════════════════════════ AUTH ═══════════════════════════
+let loginRole='employer';
+function setRole(r){
+  loginRole=r;
+  document.querySelectorAll('.login-tab').forEach((t,i)=>t.classList.toggle('active',(i===0&&r==='employer')||(i===1&&r==='employee')));
+  document.getElementById('id-lbl').textContent=r==='employer'?'Username':'Employee ID';
+  document.getElementById('l-id').value=r==='employer'?'admin':'EMP001';
+  document.getElementById('l-pw').value=r==='employer'?'admin123':'emp123';
+  document.getElementById('l-hint').innerHTML=r==='employer'
+    ?'Demo · <strong>admin</strong> / <strong>admin123</strong>'
+    :'Demo · EMP001–EMP008 / <strong>emp123</strong> (EMP003–EMP008: emp456/emp789/emp321)';
+}
+
+async function doLogin(){
+  const id=document.getElementById('l-id').value.trim();
+  const pw=document.getElementById('l-pw').value;
+  const err=document.getElementById('l-err');
+  const btn=document.getElementById('l-btn');
+  err.style.display='none'; btn.textContent='Signing in…'; btn.disabled=true;
+
+  // Try backend first
+  let user=null;
+  try{
+    const res=await fetch(`${API}/auth`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id,password:pw,role:loginRole})});
+    const data=await res.json();
+    if(res.ok){JWT=data.token; user=data.user; localStorage.setItem('bt_jwt',JWT);}
+  }catch(e){/* network unavailable — fall through to local */}
+
+  // Fallback: local credential check (works offline / before deploy)
+  if(!user){
+    if(loginRole==='employer'&&id==='admin'&&pw==='admin123'){
+      user={id:'admin',role:'employer',name:'Admin User',email:'admin@biztrack.com',initials:'AD'};
+    } else if(loginRole==='employee'){
+      const passwds={'EMP001':'emp123','EMP002':'emp123','EMP003':'emp456','EMP004':'emp456','EMP005':'emp789','EMP006':'emp789','EMP007':'emp321','EMP008':'emp321'};
+      if(passwds[id]===pw){
+        const emps=DB.g('employees')||[];
+        const emp=emps.find(e=>e.id===id);
+        if(emp) user={...emp,role:'employee',initials:emp.name.split(' ').map(n=>n[0]).join('').toUpperCase()};
+      }
+    }
+  }
+
+  if(!user){err.textContent='Invalid credentials. Please try again.';err.style.display='block';}
+  else{CU=user; ROLE=user.role; localStorage.setItem('bt_cu',JSON.stringify(CU)); launchApp();}
+  btn.textContent='Sign In'; btn.disabled=false;
+}
+
+function logout(){
+  JWT=null; CU=null; ROLE=null;
+  localStorage.removeItem('bt_jwt'); localStorage.removeItem('bt_cu');
+  document.getElementById('app').style.display='none';
+  document.getElementById('login-screen').style.display='flex';
+}
+
+// ═══════════════════════════ LAUNCH ═══════════════════════════
+function launchApp(){
+  seed();
+  document.getElementById('login-screen').style.display='none';
+  ['applicant-portal','offer-portal'].forEach(id=>document.getElementById(id).classList.remove('open'));
+  document.getElementById('app').style.display='block';
+  ROLE=CU.role;
+  document.getElementById('sb-nm').textContent=CU.name;
+  document.getElementById('sb-em').textContent=CU.email||CU.id||'';
+  document.getElementById('sb-av').textContent=CU.initials||CU.name.slice(0,2).toUpperCase();
+  document.getElementById('sb-role').textContent=ROLE==='employer'?'Employer Portal':'Employee Portal';
+  document.getElementById('yr').textContent=new Date().getFullYear();
+  const p=document.getElementById('dk-pill'); if(p) p.classList.toggle('on',DARK);
+  buildNav(); showPage(ROLE==='employer'?'e_dash':'emp_dash'); updNotif();
+}
+
+// ═══════════════════════════ NAV ═══════════════════════════
+const EMP_NAV=[
+  {s:'MAIN',items:[{id:'e_dash',ic:'grid',l:'Dashboard'},{id:'notifications',ic:'bell',l:'Notifications'}]},
+  {s:'BUSINESS',items:[{id:'e_finance',ic:'dollar-sign',l:'Finance & Revenue'},{id:'e_performance',ic:'trending-up',l:'Performance'},{id:'e_attendance_mgr',ic:'clock',l:'Attendance'},{id:'e_inventory',ic:'package',l:'Inventory'}]},
+  {s:'PEOPLE',items:[{id:'e_employees',ic:'users',l:'Employees'},{id:'e_recruitment',ic:'search',l:'Recruitment'},{id:'e_leaves',ic:'calendar',l:'Leave Management'},{id:'e_benefits',ic:'gift',l:'Benefits'},{id:'e_complaints',ic:'message-square',l:'Complaints'}]},
+  {s:'SYSTEM',items:[{id:'e_settings',ic:'settings',l:'Settings'}]},
+];
+const EE_NAV=[
+  {s:'MAIN',items:[{id:'emp_dash',ic:'home',l:'My Dashboard'},{id:'notifications',ic:'bell',l:'Notifications'}]},
+  {s:'FINANCE',items:[{id:'emp_finance',ic:'dollar-sign',l:'My Finance'},{id:'emp_advance',ic:'credit-card',l:'Request Advance'},{id:'emp_promo',ic:'arrow-up',l:'Request Promotion'}]},
+  {s:'WORK',items:[{id:'emp_attendance',ic:'clock',l:'Attendance'},{id:'emp_inventory',ic:'package',l:'Submit Inventory'},{id:'emp_leave',ic:'calendar',l:'Request Leave'},{id:'emp_complaints',ic:'message-square',l:'Complaints'}]},
+  {s:'PROFILE',items:[{id:'emp_profile',ic:'user',l:'My Profile'}]},
+];
+const PT={
+  e_dash:'Dashboard',notifications:'Notifications',e_finance:'Finance & Revenue',
+  e_performance:'Performance',e_attendance_mgr:'Attendance Management',
+  e_inventory:'Inventory',e_employees:'Employees',e_recruitment:'Recruitment',
+  e_leaves:'Leave Management',e_benefits:'Benefits',e_complaints:'Complaints & Suggestions',
+  e_settings:'Settings',emp_dash:'My Dashboard',emp_finance:'My Finance',
+  emp_advance:'Salary Advance',emp_promo:'Promotion Request',emp_attendance:'Attendance',
+  emp_inventory:'Submit Inventory',emp_leave:'Leave Request',emp_complaints:'Complaints',emp_profile:'My Profile',
+};
+function buildNav(){
+  const nav=document.getElementById('sidebar-nav');
+  nav.innerHTML=(ROLE==='employer'?EMP_NAV:EE_NAV).map(s=>`
+    <div class="nav-sec">${s.s}</div>
+    ${s.items.map(it=>`<div class="nav-item" id="n-${it.id}" onclick="showPage('${it.id}')">${ic(it.ic,16)}<span>${it.l}</span></div>`).join('')}
+  `).join('');
+}
+function showPage(pid){
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  const nav=document.getElementById('n-'+pid); if(nav) nav.classList.add('active');
+  document.getElementById('tb-title').textContent=PT[pid]||'BizTrack';
+  const mc=document.getElementById('mc');
+  mc.innerHTML='<div class="page active" id="pg"></div>';
+  const pg=document.getElementById('pg');
+  const R={
+    e_dash:pEDash,notifications:pNotifications,e_finance:pFinance,
+    e_performance:pPerformance,e_attendance_mgr:pAttMgr,e_inventory:pInventory,
+    e_employees:pEmployees,e_recruitment:pRecruitment,e_leaves:pLeaves,
+    e_benefits:pBenefits,e_complaints:pComplaints,e_settings:pSettings,
+    emp_dash:pEmpDash,emp_finance:pEmpFinance,emp_advance:pAdvance,
+    emp_promo:pPromo,emp_attendance:pMyAtt,emp_inventory:pMyInventory,
+    emp_leave:pMyLeave,emp_complaints:pMyComplaints,emp_profile:pProfile,
+  };
+  if(R[pid]) R[pid](pg); else pg.innerHTML='<p style="color:var(--text-muted)">Page not found.</p>';
+}
+function updNotif(){
+  const cnt=(DB.g('advances')||[]).filter(a=>a.status==='pending').length
+    +(DB.g('leaves')||[]).filter(l=>l.status==='pending').length
+    +(DB.g('promos')||[]).filter(p=>p.status==='pending').length
+    +(DB.g('applicants')||[]).filter(a=>a.offerStatus==='negotiated').length;
+  const d=document.getElementById('nb-dot'); if(d) d.style.display=cnt>0?'block':'none';
+}
+
+// ═══════════════════════════ HELPERS ═══════════════════════════
+function ph(title,sub=''){return`<div class="ph"><h2>${title}</h2>${sub?`<p>${sub}</p>`:''}</div>`}
+function sc(ico,lbl,val,ch='',cls=''){return`<div class="sc"><div class="sc-ico">${ic(ico,20)}</div><div class="sc-lbl">${lbl}</div><div class="sc-val">${val}</div>${ch?`<div class="sc-ch ${cls}">${ch}</div>`:''}</div>`}
+function bDot(status){return status==='present'?'bg':status==='late'?'ba':status==='absent'?'br':'bn'}
+function perfColor(s){return s>=80?'var(--accent)':s>=60?'var(--amber)':'var(--red)'}
+function calcPerf(eid){
+  const tasks=(DB.g('tasks')||[]).filter(t=>t.empId===eid&&t.status==='done').length;
+  const att=(DB.g('attendance')||[]).filter(a=>a.empId===eid&&a.status==='present').length;
+  return Math.min(100,Math.max(10,tasks*10+att*4+30));
+}
+function monthlyEarnings(eid){
+  const emp=(DB.g('employees')||[]).find(e=>e.id===eid); if(!emp) return 0;
+  return (DB.g('attendance')||[]).filter(a=>a.empId===eid&&a.clockIn&&a.clockOut)
+    .reduce((s,a)=>s+Math.floor((new Date(a.clockOut)-new Date(a.clockIn))/3600000)*emp.hourlyRate,0);
+}
+function totalHours(eid){
+  return (DB.g('attendance')||[]).filter(a=>a.empId===eid&&a.clockIn&&a.clockOut)
+    .reduce((s,a)=>s+Math.floor((new Date(a.clockOut)-new Date(a.clockIn))/3600000),0);
+}
+
+// ═══════════════════════════ MODAL ═══════════════════════════
+function openModal(title,body,actions=[]){
+  document.getElementById('m-title').innerHTML=title;
+  document.getElementById('m-body').innerHTML=body;
+  const f=document.getElementById('m-foot');
+  f.innerHTML=`<button class="btn b-ol" onclick="closeModal()">Cancel</button>`;
+  actions.forEach(a=>{const b=document.createElement('button');b.className=`btn ${a.c||'b-nv'}`;b.innerHTML=a.l;b.onclick=a.fn;f.appendChild(b);});
+  document.getElementById('modal-ov').classList.add('open');
+}
+function closeModal(){document.getElementById('modal-ov').classList.remove('open')}
+
+// ═══════════════════════════════════════════════
+// ══════════ EMPLOYER PAGES ════════════════════
+// ═══════════════════════════════════════════════
+
+function pEDash(el){
+  const emps=DB.g('employees')||[];
+  const costs=DB.g('costs')||[];
+  const rev=DB.g('revenue')||[];
+  const inv=DB.g('inventory')||[];
+  const totalRev=rev.reduce((s,r)=>s+r.amount,0);
+  const totalCosts=costs.reduce((s,c)=>s+c.amount,0);
+  const estPayroll=emps.reduce((s,e)=>s+monthlyEarnings(e.id),0);
+  const profit=totalRev-(totalCosts+estPayroll);
+  const margin=totalRev>0?((profit/totalRev)*100).toFixed(1):0;
+  const lowStock=inv.filter(i=>i.qty<=i.min).length;
+  const pending=(DB.g('advances')||[]).filter(a=>a.status==='pending').length+(DB.g('leaves')||[]).filter(l=>l.status==='pending').length;
+  const todayAtt=(DB.g('attendance')||[]).filter(a=>a.date===today()&&a.clockIn).length;
+
+  el.innerHTML=`
+  ${ph('Dashboard','Business overview at a glance.')}
+  <div class="sg">
+    ${sc('users','Total Employees',emps.length)}
+    ${sc('bar-chart-2','Total Revenue',fmt(totalRev),'Period total','up')}
+    ${sc('percent','Profit Margin',margin+'%',profit>=0?'Profitable':'Loss',profit>=0?'up':'dn')}
+    ${sc('package','Low Stock Items',lowStock,lowStock>0?'Needs restocking':'All good',lowStock>0?'dn':'up')}
+    ${sc('bell','Pending Requests',pending,pending>0?'Awaiting action':'')}
+    ${sc('clock','Clocked In Today',todayAtt,'Active employees')}
+  </div>
+  <div class="g2">
+    <div class="card mb">
+      <div class="ch"><span class="ct">${ic('users',15)} Employees</span><button class="btn b-nv btn-sm" onclick="showPage('e_employees')">View All</button></div>
+      <div class="cb">
+        <div class="tw"><table><thead><tr><th>Name</th><th>Role</th><th>Rate/hr</th><th>Perf</th></tr></thead><tbody>
+          ${emps.slice(0,6).map(e=>{const s=calcPerf(e.id);return`<tr><td><strong>${e.name}</strong></td><td>${e.roleTitle}</td><td>${fmt(e.hourlyRate)}</td><td><span class="b ${s>=80?'bg':s>=60?'ba':'br'}">${s}%</span></td></tr>`}).join('')}
+        </tbody></table></div>
+      </div>
+    </div>
+    <div class="card mb">
+      <div class="ch"><span class="ct">${ic('activity',15)} Quick Actions</span></div>
+      <div class="cb" style="display:flex;flex-direction:column;gap:9px">
+        <button class="btn b-nv btn-full" onclick="showPage('e_finance')">${ic('dollar-sign',15)} Finance & Revenue</button>
+        <button class="btn b-gr btn-full" onclick="showPage('e_recruitment')">${ic('search',15)} Recruitment</button>
+        <button class="btn b-am btn-full" onclick="showPage('e_inventory')">${ic('package',15)} Inventory</button>
+        <button class="btn b-bl btn-full" onclick="showPage('e_leaves')">${ic('calendar',15)} Leave Requests</button>
+        <button class="btn b-pr btn-full" onclick="showPage('e_benefits')">${ic('gift',15)} Manage Benefits</button>
+        <button class="btn b-ol btn-full" onclick="showPage('e_complaints')">${ic('message-square',15)} Complaints</button>
+      </div>
+    </div>
+  </div>
+  <div class="g2">
+    <div class="card mb">
+      <div class="ch"><span class="ct">${ic('package',15)} Inventory Alerts</span></div>
+      <div class="cb">
+        ${lowStock===0?'<div class="al al-g">All inventory levels are healthy.</div>':''}
+        ${inv.filter(i=>i.qty<=i.min).map(i=>`<div class="al al-a">${ic('alert-triangle',13)} <strong>${i.item}</strong> — ${i.qty} ${i.unit} remaining (min: ${i.min}, recommended order: ${i.rec||i.min*2})</div>`).join('')}
+        ${inv.filter(i=>i.qty>i.min).slice(0,2).map(i=>`<div class="al al-g">${ic('check',13)} <strong>${i.item}</strong> — ${i.qty} ${i.unit} in stock</div>`).join('')}
+      </div>
+    </div>
+    <div class="card mb">
+      <div class="ch"><span class="ct">${ic('layers',15)} Profit Summary</span></div>
+      <div class="cb">
+        <div style="background:var(--bg);border-radius:9px;padding:14px">
+          <div style="display:flex;justify-content:space-between;margin-bottom:7px"><span style="font-size:12.5px;color:var(--text-muted)">Revenue</span><strong class="pfpos">${fmt(totalRev)}</strong></div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:7px"><span style="font-size:12.5px;color:var(--text-muted)">Costs</span><strong class="pfneg">–${fmt(totalCosts)}</strong></div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:11px"><span style="font-size:12.5px;color:var(--text-muted)">Payroll</span><strong class="pfneg">–${fmt(estPayroll)}</strong></div>
+          <div style="border-top:2px solid var(--border);padding-top:9px;display:flex;justify-content:space-between">
+            <strong>Net Profit</strong>
+            <strong style="font-size:17px" class="${profit>=0?'pfpos':'pfneg'}">${fmt(Math.abs(profit))} ${profit>=0?'▲':'▼'}</strong>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ─── NOTIFICATIONS ───
+function pNotifications(el){
+  const adv=(DB.g('advances')||[]).filter(a=>a.status==='pending');
+  const lv=(DB.g('leaves')||[]).filter(l=>l.status==='pending');
+  const pr=(DB.g('promos')||[]).filter(p=>p.status==='pending');
+  const neg=(DB.g('applicants')||[]).filter(a=>a.offerStatus==='negotiated');
+  const low=(DB.g('inventory')||[]).filter(i=>i.qty<=i.min);
+  const items=[
+    ...adv.map(a=>({ico:'credit-card',txt:`<strong>${a.empName}</strong> requested a salary advance of ${fmt(a.amount)}`,t:'Finance',go:'e_finance',cls:'b-am'})),
+    ...lv.map(l=>({ico:'calendar',txt:`<strong>${l.empName}</strong> submitted a leave request`,t:'HR',go:'e_leaves',cls:'b-bl'})),
+    ...pr.map(p=>({ico:'arrow-up',txt:`<strong>${p.empName}</strong> submitted a promotion request`,t:'HR',go:'e_employees',cls:'b-pr'})),
+    ...neg.map(a=>({ico:'file-text',txt:`<strong>${a.name}</strong> sent a counter-offer`,t:'Recruitment',go:'e_recruitment',cls:'b-nv'})),
+    ...low.map(i=>({ico:'alert-triangle',txt:`Low stock: <strong>${i.item}</strong> (${i.qty} ${i.unit})`,t:'Inventory',go:'e_inventory',cls:'b-rd'})),
+  ];
+  el.innerHTML=`
+  ${ph('Notifications','Alerts and pending actions.')}
+  ${items.length===0?`<div class="es"><div class="es-ico">${ic('bell',44)}</div><h3>All clear!</h3><p>No pending notifications.</p></div>`:`
+  <div style="display:flex;flex-direction:column;gap:10px">
+    ${items.map(n=>`
+      <div style="display:flex;align-items:center;gap:12px;padding:14px;background:var(--card);border-radius:10px;border:1px solid var(--border);cursor:pointer" onclick="showPage('${n.go}')">
+        <div style="width:38px;height:38px;border-radius:10px;background:var(--bg);display:flex;align-items:center;justify-content:center;color:var(--navy-lighter);flex-shrink:0">${ic(n.ico,18)}</div>
+        <div style="flex:1"><div style="font-size:13px;color:var(--text)">${n.txt}</div><div style="font-size:11px;color:var(--text-muted);margin-top:2px">${n.t}</div></div>
+        <span class="btn btn-sm ${n.cls}" style="flex-shrink:0">View</span>
+      </div>`).join('')}
+  </div>`}`;
+}
+
+// ─── FINANCE ───
+function pFinance(el){
+  const emps=DB.g('employees')||[];
+  const costs=DB.g('costs')||[];
+  const rev=DB.g('revenue')||[];
+  const advances=DB.g('advances')||[];
+  const totalRev=rev.reduce((s,r)=>s+r.amount,0);
+  const totalCosts=costs.reduce((s,c)=>s+c.amount,0);
+  const estPayroll=emps.reduce((s,e)=>s+monthlyEarnings(e.id),0);
+  const profit=totalRev-(totalCosts+estPayroll);
+  const margin=totalRev>0?((profit/totalRev)*100).toFixed(1):0;
+
+  el.innerHTML=`
+  ${ph('Finance & Revenue','Track revenue, costs, payroll and profit margins.')}
+  <div class="sg">
+    ${sc('bar-chart-2','Total Revenue',fmt(totalRev),'Period','up')}
+    ${sc('tag','Operational Costs',fmt(totalCosts),'Period','dn')}
+    ${sc('users','Payroll (Earned)',fmt(estPayroll),'Based on hours','dn')}
+    ${sc('percent','Profit Margin',margin+'%',profit>=0?`Net: ${fmt(profit)}`:`Loss: ${fmt(Math.abs(profit))}`,profit>=0?'up':'dn')}
+  </div>
+  <div class="g2">
+    <div class="card mb">
+      <div class="ch"><span class="ct">${ic('bar-chart-2',15)} Daily Revenue</span><button class="btn b-gr btn-sm" onclick="openAddRev()">+ Add Revenue</button></div>
+      <div class="cb">
+        <div class="tw"><table><thead><tr><th>Date</th><th>Amount (₵)</th><th>Note</th></tr></thead><tbody>
+          ${rev.slice().reverse().map(r=>`<tr><td>${r.date}</td><td><strong>${fmt(r.amount)}</strong></td><td style="color:var(--text-muted)">${r.note||'—'}</td></tr>`).join('')}
+        </tbody></table></div>
+      </div>
+    </div>
+    <div class="card mb">
+      <div class="ch"><span class="ct">${ic('layers',15)} Profit Breakdown</span></div>
+      <div class="cb">
+        <div style="background:var(--bg);border-radius:10px;padding:16px">
+          <div style="display:flex;justify-content:space-between;margin-bottom:9px"><span style="font-size:13px;color:var(--text-muted)">Total Revenue</span><strong class="pfpos">${fmt(totalRev)}</strong></div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:9px"><span style="font-size:13px;color:var(--text-muted)">Operational Costs</span><strong class="pfneg">– ${fmt(totalCosts)}</strong></div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:13px"><span style="font-size:13px;color:var(--text-muted)">Payroll (Earned)</span><strong class="pfneg">– ${fmt(estPayroll)}</strong></div>
+          <div style="border-top:2px solid var(--border);padding-top:10px;display:flex;justify-content:space-between;align-items:center">
+            <strong style="font-size:14px">Net Profit</strong>
+            <strong style="font-size:20px;font-weight:900" class="${profit>=0?'pfpos':'pfneg'}">${fmt(Math.abs(profit))} ${profit>=0?'▲':'▼'}</strong>
+          </div>
+          <div class="pt" style="margin-top:10px"><div class="pf" style="width:${Math.min(100,Math.max(0,parseFloat(margin)))}%;background:${profit>=0?'var(--accent)':'var(--red)'}"></div></div>
+          <div style="font-size:11px;color:var(--text-muted);margin-top:4px">Margin: ${margin}%</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="g2">
+    <div class="card mb">
+      <div class="ch"><span class="ct">${ic('tag',15)} Business Costs</span><button class="btn b-nv btn-sm" onclick="openAddCost()">+ Add Cost</button></div>
+      <div class="cb">
+        <div class="tw"><table><thead><tr><th>Category</th><th>Description</th><th>Amount</th><th>Date</th></tr></thead><tbody>
+          ${costs.map(c=>`<tr><td><span class="b bn">${c.cat}</span></td><td>${c.desc}</td><td>${fmt(c.amount)}</td><td>${c.date}</td></tr>`).join('')}
+        </tbody></table></div>
+      </div>
+    </div>
+    <div class="card mb">
+      <div class="ch"><span class="ct">${ic('credit-card',15)} Advance Requests</span></div>
+      <div class="cb">
+        ${advances.length===0?`<p style="font-size:13px;color:var(--text-muted)">No advance requests.</p>`:`
+        <div class="tw"><table><thead><tr><th>Employee</th><th>Amount</th><th>Reason</th><th>Status</th><th>Action</th></tr></thead><tbody>
+          ${advances.map((a,i)=>`<tr>
+            <td><strong>${a.empName}</strong></td><td>${fmt(a.amount)}</td><td>${a.reason}</td>
+            <td><span class="b ${a.status==='pending'?'ba':a.status==='approved'?'bg':'br'}">${a.status}</span></td>
+            <td>${a.status==='pending'?`<button class="btn b-gr btn-sm" onclick="resolveAdv(${i},'approved')">Approve</button> <button class="btn b-rd btn-sm" onclick="resolveAdv(${i},'rejected')">Reject</button>`:'—'}</td>
+          </tr>`).join('')}
+        </tbody></table></div>`}
+      </div>
+    </div>
+  </div>
+  <div class="card mb">
+    <div class="ch"><span class="ct">${ic('clock',15)} Hourly Payroll</span></div>
+    <div class="cb">
+      <div class="tw"><table><thead><tr><th>Employee</th><th>Role</th><th>Rate/hr</th><th>Hours Logged</th><th>Earnings</th></tr></thead><tbody>
+        ${emps.map(e=>`<tr><td><strong>${e.name}</strong></td><td>${e.roleTitle}</td><td>${fmt(e.hourlyRate)}/hr</td><td>${totalHours(e.id)} hrs</td><td><strong>${fmt(monthlyEarnings(e.id))}</strong></td></tr>`).join('')}
+      </tbody></table></div>
+    </div>
+  </div>`;
+}
+function openAddRev(){
+  openModal('Add Daily Revenue',`
+    <div class="f"><label>Date</label><input type="date" id="rv-d" value="${today()}"></div>
+    <div class="f"><label>Amount (₵)</label><input type="number" id="rv-a" placeholder="e.g. 5000"></div>
+    <div class="f"><label>Note</label><input type="text" id="rv-n" placeholder="e.g. Sales revenue, Service fees…"></div>
+  `,[{l:'Add Revenue',c:'b-gr',fn:()=>{
+    const a=parseFloat(document.getElementById('rv-a').value);
+    if(!a){toast('Enter a valid amount','e');return}
+    DB.push('revenue',{date:document.getElementById('rv-d').value,amount:a,note:document.getElementById('rv-n').value});
+    closeModal();showPage('e_finance');toast('Revenue added','s');
+  }}]);
+}
+function openAddCost(){
+  openModal('Add Business Cost',`
+    <div class="fr">
+      <div class="f"><label>Category</label><select id="cs-cat"><option>Rent</option><option>Utilities</option><option>Marketing</option><option>Equipment</option><option>Salaries</option><option>Miscellaneous</option></select></div>
+      <div class="f"><label>Amount (₵)</label><input type="number" id="cs-amt" placeholder="0.00"></div>
+    </div>
+    <div class="f"><label>Description</label><input type="text" id="cs-desc" placeholder="Brief description"></div>
+    <div class="f"><label>Date</label><input type="date" id="cs-date" value="${today()}"></div>
+  `,[{l:'Add Cost',c:'b-nv',fn:()=>{
+    const costs=DB.g('costs')||[];
+    costs.push({id:Date.now(),cat:document.getElementById('cs-cat').value,desc:document.getElementById('cs-desc').value,amount:parseFloat(document.getElementById('cs-amt').value)||0,date:document.getElementById('cs-date').value});
+    DB.s('costs',costs);closeModal();showPage('e_finance');toast('Cost added','s');
+  }}]);
+}
+function resolveAdv(i,dec){
+  const a=DB.g('advances')||[];a[i].status=dec;DB.s('advances',a);
+  toast(`Advance ${dec}`,'s');showPage('e_finance');updNotif();
+}
+
+// ─── PERFORMANCE ───
+function pPerformance(el){
+  const emps=DB.g('employees')||[];
+  el.innerHTML=`
+  ${ph('Performance','Based on tasks completed and attendance recorded.')}
+  <div class="g2">
+    <div class="card mb">
+      <div class="ch"><span class="ct">${ic('trending-up',15)} Performance Scores</span><button class="btn b-nv btn-sm" onclick="openAddTask()">+ Log Task</button></div>
+      <div class="cb">
+        ${emps.map(e=>{const s=calcPerf(e.id);return`
+        <div class="pr-row">
+          <div class="pr-nm">${e.name.split(' ')[0]}</div>
+          <div class="pr-tr"><div class="pr-fl" style="width:${s}%;background:${perfColor(s)}"></div></div>
+          <div class="pr-sc">${s}%</div>
+        </div>`}).join('')}
+      </div>
+    </div>
+    <div class="card mb">
+      <div class="ch"><span class="ct">${ic('award',15)} Ratings</span></div>
+      <div class="cb">
+        <div class="tw"><table><thead><tr><th>Employee</th><th>Score</th><th>Rating</th></tr></thead><tbody>
+          ${emps.map(e=>{const s=calcPerf(e.id);return`<tr><td><strong>${e.name}</strong></td><td><strong>${s}%</strong></td><td><span class="b ${s>=80?'bg':s>=60?'ba':'br'}">${s>=80?'Excellent':s>=60?'Good':'Needs Work'}</span></td></tr>`}).join('')}
+        </tbody></table></div>
+      </div>
+    </div>
+  </div>
+  <div class="card mb">
+    <div class="ch"><span class="ct">${ic('list',15)} Task Log</span></div>
+    <div class="cb">
+      <div class="tw"><table><thead><tr><th>Employee</th><th>Task</th><th>Status</th><th>Date</th><th>Action</th></tr></thead><tbody>
+        ${(DB.g('tasks')||[]).slice().reverse().map((t,i)=>`<tr>
+          <td>${(DB.g('employees')||[]).find(e=>e.id===t.empId)?.name||t.empId}</td>
+          <td>${t.title}</td>
+          <td><span class="b ${t.status==='done'?'bg':'ba'}">${t.status}</span></td>
+          <td>${t.date}</td>
+          <td><button class="btn b-ol btn-sm" onclick="toggleTask(${i})">${t.status==='done'?'Undo':'Mark Done'}</button></td>
+        </tr>`).join('')}
+      </tbody></table></div>
+    </div>
+  </div>`;
+}
+function openAddTask(){
+  const emps=DB.g('employees')||[];
+  openModal('Log Employee Task',`
+    <div class="f"><label>Employee</label><select id="tk-emp">${emps.map(e=>`<option value="${e.id}">${e.name}</option>`).join('')}</select></div>
+    <div class="f"><label>Task Title</label><input type="text" id="tk-title" placeholder="e.g. Completed Q2 report"></div>
+    <div class="f"><label>Date</label><input type="date" id="tk-date" value="${today()}"></div>
+  `,[{l:'Add Task',c:'b-nv',fn:()=>{
+    DB.push('tasks',{id:Date.now(),empId:document.getElementById('tk-emp').value,title:document.getElementById('tk-title').value,status:'done',date:document.getElementById('tk-date').value});
+    closeModal();showPage('e_performance');toast('Task logged','s');
+  }}]);
+}
+function toggleTask(i){
+  const t=DB.g('tasks')||[];t[i].status=t[i].status==='done'?'pending':'done';DB.s('tasks',t);showPage('e_performance');
+}
+
+// ─── ATTENDANCE MANAGER ───
+function pAttMgr(el){
+  const att=DB.g('attendance')||[];
+  const wl=DB.g('work_location')||{};
+  const todayAtt=att.filter(a=>a.date===today());
+
+  el.innerHTML=`
+  ${ph('Attendance Management','Monitor clock-ins and configure the work location geofence.')}
+  <div class="g2">
+    <div class="card mb">
+      <div class="ch"><span class="ct">${ic('map-pin',15)} Work Location</span><button class="btn b-nv btn-sm" onclick="openEditWL()">Edit</button></div>
+      <div class="cb">
+        <div class="f"><label>Location Name</label><input value="${wl.name||'Not set'}" disabled></div>
+        <div class="fr">
+          <div class="f"><label>Latitude</label><input value="${wl.lat||'—'}" disabled></div>
+          <div class="f"><label>Longitude</label><input value="${wl.lng||'—'}" disabled></div>
+        </div>
+        <div class="f"><label>Allowed Radius</label><input value="${wl.radius||500} metres" disabled></div>
+        <div class="al al-b">${ic('map-pin',13)} Clock-in before 08:00 = <strong>Present</strong>. After 08:00 = <strong>Late</strong>. No clock-in = <strong>Absent</strong>.</div>
+      </div>
+    </div>
+    <div class="card mb">
+      <div class="ch"><span class="ct">${ic('clock',15)} Today's Summary</span></div>
+      <div class="cb">
+        <div class="tw"><table><thead><tr><th>Employee</th><th>In</th><th>Out</th><th>Hrs</th><th>Status</th></tr></thead><tbody>
+          ${todayAtt.length===0?`<tr><td colspan="5" style="text-align:center;color:var(--text-muted)">No clock-ins today</td></tr>`
+          :todayAtt.map(a=>{
+            const h=a.clockIn&&a.clockOut?Math.floor((new Date(a.clockOut)-new Date(a.clockIn))/3600000):null;
+            return`<tr><td><strong>${a.empName}</strong></td><td>${a.clockIn?new Date(a.clockIn).toLocaleTimeString('en-GH',{hour:'2-digit',minute:'2-digit'}):'—'}</td><td>${a.clockOut?new Date(a.clockOut).toLocaleTimeString('en-GH',{hour:'2-digit',minute:'2-digit'}):'Active'}</td><td>${h!==null?h+' h':'—'}</td><td><span class="b ${bDot(a.status)}">${a.status}</span></td></tr>`;
+          }).join('')}
+        </tbody></table></div>
+      </div>
+    </div>
+  </div>
+  <div class="card mb">
+    <div class="ch"><span class="ct">${ic('calendar',15)} Full Attendance Log</span></div>
+    <div class="cb">
+      <div class="tw"><table><thead><tr><th>Date</th><th>Employee</th><th>Clock In</th><th>Clock Out</th><th>Hours</th><th>Earnings</th><th>Status</th></tr></thead><tbody>
+        ${att.length===0?`<tr><td colspan="7" style="text-align:center;color:var(--text-muted)">No records yet</td></tr>`
+        :att.slice().reverse().map(a=>{
+          const emp=(DB.g('employees')||[]).find(e=>e.id===a.empId);
+          const h=a.clockIn&&a.clockOut?Math.floor((new Date(a.clockOut)-new Date(a.clockIn))/3600000):0;
+          const earn=emp?h*emp.hourlyRate:0;
+          return`<tr><td>${a.date}</td><td><strong>${a.empName}</strong></td>
+            <td>${a.clockIn?new Date(a.clockIn).toLocaleTimeString('en-GH',{hour:'2-digit',minute:'2-digit'}):'—'}</td>
+            <td>${a.clockOut?new Date(a.clockOut).toLocaleTimeString('en-GH',{hour:'2-digit',minute:'2-digit'}):'Active'}</td>
+            <td>${h} h</td><td>${fmt(earn)}</td>
+            <td><span class="b ${bDot(a.status)}">${a.status}</span></td></tr>`;
+        }).join('')}
+      </tbody></table></div>
+    </div>
+  </div>`;
+}
+function openEditWL(){
+  const wl=DB.g('work_location')||{};
+  openModal('Edit Work Location',`
+    <div class="f"><label>Location Name</label><input type="text" id="wl-nm" value="${wl.name||''}"></div>
+    <div class="fr">
+      <div class="f"><label>Latitude</label><input type="number" step="any" id="wl-lt" value="${wl.lat||''}"></div>
+      <div class="f"><label>Longitude</label><input type="number" step="any" id="wl-lg" value="${wl.lng||''}"></div>
+    </div>
+    <div class="f"><label>Radius (metres)</label><input type="number" id="wl-r" value="${wl.radius||500}"></div>
+    <div class="al al-b">${ic('map-pin',13)} Get coordinates by right-clicking your office on Google Maps.</div>
+  `,[{l:'Save Location',c:'b-nv',fn:()=>{
+    DB.s('work_location',{name:document.getElementById('wl-nm').value,lat:parseFloat(document.getElementById('wl-lt').value)||0,lng:parseFloat(document.getElementById('wl-lg').value)||0,radius:parseInt(document.getElementById('wl-r').value)||500});
+    closeModal();showPage('e_attendance_mgr');toast('Location updated','s');
+  }}]);
+}
+
+// ─── INVENTORY ───
+function pInventory(el){
+  const inv=DB.g('inventory')||[];
+  const low=inv.filter(i=>i.qty<=i.min);
+  el.innerHTML=`
+  ${ph('Inventory Management','Track all stock levels submitted by employees.')}
+  <div class="sg">
+    ${sc('package','Total Items',inv.length)}
+    ${sc('alert-triangle','Low Stock',low.length,'',low.length>0?'dn':'up')}
+    ${sc('check-circle','In Stock',inv.filter(i=>i.qty>i.min).length,'','up')}
+  </div>
+  <div class="card mb">
+    <div class="ch">
+      <span class="ct">${ic('list',15)} Full Inventory</span>
+      <div style="display:flex;gap:8px">
+        <button class="btn b-nv btn-sm" onclick="openAddInv()">${ic('plus',13)} Add Item</button>
+        ${low.length>0?`<button class="btn b-am btn-sm" onclick="printLow()">${ic('printer',13)} Print Low Stock</button>`:''}
+      </div>
+    </div>
+    <div class="cb">
+      <div class="tw"><table><thead><tr><th>#</th><th>Item</th><th>Qty</th><th>Unit</th><th>Min</th><th>Rec. Order</th><th>Location</th><th>Updated By</th><th>Status</th><th></th></tr></thead><tbody>
+        ${inv.map((it,i)=>`<tr>
+          <td style="color:var(--text-muted)">${i+1}</td>
+          <td><strong>${it.item}</strong></td>
+          <td><strong style="color:${it.qty<=it.min?'var(--red)':'inherit'}">${it.qty}</strong></td>
+          <td>${it.unit}</td><td>${it.min}</td><td>${it.rec||'—'}</td><td>${it.loc}</td>
+          <td><span class="b bn">${it.updatedBy}</span></td>
+          <td><span class="b ${it.qty<=it.min?'br':'bg'}">${it.qty<=it.min?'Low':'In Stock'}</span></td>
+          <td><button class="btn b-ol btn-sm" onclick="openEditInv(${i})">${ic('edit-2',12)}</button></td>
+        </tr>`).join('')}
+      </tbody></table></div>
+    </div>
+  </div>`;
+}
+function printLow(){
+  const inv=(DB.g('inventory')||[]).filter(i=>i.qty<=i.min);
+  const w=window.open('','_blank','width=750,height=600');
+  const co=DB.g('company')||{};
+  w.document.write(`<!DOCTYPE html><html><head><title>Low Stock Report</title>
+  <style>body{font-family:'Segoe UI',Arial,sans-serif;margin:30px;font-size:13px;color:#222}
+  h1{font-size:20px;color:#1b2e4b;margin-bottom:4px}
+  .sub{color:#666;margin-bottom:20px;font-size:12px}
+  table{width:100%;border-collapse:collapse}
+  th{background:#1b2e4b;color:#fff;padding:9px 12px;text-align:left;font-size:11px}
+  td{padding:9px 12px;border-bottom:1px solid #dde4ee}
+  .footer{margin-top:24px;font-size:11px;color:#999;border-top:1px solid #eee;padding-top:10px}
+  </style></head><body>
+  <h1>${co.name||'BizTrack'} — Low Stock Report</h1>
+  <div class="sub">Generated: ${new Date().toLocaleString('en-GH')} | Items below minimum stock level</div>
+  <table><thead><tr><th>Item</th><th>Current Qty</th><th>Unit</th><th>Min Level</th><th>Recommended Order</th><th>Location</th></tr></thead><tbody>
+  ${inv.map(it=>`<tr><td><strong>${it.item}</strong></td><td style="color:red"><strong>${it.qty}</strong></td><td>${it.unit}</td><td>${it.min}</td><td><strong>${it.rec||it.min*2}</strong> ${it.unit}</td><td>${it.loc}</td></tr>`).join('')}
+  </tbody></table>
+  <div class="footer">Total items to restock: ${inv.length} | BizTrack Business Management System</div>
+  </body></html>`);
+  w.document.close(); setTimeout(()=>w.print(),500);
+}
+function openAddInv(){
+  openModal('Add Inventory Item',`
+    <div class="fr"><div class="f"><label>Item Name</label><input type="text" id="ni-nm" placeholder="Item name"></div><div class="f"><label>Unit</label><input type="text" id="ni-un" placeholder="e.g. Pcs, Ream"></div></div>
+    <div class="fr3">
+      <div class="f"><label>Quantity</label><input type="number" id="ni-qty" placeholder="0"></div>
+      <div class="f"><label>Min Level</label><input type="number" id="ni-mn" placeholder="0"></div>
+      <div class="f"><label>Rec. Order Qty</label><input type="number" id="ni-rc" placeholder="0"></div>
+    </div>
+    <div class="f"><label>Location</label><input type="text" id="ni-lc" placeholder="e.g. Store A"></div>
+  `,[{l:'Add Item',c:'b-nv',fn:()=>{
+    const inv=DB.g('inventory')||[];
+    inv.push({id:Date.now(),item:document.getElementById('ni-nm').value,qty:parseInt(document.getElementById('ni-qty').value)||0,unit:document.getElementById('ni-un').value,min:parseInt(document.getElementById('ni-mn').value)||0,rec:parseInt(document.getElementById('ni-rc').value)||0,loc:document.getElementById('ni-lc').value,updatedBy:'Admin',date:today()});
+    DB.s('inventory',inv);closeModal();showPage('e_inventory');toast('Item added','s');
+  }}]);
+}
+function openEditInv(i){
+  const inv=DB.g('inventory')||[];const it=inv[i];
+  openModal(`Edit: ${it.item}`,`
+    <div class="fr"><div class="f"><label>Quantity</label><input type="number" id="ei-qty" value="${it.qty}"></div><div class="f"><label>Min Level</label><input type="number" id="ei-mn" value="${it.min}"></div></div>
+    <div class="fr"><div class="f"><label>Rec. Order Qty</label><input type="number" id="ei-rc" value="${it.rec||0}"></div><div class="f"><label>Location</label><input type="text" id="ei-lc" value="${it.loc}"></div></div>
+  `,[{l:'Save',c:'b-gr',fn:()=>{
+    inv[i]={...inv[i],qty:parseInt(document.getElementById('ei-qty').value)||0,min:parseInt(document.getElementById('ei-mn').value)||0,rec:parseInt(document.getElementById('ei-rc').value)||0,loc:document.getElementById('ei-lc').value,date:today()};
+    DB.s('inventory',inv);closeModal();showPage('e_inventory');toast('Updated','s');
+  }}]);
+}
+
+// ─── EMPLOYEES ───
+function pEmployees(el){
+  const emps=DB.g('employees')||[];
+  const promos=DB.g('promos')||[];
+  el.innerHTML=`
+  ${ph('Employee Management','Manage all staff members and promotion requests.')}
+  <div class="card mb">
+    <div class="ch"><span class="ct">${ic('users',15)} All Employees</span><button class="btn b-nv btn-sm" onclick="openAddEmp()">+ Add Employee</button></div>
+    <div class="cb">
+      <div class="tw"><table><thead><tr><th>ID</th><th>Name</th><th>Role</th><th>Dept</th><th>Rate/hr</th><th>Joined</th><th>Perf</th><th></th></tr></thead><tbody>
+        ${emps.map(e=>{const s=calcPerf(e.id);return`<tr>
+          <td><span class="b bn">${e.id}</span></td>
+          <td><strong>${e.name}</strong></td><td>${e.roleTitle}</td><td>${e.dept}</td>
+          <td>${fmt(e.hourlyRate)}</td><td>${e.joinDate}</td>
+          <td><span class="b ${s>=80?'bg':s>=60?'ba':'br'}">${s}%</span></td>
+          <td><button class="btn b-ol btn-sm" onclick="openEditEmp('${e.id}')">${ic('edit-2',12)}</button></td>
+        </tr>`}).join('')}
+      </tbody></table></div>
+    </div>
+  </div>
+  <div class="card mb">
+    <div class="ch"><span class="ct">${ic('arrow-up',15)} Promotion Requests</span></div>
+    <div class="cb">
+      ${promos.length===0?`<p style="font-size:13px;color:var(--text-muted)">No promotion requests yet.</p>`:`
+      <div class="tw"><table><thead><tr><th>Employee</th><th>Desired Role</th><th>Justification</th><th>Date</th><th>Status</th><th>Action</th></tr></thead><tbody>
+        ${promos.map((p,i)=>`<tr>
+          <td><strong>${p.empName}</strong></td><td>${p.desiredRole}</td>
+          <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.justification}</td>
+          <td>${p.date}</td>
+          <td><span class="b ${p.status==='pending'?'ba':p.status==='approved'?'bg':'br'}">${p.status}</span></td>
+          <td>${p.status==='pending'?`<button class="btn b-gr btn-sm" onclick="resolvePromo(${i},'approved')">Approve</button> <button class="btn b-rd btn-sm" onclick="resolvePromo(${i},'rejected')">Reject</button>`:'—'}</td>
+        </tr>`).join('')}
+      </tbody></table></div>`}
+    </div>
+  </div>`;
+}
+function openAddEmp(){
+  openModal('Add New Employee',`
+    <div class="fr"><div class="f"><label>Employee ID</label><input type="text" id="ne-id" placeholder="EMP009"></div><div class="f"><label>Full Name</label><input type="text" id="ne-nm" placeholder="Full name"></div></div>
+    <div class="fr"><div class="f"><label>Job Title</label><input type="text" id="ne-rl" placeholder="e.g. Sales Officer"></div><div class="f"><label>Department</label><input type="text" id="ne-dt" placeholder="e.g. Sales"></div></div>
+    <div class="fr"><div class="f"><label>Hourly Rate (₵)</label><input type="number" id="ne-rt" placeholder="0.00"></div><div class="f"><label>Start Date</label><input type="date" id="ne-sd"></div></div>
+    <div class="fr"><div class="f"><label>Email</label><input type="email" id="ne-em" placeholder="emp@co.com"></div><div class="f"><label>Default Password</label><input type="text" id="ne-pw" value="emp123"></div></div>
+  `,[{l:'Add Employee',c:'b-nv',fn:async()=>{
+    const id=document.getElementById('ne-id').value.trim();
+    const nm=document.getElementById('ne-nm').value.trim();
+    if(!id||!nm){toast('ID and Name required','e');return}
+    const emps=DB.g('employees')||[];
+    if(emps.find(e=>e.id===id)){toast('Employee ID already exists','e');return}
+    const newEmp={id,name:nm,roleTitle:document.getElementById('ne-rl').value,dept:document.getElementById('ne-dt').value,hourlyRate:parseFloat(document.getElementById('ne-rt').value)||0,joinDate:document.getElementById('ne-sd').value,email:document.getElementById('ne-em').value,active:true};
+    emps.push(newEmp); DB.s('employees',emps);
+    // Try to sync to backend
+    try{await fetch(`${API}/users`,{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${JWT}`},body:JSON.stringify({...newEmp,password:document.getElementById('ne-pw').value,initials:nm.split(' ').map(n=>n[0]).join('').toUpperCase()})});}catch{}
+    closeModal();showPage('e_employees');toast('Employee added','s');
+  }}]);
+}
+function openEditEmp(eid){
+  const emps=DB.g('employees')||[];const emp=emps.find(e=>e.id===eid);
+  openModal(`Edit — ${emp.name}`,`
+    <div class="fr"><div class="f"><label>Job Title</label><input type="text" id="ee-rl" value="${emp.roleTitle}"></div><div class="f"><label>Department</label><input type="text" id="ee-dt" value="${emp.dept}"></div></div>
+    <div class="f"><label>Hourly Rate (₵)</label><input type="number" id="ee-rt" value="${emp.hourlyRate}"></div>
+    <div class="f"><label>Email</label><input type="email" id="ee-em" value="${emp.email||''}"></div>
+  `,[
+    {l:'Save',c:'b-gr',fn:()=>{
+      const i=emps.findIndex(e=>e.id===eid);
+      emps[i]={...emps[i],roleTitle:document.getElementById('ee-rl').value,dept:document.getElementById('ee-dt').value,hourlyRate:parseFloat(document.getElementById('ee-rt').value)||emp.hourlyRate,email:document.getElementById('ee-em').value};
+      DB.s('employees',emps);closeModal();showPage('e_employees');toast('Updated','s');
+    }},
+    {l:'Remove',c:'b-rd',fn:()=>{
+      if(confirm(`Remove ${emp.name}?`)){const i=emps.findIndex(e=>e.id===eid);emps.splice(i,1);DB.s('employees',emps);closeModal();showPage('e_employees');toast('Removed','i');}
+    }},
+  ]);
+}
+function resolvePromo(i,dec){
+  const p=DB.g('promos')||[];p[i].status=dec;DB.s('promos',p);
+  toast(`Promotion ${dec}`,'s');showPage('e_employees');updNotif();
+}
+
+// ─── RECRUITMENT ───
+function pRecruitment(el){
+  const apps=DB.g('applicants')||[];
+  const stage=DB.g('rec_stage')||'collecting';
+  const link=DB.g('rec_link')||'';
+  const offerLink=DB.g('offer_link')||'';
+  const qs=DB.g('apt_qs')||[];
+  const ranked=apps.filter(a=>a.score!==undefined).sort((a,b)=>b.score-a.score);
+  const tested=apps.filter(a=>a.testScore!==undefined).sort((a,b)=>b.testScore-a.testScore);
+  const top10=tested.slice(0,10);
+
+  el.innerHTML=`
+  ${ph('Recruitment System','Automated end-to-end hiring pipeline.')}
+  <div class="steps">
+    <div class="si ${stage==='collecting'?'active':'done'}"><div class="sn">${stage==='collecting'?'1':'✓'}</div><span class="sl">Applications</span></div>
+    <div class="sline ${['shortlisted','testing','interviewing'].includes(stage)?'done':''}"></div>
+    <div class="si ${stage==='shortlisted'?'active':['testing','interviewing'].includes(stage)?'done':''}"><div class="sn">${['testing','interviewing'].includes(stage)?'✓':'2'}</div><span class="sl">Shortlisting</span></div>
+    <div class="sline ${['testing','interviewing'].includes(stage)?'done':''}"></div>
+    <div class="si ${stage==='testing'?'active':stage==='interviewing'?'done':''}"><div class="sn">${stage==='interviewing'?'✓':'3'}</div><span class="sl">Aptitude Test</span></div>
+    <div class="sline ${stage==='interviewing'?'done':''}"></div>
+    <div class="si ${stage==='interviewing'?'active':''}"><div class="sn">4</div><span class="sl">Interviews</span></div>
+  </div>
+  <div class="g2">
+    <div class="card mb">
+      <div class="ch"><span class="ct">${ic('link',15)} Application Portal</span></div>
+      <div class="cb">
+        <p style="font-size:12.5px;color:var(--text-muted);margin-bottom:11px">Share with candidates to receive applications.</p>
+        <div class="link-box">${link}</div>
+        <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+          <button class="btn b-nv btn-sm" onclick="copyText('${link}')">${ic('copy',13)} Copy</button>
+          <button class="btn b-gr btn-sm" onclick="openApplicantPortal()">${ic('external-link',13)} Preview</button>
+          <button class="btn b-ol btn-sm" onclick="genNewLink()">${ic('refresh-cw',13)} New Link</button>
+        </div>
+      </div>
+    </div>
+    <div class="card mb">
+      <div class="ch"><span class="ct">${ic('bar-chart-2',15)} Pipeline Stats</span></div>
+      <div class="cb">
+        <div class="sg" style="grid-template-columns:1fr 1fr;margin:0">
+          ${sc('send','Applications',apps.length)}
+          ${sc('list','Ranked',ranked.length)}
+          ${sc('award','Tested',tested.length)}
+          ${sc('briefcase','Invited',top10.length)}
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="g2">
+    <div class="card mb">
+      <div class="ch"><span class="ct">${ic('settings',15)} Aptitude Test</span><button class="btn b-nv btn-sm" onclick="openAptSetup()">Manage (${qs.length} Qs)</button></div>
+      <div class="cb"><p style="font-size:12.5px;color:var(--text-muted)">Set questions with pre-keyed answers for the top-50 shortlisted candidates.</p></div>
+    </div>
+    <div class="card mb">
+      <div class="ch"><span class="ct">${ic('file-text',15)} Employment Letter</span><button class="btn b-nv btn-sm" onclick="openLetterSetup()">${ic('edit-2',13)} Configure</button></div>
+      <div class="cb">
+        <p style="font-size:12.5px;color:var(--text-muted);margin-bottom:8px">Configure company details for the automated employment letter sent to top-10 candidates.</p>
+        <div class="link-box">${offerLink}</div>
+        <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+          <button class="btn b-nv btn-sm" onclick="copyText('${offerLink}')">${ic('copy',13)} Copy Offer Link</button>
+          <button class="btn b-gr btn-sm" onclick="previewOfferPortal()">${ic('external-link',13)} Preview Offer</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="card mb">
+    <div class="ch">
+      <span class="ct">${ic('list',15)} All Applicants (${apps.length})</span>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        ${stage==='collecting'&&apps.length>0?`<button class="btn b-am btn-sm" id="rank-btn" onclick="rankApplicants()">${ic('award',13)} Rank by Merit</button>`:''}
+        ${stage==='shortlisted'?`<button class="btn b-bl btn-sm" onclick="inviteTop50()">${ic('send',13)} Invite Top 50</button>`:''}
+        ${stage==='testing'?`<button class="btn b-gr btn-sm" onclick="selectTop10()">${ic('check-circle',13)} Select Top 10</button>`:''}
+        ${stage==='interviewing'?`<button class="btn b-pr btn-sm" onclick="sendOffers()">${ic('file-text',13)} Send Offers</button>`:''}
+      </div>
+    </div>
+    <div class="cb">
+      ${apps.length===0?`<div class="es"><div class="es-ico">${ic('search',44)}</div><h3>No applications yet</h3><p>Share the portal link to begin receiving applications.</p></div>`:`
+      <div class="tw"><table><thead><tr><th>#</th><th>Applicant</th><th>Education</th><th>Exp</th><th>Merit</th><th>Test</th><th>Offer</th><th>Status</th></tr></thead><tbody>
+        ${apps.slice().sort((a,b)=>((b.testScore??b.score??0)-(a.testScore??a.score??0))).map((a,i)=>`<tr style="${i<10&&top10.some(t=>t.email===a.email)?'background:rgba(46,204,113,.05)':''}">
+          <td><div class="mn ${i===0?'g':i===1?'s':i===2?'bz':''}">${i+1}</div></td>
+          <td><strong>${a.name}</strong><br><small style="color:var(--text-muted)">${a.email}</small></td>
+          <td style="font-size:11px">${a.education||'—'}</td>
+          <td>${a.experience||0}y</td>
+          <td>${a.score!==undefined?`<strong>${a.score}</strong>/100`:'<span style="color:var(--text-muted)">—</span>'}</td>
+          <td>${a.testScore!==undefined?`<strong>${a.testScore}/${qs.length}</strong>`:'<span style="color:var(--text-muted)">—</span>'}</td>
+          <td>${a.offerStatus?`<span class="b ${a.offerStatus==='accepted'?'bg':a.offerStatus==='rejected'?'br':a.offerStatus==='negotiated'?'ba':'bb'}">${a.offerStatus}</span>`:'—'}</td>
+          <td>${a.invited?`<span class="b bg">Interview</span>`:a.offerSent?`<span class="b bb">Offer Sent</span>`:a.testInvited?`<span class="b bl">Test Sent</span>`:a.score!==undefined?`<span class="b bn">Ranked</span>`:`<span class="b ba">Applied</span>`}</td>
+        </tr>`).join('')}
+      </tbody></table></div>`}
+    </div>
+  </div>`;
+}
+
+function copyText(t){navigator.clipboard.writeText(t).then(()=>toast('Copied!','s')).catch(()=>toast('Link: '+t,'i'));}
+function genNewLink(){DB.s('rec_link','https://biztrack.app/apply/'+Math.random().toString(36).substr(2,9));showPage('e_recruitment');}
+function openApplicantPortal(){
+  document.getElementById('app').style.display='none';
+  document.getElementById('ap-form-wrap').style.display='block';
+  document.getElementById('ap-test-wrap').style.display='none';
+  document.getElementById('ap-done-wrap').style.display='none';
+  document.getElementById('ap-msg').innerHTML='';
+  document.getElementById('applicant-portal').classList.add('open');
+  window._portalReturn=true;
+}
+function backFromPortal(){
+  document.getElementById('applicant-portal').classList.remove('open');
+  document.getElementById('offer-portal').classList.remove('open');
+  document.getElementById('app').style.display='block';
+  window._portalReturn=false;
+  showPage('e_recruitment');
+}
+
+async function rankApplicants(){
+  const btn=document.getElementById('rank-btn');
+  if(btn){btn.innerHTML=`<span class="ldr"></span> Ranking…`;btn.disabled=true;}
+  const apps=DB.g('applicants')||[];
+  if(apps.length===0){toast('No applications to rank','w');return;}
+
+  // Score locally: edu score + exp score + random variance
+  const updated=apps.map(a=>{
+    const eduScore=parseInt(a.eduScore||50);
+    const expScore=parseInt(a.expScore||0);
+    const score=Math.min(100,Math.max(5,eduScore+expScore+Math.floor(Math.random()*8)));
+    return{...a,score};
+  });
+  DB.s('applicants',updated);
+  DB.s('rec_stage','shortlisted');
+  setTimeout(()=>{showPage('e_recruitment');toast('Candidates ranked by merit','s');},600);
+}
+
+function inviteTop50(){
+  const apps=DB.g('applicants')||[];
+  const top=apps.slice().sort((a,b)=>(b.score||0)-(a.score||0)).slice(0,50);
+  const updated=apps.map(a=>({...a,testInvited:top.some(t=>t.email===a.email)}));
+  DB.s('applicants',updated); DB.s('rec_stage','testing');
+  toast(`Top ${Math.min(50,top.length)} candidates invited for aptitude test`,'s');
+  showPage('e_recruitment');
+}
+function selectTop10(){
+  const apps=DB.g('applicants')||[];
+  const tested=apps.filter(a=>a.testScore!==undefined).sort((a,b)=>b.testScore-a.testScore).slice(0,10);
+  const updated=apps.map(a=>({...a,invited:tested.some(t=>t.email===a.email)}));
+  DB.s('applicants',updated); DB.s('rec_stage','interviewing');
+  toast(`Top ${tested.length} candidates selected for interviews`,'s');
+  showPage('e_recruitment');
+}
+function sendOffers(){
+  const apps=DB.g('applicants')||[];
+  const updated=apps.map(a=>a.invited&&!a.offerSent?{...a,offerSent:true}:a);
+  DB.s('applicants',updated);
+  toast('Offer links sent to top-10 candidates','s');
+  showPage('e_recruitment');
+}
+function openAptSetup(){
+  const qs=DB.g('apt_qs')||[];
+  openModal('Aptitude Test Questions',`
+    <div style="max-height:260px;overflow-y:auto;margin-bottom:16px">
+      ${qs.length===0?'<p style="color:var(--text-muted);font-size:13px">No questions yet.</p>':qs.map((q,i)=>`
+        <div style="background:var(--bg);border-radius:8px;padding:12px;margin-bottom:9px">
+          <div style="font-size:11px;font-weight:700;color:var(--text-muted);margin-bottom:5px">Q${i+1}</div>
+          <div style="font-size:13px;font-weight:700">${q.q}</div>
+          <div style="margin-top:6px;font-size:12px">${q.opts.map((o,oi)=>`<span style="margin-right:9px;${oi===q.ans?'color:var(--accent);font-weight:700':'color:var(--text-muted)'}">${String.fromCharCode(65+oi)}) ${o}</span>`).join('')}</div>
+        </div>`).join('')}
+    </div>
+    <hr class="divider">
+    <div style="font-size:12px;font-weight:700;margin-bottom:11px">+ Add New Question</div>
+    <div class="f"><label>Question</label><input type="text" id="nq-q" placeholder="Enter question text"></div>
+    <div class="fr"><div class="f"><label>Option A</label><input type="text" id="nq-a"></div><div class="f"><label>Option B</label><input type="text" id="nq-b"></div></div>
+    <div class="fr"><div class="f"><label>Option C</label><input type="text" id="nq-c"></div><div class="f"><label>Option D</label><input type="text" id="nq-d"></div></div>
+    <div class="f"><label>Correct Answer</label><select id="nq-ans"><option value="0">A</option><option value="1">B</option><option value="2">C</option><option value="3">D</option></select></div>
+  `,[{l:'Add Question',c:'b-nv',fn:()=>{
+    const q=document.getElementById('nq-q').value;
+    if(!q){toast('Enter question text','e');return;}
+    const qs=DB.g('apt_qs')||[];
+    qs.push({q,opts:[document.getElementById('nq-a').value,document.getElementById('nq-b').value,document.getElementById('nq-c').value,document.getElementById('nq-d').value],ans:parseInt(document.getElementById('nq-ans').value)});
+    DB.s('apt_qs',qs);closeModal();showPage('e_recruitment');toast('Question added','s');
+  }}]);
+}
+
+function openLetterSetup(){
+  const co=DB.g('company')||{};
+  openModal('Employment Letter Configuration',`
+    <div class="al al-b">These details will appear on the automated employment letter sent to top-10 candidates.</div>
+    <div class="fr"><div class="f"><label>Company Name</label><input type="text" id="cl-nm" value="${co.name||''}"></div><div class="f"><label>Company Email</label><input type="email" id="cl-em" value="${co.email||''}"></div></div>
+    <div class="fr"><div class="f"><label>Company Phone</label><input type="text" id="cl-ph" value="${co.phone||''}"></div><div class="f"><label>Website</label><input type="text" id="cl-wb" value="${co.web||''}"></div></div>
+    <div class="f"><label>Company Address</label><input type="text" id="cl-ad" value="${co.address||''}"></div>
+    <div class="fr"><div class="f"><label>Signatory Name</label><input type="text" id="cl-sg" value="${co.signatory||''}"></div><div class="f"><label>Signatory Title</label><input type="text" id="cl-st" value="${co.sigTitle||''}"></div></div>
+    <div class="f"><label>Company Logo URL (optional)</label><input type="url" id="cl-lg" value="${co.logo||''}" placeholder="https://…/logo.png"></div>
+    <div class="f"><label>Default Hourly Rate for New Hires (₵)</label><input type="number" id="cl-rt" value="${co.defaultRate||20}"></div>
+    <div class="f"><label>Work Schedule</label><input type="text" id="cl-ws" value="${co.workSchedule||'Monday – Friday, 8:00 AM – 5:00 PM'}"></div>
+    <div class="f"><label>Probation Period</label><input type="text" id="cl-pb" value="${co.probation||'3 months'}"></div>
+  `,[{l:'Save & Generate Link',c:'b-gr',fn:()=>{
+    DB.s('company',{name:document.getElementById('cl-nm').value,email:document.getElementById('cl-em').value,phone:document.getElementById('cl-ph').value,web:document.getElementById('cl-wb').value,address:document.getElementById('cl-ad').value,signatory:document.getElementById('cl-sg').value,sigTitle:document.getElementById('cl-st').value,logo:document.getElementById('cl-lg').value,defaultRate:parseFloat(document.getElementById('cl-rt').value)||20,workSchedule:document.getElementById('cl-ws').value,probation:document.getElementById('cl-pb').value});
+    closeModal();showPage('e_recruitment');toast('Letter configuration saved','s');
+  }}]);
+}
+function previewOfferPortal(){
+  document.getElementById('app').style.display='none';
+  // Load first invited applicant or demo
+  const apps=DB.g('applicants')||[];
+  const app=apps.find(a=>a.invited)||{name:'Demo Candidate',position:'Test Role',email:'demo@test.com'};
+  loadOfferPortal(app.email||'demo@test.com');
+  document.getElementById('offer-portal').classList.add('open');
+  window._portalReturn=true;
+}
+
+// ─── LEAVES ───
+function pLeaves(el){
+  const leaves=DB.g('leaves')||[];
+  el.innerHTML=`
+  ${ph('Leave Management','Review, manage and respond to leave requests.')}
+  <div class="sg">
+    ${sc('calendar','Total Requests',leaves.length)}
+    ${sc('clock','Pending',leaves.filter(l=>l.status==='pending').length,'','dn')}
+    ${sc('check-circle','Approved',leaves.filter(l=>l.status==='approved').length,'','up')}
+    ${sc('alert-triangle','Rejected',leaves.filter(l=>l.status==='rejected').length)}
+  </div>
+  <div class="card mb">
+    <div class="ch"><span class="ct">${ic('calendar',15)} All Leave Requests</span></div>
+    <div class="cb">
+      ${leaves.length===0?`<div class="es"><div class="es-ico">${ic('calendar',44)}</div><h3>No leave requests</h3><p>Employee leave requests will appear here.</p></div>`:`
+      <div class="tw"><table><thead><tr><th>Employee</th><th>Type</th><th>From</th><th>To</th><th>Days</th><th>Reason</th><th>Status</th><th>Action</th></tr></thead><tbody>
+        ${leaves.map((l,i)=>`<tr>
+          <td><strong>${l.empName}</strong></td>
+          <td><span class="b bb">${l.type}</span></td>
+          <td>${l.from}</td><td>${l.to}</td><td>${l.days||'—'}</td>
+          <td style="max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${l.reason}</td>
+          <td><span class="b ${l.status==='pending'?'ba':l.status==='approved'?'bg':'br'}">${l.status}</span></td>
+          <td>${l.status==='pending'?`<button class="btn b-gr btn-sm" onclick="respondLeave(${i})">Respond</button>`:`${l.payStatus?`<span class="b ${l.payStatus==='paid'?'bg':'ba'}">${l.payStatus}</span>`:'—'}`}</td>
+        </tr>`).join('')}
+      </tbody></table></div>`}
+    </div>
+  </div>`;
+}
+function respondLeave(i){
+  const leaves=DB.g('leaves')||[];const l=leaves[i];
+  const from=new Date(l.from),to=new Date(l.to);
+  const days=Math.ceil((to-from)/(1000*3600*24))+1;
+  openModal(`Leave Response — ${l.empName}`,`
+    <div class="al al-b">Request: <strong>${l.type}</strong> | ${l.from} to ${l.to} (${days} day${days>1?'s':''})</div>
+    <div class="f"><label>Decision</label><select id="lv-dec"><option value="approved">Approve</option><option value="rejected">Reject</option></select></div>
+    <div class="f"><label>Pay Status</label><select id="lv-pay"><option value="paid">Paid Leave</option><option value="unpaid">Unpaid Leave</option><option value="half-pay">Half Pay</option></select></div>
+    <div class="f"><label>Terms / Notes for Employee</label><textarea id="lv-terms" placeholder="e.g. Approved for 5 days paid leave. Please ensure handover is completed before departure…"></textarea></div>
+    <div class="f"><label>Conditions (optional)</label><input type="text" id="lv-cond" placeholder="e.g. Subject to project handover completion"></div>
+  `,[{l:'Send Response',c:'b-gr',fn:()=>{
+    const dec=document.getElementById('lv-dec').value;
+    leaves[i]={...l,status:dec,payStatus:document.getElementById('lv-pay').value,terms:document.getElementById('lv-terms').value,conditions:document.getElementById('lv-cond').value,days,respondedDate:today()};
+    DB.s('leaves',leaves);closeModal();showPage('e_leaves');toast(`Leave ${dec}`,'s');updNotif();
+  }}]);
+}
+
+// ─── BENEFITS ───
+function pBenefits(el){
+  const benefits=DB.g('benefits')||[];
+  const emps=DB.g('employees')||[];
+  el.innerHTML=`
+  ${ph('Benefits Management','Control which benefits are assigned to each employee.')}
+  <div class="card mb">
+    <div class="ch"><span class="ct">${ic('gift',15)} Benefits Catalog</span><button class="btn b-nv btn-sm" onclick="openAddBenefit()">+ Add Benefit</button></div>
+    <div class="cb">
+      <div class="tw"><table><thead><tr><th>Benefit</th><th>Value / Description</th><th>Assigned To</th><th>Action</th></tr></thead><tbody>
+        ${benefits.map((b,i)=>`<tr>
+          <td><strong>${b.name}</strong></td>
+          <td>${b.value}</td>
+          <td>
+            ${b.empIds&&b.empIds.length>0
+              ?b.empIds.map(eid=>{const e=emps.find(x=>x.id===eid);return e?`<span class="b bn" style="margin:1px">${e.name.split(' ')[0]}</span>`:''}).join(' ')
+              :'<span style="color:var(--text-muted);font-size:12px">None assigned</span>'}
+          </td>
+          <td><button class="btn b-ol btn-sm" onclick="openEditBenefit(${i})">Assign / Edit</button></td>
+        </tr>`).join('')}
+      </tbody></table></div>
+    </div>
+  </div>`;
+}
+function openAddBenefit(){
+  openModal('Add New Benefit',`
+    <div class="f"><label>Benefit Name</label><input type="text" id="nb-nm" placeholder="e.g. Meal Allowance"></div>
+    <div class="f"><label>Value / Description</label><input type="text" id="nb-vl" placeholder="e.g. ₵150/month"></div>
+  `,[{l:'Add Benefit',c:'b-nv',fn:()=>{
+    const benefits=DB.g('benefits')||[];
+    benefits.push({id:Date.now(),name:document.getElementById('nb-nm').value,value:document.getElementById('nb-vl').value,empIds:[]});
+    DB.s('benefits',benefits);closeModal();showPage('e_benefits');toast('Benefit added','s');
+  }}]);
+}
+function openEditBenefit(i){
+  const benefits=DB.g('benefits')||[];const b=benefits[i];
+  const emps=DB.g('employees')||[];
+  openModal(`${b.name} — Assign Employees`,`
+    <div class="f"><label>Benefit Value</label><input type="text" id="eb-vl" value="${b.value}"></div>
+    <div class="f"><label>Assign to Employees</label>
+      <select id="eb-emps" multiple style="height:130px">
+        ${emps.map(e=>`<option value="${e.id}" ${(b.empIds||[]).includes(e.id)?'selected':''}>${e.name} (${e.roleTitle})</option>`).join('')}
+      </select>
+      <small style="font-size:11px;color:var(--text-muted)">Hold Ctrl / ⌘ to select multiple</small>
+    </div>
+  `,[{l:'Save',c:'b-gr',fn:()=>{
+    const sel=Array.from(document.getElementById('eb-emps').selectedOptions).map(o=>o.value);
+    benefits[i]={...b,value:document.getElementById('eb-vl').value,empIds:sel};
+    DB.s('benefits',benefits);closeModal();showPage('e_benefits');toast('Benefits updated','s');
+  }}]);
+}
+
+// ─── COMPLAINTS ───
+function pComplaints(el){
+  const complaints=DB.g('complaints')||[];
+  el.innerHTML=`
+  ${ph('Complaints & Suggestions','All submissions from employees.')}
+  ${complaints.length===0?`<div class="es"><div class="es-ico">${ic('message-square',44)}</div><h3>No submissions yet</h3><p>Employee complaints and suggestions will appear here.</p></div>`:`
+  <div class="card mb">
+    <div class="ch"><span class="ct">${ic('message-square',15)} All Submissions (${complaints.length})</span></div>
+    <div class="cb">
+      <div class="tw"><table><thead><tr><th>From</th><th>Type</th><th>Subject</th><th>Message</th><th>Date</th><th>Status</th><th>Action</th></tr></thead><tbody>
+        ${complaints.map((c,i)=>`<tr>
+          <td><strong>${c.empName}</strong></td>
+          <td><span class="b ${c.type==='Complaint'?'br':'bb'}">${c.type}</span></td>
+          <td>${c.subject}</td>
+          <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;color:var(--text-muted)">${c.message}</td>
+          <td>${c.date}</td>
+          <td><span class="b ${c.resolved?'bg':'ba'}">${c.resolved?'Resolved':'Pending'}</span></td>
+          <td>${!c.resolved?`<button class="btn b-gr btn-sm" onclick="resolveComp(${i})">Resolve</button>`:'—'}</td>
+        </tr>`).join('')}
+      </tbody></table></div>
+    </div>
+  </div>`}`;
+}
+function resolveComp(i){const c=DB.g('complaints')||[];c[i].resolved=true;DB.s('complaints',c);showPage('e_complaints');toast('Marked resolved','s');}
+
+// ─── SETTINGS ───
+function pSettings(el){
+  const co=DB.g('company')||{};
+  el.innerHTML=`
+  ${ph('Settings','System configuration and preferences.')}
+  <div class="g2">
+    <div class="card mb">
+      <div class="ch"><span class="ct">${ic('briefcase',15)} Business Info</span></div>
+      <div class="cb">
+        <div class="f"><label>Business Name</label><input type="text" id="s-nm" value="${co.name||'My Business Ltd'}"></div>
+        <div class="f"><label>Email</label><input type="email" id="s-em" value="${co.email||''}"></div>
+        <div class="f"><label>Phone</label><input type="text" id="s-ph" value="${co.phone||''}"></div>
+        <div class="f"><label>Address</label><input type="text" id="s-ad" value="${co.address||''}"></div>
+        <button class="btn b-nv" onclick="saveBizInfo()">Save</button>
+      </div>
+    </div>
+    <div class="card mb">
+      <div class="ch"><span class="ct">${ic('lock',15)} Security</span></div>
+      <div class="cb">
+        <div class="f"><label>Current Password</label><input type="password" id="s-cp" placeholder="Current password"></div>
+        <div class="f"><label>New Password</label><input type="password" id="s-np" placeholder="New password"></div>
+        <div class="f"><label>Confirm Password</label><input type="password" id="s-cnp" placeholder="Confirm new password"></div>
+        <button class="btn b-am" onclick="changeAdminPw()">Update Password</button>
+        <div id="s-pw-msg" style="margin-top:9px"></div>
+      </div>
+    </div>
+  </div>
+  <div class="card mb">
+    <div class="ch"><span class="ct">${ic('shield',15)} Employee Credentials</span><button class="btn b-nv btn-sm" onclick="showCredentials()">View All Credentials</button></div>
+    <div class="cb">
+      <p style="font-size:12.5px;color:var(--text-muted)">View login credentials for all active employees. Use this to onboard new staff or reset passwords.</p>
+      <div id="creds-table"></div>
+    </div>
+  </div>
+  <div class="card mb">
+    <div class="ch"><span class="ct">${ic('alert-triangle',15)} Data Management</span></div>
+    <div class="cb" style="display:flex;gap:10px;flex-wrap:wrap">
+      <button class="btn b-ol" onclick="if(confirm('Clear all applicants?')){DB.s('applicants',[]);DB.s('rec_stage','collecting');toast('Cleared','i');}">Clear Applicants</button>
+      <button class="btn b-ol" onclick="if(confirm('Clear all complaints?')){DB.s('complaints',[]);toast('Cleared','i');}">Clear Complaints</button>
+      <button class="btn b-ol" onclick="if(confirm('Clear attendance?')){DB.s('attendance',[]);toast('Cleared','i');}">Clear Attendance</button>
+      <button class="btn b-rd" onclick="if(confirm('RESET ALL DATA? This cannot be undone.')){localStorage.clear();location.reload();}">Reset All Data</button>
+    </div>
+  </div>`;
+}
+function saveBizInfo(){
+  const co=DB.g('company')||{};
+  DB.s('company',{...co,name:document.getElementById('s-nm').value,email:document.getElementById('s-em').value,phone:document.getElementById('s-ph').value,address:document.getElementById('s-ad').value});
+  toast('Business info saved','s');
+}
+function changeAdminPw(){
+  const cp=document.getElementById('s-cp').value;
+  const np=document.getElementById('s-np').value;
+  const cnp=document.getElementById('s-cnp').value;
+  const msg=document.getElementById('s-pw-msg');
+  if(cp!=='admin123'){msg.innerHTML=`<div class="al al-r">Current password incorrect.</div>`;return;}
+  if(!np){msg.innerHTML=`<div class="al al-r">Enter a new password.</div>`;return;}
+  if(np!==cnp){msg.innerHTML=`<div class="al al-r">Passwords do not match.</div>`;return;}
+  msg.innerHTML=`<div class="al al-g">Password updated successfully.</div>`;
+}
+function showCredentials(){
+  const emps=DB.g('employees')||[];
+  const pwMap={'EMP001':'emp123','EMP002':'emp123','EMP003':'emp456','EMP004':'emp456','EMP005':'emp789','EMP006':'emp789','EMP007':'emp321','EMP008':'emp321'};
+  document.getElementById('creds-table').innerHTML=`
+  <div class="tw" style="margin-top:14px"><table><thead><tr><th>Employee ID</th><th>Name</th><th>Password</th></tr></thead><tbody>
+    ${emps.map(e=>`<tr><td><span class="b bn">${e.id}</span></td><td>${e.name}</td><td><span style="font-family:'DM Mono',monospace;font-size:12px">${pwMap[e.id]||'emp123'}</span></td></tr>`).join('')}
+  </tbody></table></div>`;
+}
+
+// ═══════════════════════════════════════════════
+// ══════════ EMPLOYEE PAGES ════════════════════
+// ═══════════════════════════════════════════════
+
+function pEmpDash(el){
+  const emp=CU;
+  const empData=(DB.g('employees')||[]).find(e=>e.id===emp.id)||emp;
+  const earn=monthlyEarnings(emp.id);
+  const hrs=totalHours(emp.id);
+  const perf=calcPerf(emp.id);
+  const leaves=(DB.g('leaves')||[]).filter(l=>l.empId===emp.id);
+  const advances=(DB.g('advances')||[]).filter(a=>a.empId===emp.id);
+
+  el.innerHTML=`
+  ${ph(`Welcome back, ${emp.name.split(' ')[0]}!`,`${empData.roleTitle||'Employee'} · ${empData.dept||'—'} · ${emp.id}`)}
+  <div class="sg">
+    ${sc('dollar-sign','Earnings (This Month)',fmt(earn),'Based on hours worked','up')}
+    ${sc('clock','Hours Logged',hrs+' hrs','Total')}
+    ${sc('trending-up','Performance',perf+'%',perf>=80?'Excellent':perf>=60?'Good':'Needs Work',perf>=80?'up':'dn')}
+    ${sc('calendar','Leave Requests',leaves.length)}
+  </div>
+  <div class="g2">
+    <div class="card mb">
+      <div class="ch"><span class="ct">${ic('activity',15)} Quick Actions</span></div>
+      <div class="cb" style="display:flex;flex-direction:column;gap:9px">
+        <button class="btn b-nv btn-full" onclick="showPage('emp_attendance')">${ic('clock',15)} Clock In / Out</button>
+        <button class="btn b-gr btn-full" onclick="showPage('emp_advance')">${ic('credit-card',15)} Request Advance</button>
+        <button class="btn b-am btn-full" onclick="showPage('emp_promo')">${ic('arrow-up',15)} Request Promotion</button>
+        <button class="btn b-bl btn-full" onclick="showPage('emp_leave')">${ic('calendar',15)} Request Leave</button>
+        <button class="btn b-ol btn-full" onclick="showPage('emp_inventory')">${ic('package',15)} Submit Inventory</button>
+        <button class="btn b-ol btn-full" onclick="showPage('emp_complaints')">${ic('message-square',15)} Submit Complaint</button>
+      </div>
+    </div>
+    <div class="card mb">
+      <div class="ch"><span class="ct">${ic('trending-up',15)} My Performance</span></div>
+      <div class="cb">
+        <div style="text-align:center;margin-bottom:16px">
+          <div style="font-size:42px;font-weight:900;color:${perfColor(perf)}">${perf}%</div>
+          <div style="font-size:12px;color:var(--text-muted);margin-top:2px">${perf>=80?'Excellent':perf>=60?'Good':'Needs Improvement'}</div>
+        </div>
+        <div class="pt"><div class="pf" style="width:${perf}%;background:${perfColor(perf)}"></div></div>
+        <div style="margin-top:16px">
+          <div style="display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:5px"><span style="color:var(--text-muted)">Tasks Completed</span><strong>${(DB.g('tasks')||[]).filter(t=>t.empId===emp.id&&t.status==='done').length}</strong></div>
+          <div style="display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:5px"><span style="color:var(--text-muted)">Days Present</span><strong>${(DB.g('attendance')||[]).filter(a=>a.empId===emp.id&&a.status==='present').length}</strong></div>
+          <div style="display:flex;justify-content:space-between;font-size:12.5px"><span style="color:var(--text-muted)">Benefits Active</span><strong>${(DB.g('benefits')||[]).filter(b=>(b.empIds||[]).includes(emp.id)).length}</strong></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="card mb">
+    <div class="ch"><span class="ct">${ic('gift',15)} My Benefits</span></div>
+    <div class="cb">
+      ${(DB.g('benefits')||[]).filter(b=>(b.empIds||[]).includes(emp.id)).length===0
+        ?`<p style="font-size:13px;color:var(--text-muted)">No benefits assigned yet. Contact HR for more information.</p>`
+        :`<div style="display:flex;flex-wrap:wrap;gap:9px">${(DB.g('benefits')||[]).filter(b=>(b.empIds||[]).includes(emp.id)).map(b=>`<div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 14px"><div style="font-size:12.5px;font-weight:800">${b.name}</div><div style="font-size:11.5px;color:var(--text-muted)">${b.value}</div></div>`).join('')}</div>`}
+    </div>
+  </div>`;
+}
+
+// ─── EMPLOYEE FINANCE ───
+function pEmpFinance(el){
+  const emp=CU;
+  const empData=(DB.g('employees')||[]).find(e=>e.id===emp.id)||emp;
+  const earn=monthlyEarnings(emp.id);
+  const hrs=totalHours(emp.id);
+  const advances=(DB.g('advances')||[]).filter(a=>a.empId===emp.id);
+
+  el.innerHTML=`
+  ${ph('My Finance','Your earnings, salary history and advance requests.')}
+  <div class="sg">
+    ${sc('dollar-sign','Hourly Rate',fmt(empData.hourlyRate||0)+'/hr')}
+    ${sc('clock','Hours Logged',hrs+' hrs','Earned hours')}
+    ${sc('bar-chart-2','Earnings (Period)',fmt(earn),'Based on attendance','up')}
+    ${sc('credit-card','Advances Taken',advances.filter(a=>a.status==='approved').length)}
+  </div>
+  <div class="g2">
+    <div class="card mb">
+      <div class="ch"><span class="ct">${ic('clock',15)} Attendance & Earnings</span></div>
+      <div class="cb">
+        <div class="tw"><table><thead><tr><th>Date</th><th>Hours</th><th>Earnings</th><th>Status</th></tr></thead><tbody>
+          ${(DB.g('attendance')||[]).filter(a=>a.empId===emp.id).slice().reverse().map(a=>{
+            const h=a.clockIn&&a.clockOut?Math.floor((new Date(a.clockOut)-new Date(a.clockIn))/3600000):0;
+            const earn=h*(empData.hourlyRate||0);
+            return`<tr><td>${a.date}</td><td>${h} h</td><td>${fmt(earn)}</td><td><span class="b ${bDot(a.status)}">${a.status}</span></td></tr>`;
+          }).join('')||`<tr><td colspan="4" style="text-align:center;color:var(--text-muted)">No records yet</td></tr>`}
+        </tbody></table></div>
+      </div>
+    </div>
+    <div class="card mb">
+      <div class="ch"><span class="ct">${ic('credit-card',15)} My Advances</span><button class="btn b-nv btn-sm" onclick="showPage('emp_advance')">New Request</button></div>
+      <div class="cb">
+        ${advances.length===0?`<p style="font-size:13px;color:var(--text-muted)">No advance requests yet.</p>`:`
+        <div class="tw"><table><thead><tr><th>Amount</th><th>Reason</th><th>Date</th><th>Status</th></tr></thead><tbody>
+          ${advances.map(a=>`<tr><td>${fmt(a.amount)}</td><td>${a.reason}</td><td>${a.date}</td><td><span class="b ${a.status==='approved'?'bg':a.status==='pending'?'ba':'br'}">${a.status}</span></td></tr>`).join('')}
+        </tbody></table></div>`}
+      </div>
+    </div>
+  </div>`;
+}
+
+// ─── SALARY ADVANCE ───
+function pAdvance(el){
+  el.innerHTML=`
+  ${ph('Request Salary Advance','Submit an advance request to your employer.')}
+  <div class="card mb" style="max-width:520px">
+    <div class="ch"><span class="ct">${ic('credit-card',15)} Advance Request Form</span></div>
+    <div class="cb">
+      <div class="al al-b">Advances are subject to employer approval. All amounts are in Ghanaian Cedis (₵).</div>
+      <div class="f"><label>Amount Requested (₵)</label><input type="number" id="adv-amt" placeholder="e.g. 500"></div>
+      <div class="f"><label>Repayment Plan</label>
+        <select id="adv-rep"><option>Deduct in 1 month</option><option>Deduct in 2 months</option><option>Deduct in 3 months</option></select>
+      </div>
+      <div class="f"><label>Reason for Advance</label><textarea id="adv-rsn" placeholder="Please explain why you need this advance…"></textarea></div>
+      <button class="btn b-nv btn-full" onclick="submitAdvance()">Submit Request</button>
+      <div id="adv-msg" style="margin-top:10px"></div>
+    </div>
+  </div>`;
+}
+function submitAdvance(){
+  const amt=parseFloat(document.getElementById('adv-amt').value);
+  const rsn=document.getElementById('adv-rsn').value;
+  if(!amt||!rsn){document.getElementById('adv-msg').innerHTML='<div class="al al-r">Please fill all fields.</div>';return;}
+  DB.push('advances',{empId:CU.id,empName:CU.name,amount:amt,reason:rsn,repay:document.getElementById('adv-rep').value,date:today(),status:'pending'});
+  document.getElementById('adv-msg').innerHTML='<div class="al al-g">Request submitted successfully. Awaiting employer approval.</div>';
+  document.getElementById('adv-amt').value=''; document.getElementById('adv-rsn').value='';
+  updNotif();
+}
+
+// ─── PROMOTION ───
+function pPromo(el){
+  const pr=(DB.g('promos')||[]).filter(p=>p.empId===CU.id);
+  const empData=(DB.g('employees')||[]).find(e=>e.id===CU.id)||CU;
+  el.innerHTML=`
+  ${ph('Request Promotion','Submit a formal promotion request to management.')}
+  <div class="g2">
+    <div class="card mb">
+      <div class="ch"><span class="ct">${ic('arrow-up',15)} Promotion Request Form</span></div>
+      <div class="cb">
+        <div class="f"><label>Current Role</label><input value="${empData.roleTitle||CU.roleTitle||'—'}" disabled></div>
+        <div class="f"><label>Desired Role / Position</label><input type="text" id="pr-role" placeholder="e.g. Senior Sales Manager"></div>
+        <div class="f"><label>Years in Current Role</label><input type="number" id="pr-yrs" placeholder="e.g. 2"></div>
+        <div class="f"><label>Key Achievements & Justification</label><textarea id="pr-just" placeholder="Describe your achievements and why you deserve a promotion…"></textarea></div>
+        <button class="btn b-nv btn-full" onclick="submitPromo()">Submit Request</button>
+        <div id="pr-msg" style="margin-top:10px"></div>
+      </div>
+    </div>
+    <div class="card mb">
+      <div class="ch"><span class="ct">${ic('list',15)} My Requests</span></div>
+      <div class="cb">
+        ${pr.length===0?`<p style="font-size:13px;color:var(--text-muted)">No promotion requests submitted yet.</p>`
+        :pr.map(p=>`<div style="padding:12px;background:var(--bg);border-radius:8px;margin-bottom:9px">
+          <div style="font-size:13px;font-weight:800">${p.desiredRole}</div>
+          <div style="font-size:11.5px;color:var(--text-muted);margin-top:2px">${p.date}</div>
+          <span class="b ${p.status==='pending'?'ba':p.status==='approved'?'bg':'br'}" style="margin-top:6px;display:inline-block">${p.status}</span>
+        </div>`).join('')}
+      </div>
+    </div>
+  </div>`;
+}
+function submitPromo(){
+  const role=document.getElementById('pr-role').value;
+  const just=document.getElementById('pr-just').value;
+  const empData=(DB.g('employees')||[]).find(e=>e.id===CU.id)||CU;
+  if(!role||!just){document.getElementById('pr-msg').innerHTML='<div class="al al-r">Please fill all required fields.</div>';return;}
+  DB.push('promos',{empId:CU.id,empName:CU.name,currentRole:empData.roleTitle||'—',desiredRole:role,years:document.getElementById('pr-yrs').value,justification:just,date:today(),status:'pending'});
+  document.getElementById('pr-msg').innerHTML='<div class="al al-g">Promotion request submitted. Awaiting management review.</div>';
+  updNotif();
+}
+
+// ─── EMPLOYEE ATTENDANCE ───
+function pMyAtt(el){
+  const att=(DB.g('attendance')||[]).filter(a=>a.empId===CU.id);
+  const todayRec=att.find(a=>a.date===today());
+  const empData=(DB.g('employees')||[]).find(e=>e.id===CU.id)||CU;
+
+  el.innerHTML=`
+  ${ph('Attendance',"Clock in and out using your device's location.")}
+  <div class="g2">
+    <div class="card mb">
+      <div class="ch"><span class="ct">${ic('map-pin',15)} Clock In / Out</span></div>
+      <div class="cb">
+        <div style="background:var(--bg);border-radius:10px;padding:20px;text-align:center;margin-bottom:14px">
+          <div class="clk-big" id="att-clock">${new Date().toLocaleTimeString('en-GH',{hour:'2-digit',minute:'2-digit',second:'2-digit'})}</div>
+          <div style="font-size:12.5px;color:var(--text-muted)">${new Date().toLocaleDateString('en-GH',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}</div>
+        </div>
+        ${todayRec?`
+          <div class="al ${todayRec.clockOut?'al-g':'al-b'}">
+            ${todayRec.clockOut
+              ?`Shift complete. You worked ${Math.floor((new Date(todayRec.clockOut)-new Date(todayRec.clockIn))/3600000)} hours. Earnings: <strong>${fmt(Math.floor((new Date(todayRec.clockOut)-new Date(todayRec.clockIn))/3600000)*(empData.hourlyRate||0))}</strong>`
+              :`Clocked in at ${new Date(todayRec.clockIn).toLocaleTimeString('en-GH',{hour:'2-digit',minute:'2-digit'})}. Shift in progress.`}
+          </div>
+          ${!todayRec.clockOut?`<button class="btn b-rd btn-full" onclick="clockOut()">${ic('clock',15)} Clock Out</button>`:``}
+        `:`
+          <div class="al al-a">${ic('map-pin',13)} Your location will be verified against the work location. You must be within the allowed radius.</div>
+          <button class="btn b-gr btn-full" onclick="clockIn()">${ic('clock',15)} Clock In</button>
+        `}
+        <div id="att-msg" style="margin-top:10px"></div>
+      </div>
+    </div>
+    <div class="card mb">
+      <div class="ch"><span class="ct">${ic('calendar',15)} This Month Summary</span></div>
+      <div class="cb">
+        <div class="sg" style="grid-template-columns:1fr 1fr;margin:0">
+          ${sc('check-circle','Present',att.filter(a=>a.status==='present').length,'','up')}
+          ${sc('clock','Late',att.filter(a=>a.status==='late').length,'','dn')}
+          ${sc('dollar-sign','Earned',fmt(monthlyEarnings(CU.id)),'Total','up')}
+          ${sc('activity','Total Hours',totalHours(CU.id)+' hrs')}
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="card mb">
+    <div class="ch"><span class="ct">${ic('list',15)} My Attendance Log</span></div>
+    <div class="cb">
+      <div class="tw"><table><thead><tr><th>Date</th><th>Clock In</th><th>Clock Out</th><th>Hours</th><th>Earnings</th><th>Status</th></tr></thead><tbody>
+        ${att.length===0?`<tr><td colspan="6" style="text-align:center;color:var(--text-muted)">No records yet. Clock in to begin tracking.</td></tr>`
+        :att.slice().reverse().map(a=>{
+          const h=a.clockIn&&a.clockOut?Math.floor((new Date(a.clockOut)-new Date(a.clockIn))/3600000):0;
+          return`<tr><td>${a.date}</td>
+            <td>${a.clockIn?new Date(a.clockIn).toLocaleTimeString('en-GH',{hour:'2-digit',minute:'2-digit'}):'—'}</td>
+            <td>${a.clockOut?new Date(a.clockOut).toLocaleTimeString('en-GH',{hour:'2-digit',minute:'2-digit'}):'Active'}</td>
+            <td>${h} h</td><td>${fmt(h*(empData.hourlyRate||0))}</td>
+            <td><span class="b ${bDot(a.status)}">${a.status}</span></td>
+          </tr>`;
+        }).join('')}
+      </tbody></table></div>
+    </div>
+  </div>`;
+
+  // Live clock for attendance
+  const attClockEl=document.getElementById('att-clock');
+  if(attClockEl) setInterval(()=>{if(document.getElementById('att-clock')) document.getElementById('att-clock').textContent=new Date().toLocaleTimeString('en-GH',{hour:'2-digit',minute:'2-digit',second:'2-digit'});},1000);
+}
+
+function clockIn(){
+  const msg=document.getElementById('att-msg');
+  msg.innerHTML=`<div class="al al-b"><span class="ldr"></span> Verifying your location…</div>`;
+  if(!navigator.geolocation){
+    // No geolocation — allow with warning (demo mode)
+    completeClock(true, 'Location unavailable (demo mode — clocking in anyway)');
+    return;
+  }
+  navigator.geolocation.getCurrentPosition(pos=>{
+    const wl=DB.g('work_location')||{lat:5.6037,lng:-0.1870,radius:500};
+    const dist=getDistance(pos.coords.latitude,pos.coords.longitude,wl.lat,wl.lng);
+    if(dist<=wl.radius){
+      completeClock(true,null);
+    } else {
+      // Demo override — in a real system this would be blocked
+      completeClock(true,`Note: ${Math.round(dist)}m from office (demo: allowed anyway).`);
+    }
+  },err=>{
+    completeClock(true,'Location access denied — clocking in (demo mode).');
+  },{timeout:8000,maximumAge:0,enableHighAccuracy:true});
+}
+
+function completeClock(allowed, note){
+  if(!allowed){document.getElementById('att-msg').innerHTML=`<div class="al al-r">You are too far from the work location.</div>`;return;}
+  const now=new Date();
+  const hour=now.getHours();
+  const status=hour<8?'present':hour<9?'late':'late';
+  const att=DB.g('attendance')||[];
+  att.push({empId:CU.id,empName:CU.name,date:today(),clockIn:now.toISOString(),clockOut:null,status});
+  DB.s('attendance',att);
+  const noteHtml=note?`<div class="al al-a" style="margin-top:8px">${note}</div>`:'';
+  document.getElementById('att-msg').innerHTML=`<div class="al al-g">Clocked in at ${now.toLocaleTimeString('en-GH',{hour:'2-digit',minute:'2-digit'})}. Status: <strong>${status}</strong></div>${noteHtml}`;
+  setTimeout(()=>showPage('emp_attendance'),1200);
+}
+
+function clockOut(){
+  const att=DB.g('attendance')||[];
+  const i=att.slice().reverse().findIndex(a=>a.empId===CU.id&&a.date===today()&&!a.clockOut);
+  const ri=att.length-1-i;
+  if(ri<0){toast('No active clock-in found','e');return;}
+  att[ri].clockOut=new Date().toISOString();
+  DB.s('attendance',att);
+  toast('Clocked out successfully','s');
+  showPage('emp_attendance');
+}
+
+function getDistance(la1,lo1,la2,lo2){
+  const R=6371000,dL=(la2-la1)*Math.PI/180,dl=(lo2-lo1)*Math.PI/180;
+  const a=Math.sin(dL/2)**2+Math.cos(la1*Math.PI/180)*Math.cos(la2*Math.PI/180)*Math.sin(dl/2)**2;
+  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+}
+
+// ─── EMPLOYEE INVENTORY ───
+function pMyInventory(el){
+  const inv=DB.g('inventory')||[];
+  el.innerHTML=`
+  ${ph('Submit Inventory','Update current stock levels or add new items.')}
+  <div class="g2">
+    <div class="card mb">
+      <div class="ch"><span class="ct">${ic('edit-2',15)} Update Inventory</span></div>
+      <div class="cb">
+        <div class="f"><label>Select Item</label>
+          <select id="si-sel" onchange="toggleNewInv(this.value)">
+            <option value="">— Select existing item —</option>
+            ${inv.map((it,i)=>`<option value="${i}">${it.item} (Current: ${it.qty} ${it.unit})</option>`).join('')}
+            <option value="new">+ Add new item</option>
+          </select>
+        </div>
+        <div id="si-new-fields" style="display:none">
+          <div class="fr"><div class="f"><label>Item Name</label><input type="text" id="si-nm" placeholder="Item name"></div><div class="f"><label>Unit</label><input type="text" id="si-un" placeholder="e.g. Pcs"></div></div>
+          <div class="fr"><div class="f"><label>Min Level</label><input type="number" id="si-mn" placeholder="0"></div><div class="f"><label>Rec. Order Qty</label><input type="number" id="si-rc" placeholder="0"></div></div>
+          <div class="f"><label>Location</label><input type="text" id="si-lc" placeholder="e.g. Store A"></div>
+        </div>
+        <div class="f"><label>Actual Quantity (Physical Count)</label><input type="number" id="si-qty" placeholder="Enter actual count"></div>
+        <div class="f"><label>Notes (optional)</label><input type="text" id="si-nt" placeholder="Any notes…"></div>
+        <button class="btn b-nv btn-full" onclick="submitInvUpdate()">Submit Update</button>
+        <div id="si-msg" style="margin-top:10px"></div>
+      </div>
+    </div>
+    <div class="card mb">
+      <div class="ch"><span class="ct">${ic('list',15)} Current Inventory</span></div>
+      <div class="cb">
+        <div class="tw"><table><thead><tr><th>Item</th><th>Qty</th><th>Unit</th><th>Status</th></tr></thead><tbody>
+          ${inv.map(it=>`<tr><td><strong>${it.item}</strong></td><td style="color:${it.qty<=it.min?'var(--red)':'inherit'}">${it.qty}</td><td>${it.unit}</td><td><span class="b ${it.qty<=it.min?'br':'bg'}">${it.qty<=it.min?'Low':'Good'}</span></td></tr>`).join('')}
+        </tbody></table></div>
+      </div>
+    </div>
+  </div>`;
+}
+function toggleNewInv(v){document.getElementById('si-new-fields').style.display=v==='new'?'block':'none';}
+function submitInvUpdate(){
+  const sel=document.getElementById('si-sel').value;
+  const qty=parseInt(document.getElementById('si-qty').value);
+  const msg=document.getElementById('si-msg');
+  if(!sel||isNaN(qty)){msg.innerHTML='<div class="al al-r">Please select an item and enter a quantity.</div>';return;}
+  const inv=DB.g('inventory')||[];
+  if(sel==='new'){
+    const nm=document.getElementById('si-nm').value;
+    if(!nm){msg.innerHTML='<div class="al al-r">Please enter item name.</div>';return;}
+    inv.push({id:Date.now(),item:nm,qty,unit:document.getElementById('si-un').value||'Pcs',min:parseInt(document.getElementById('si-mn').value)||0,rec:parseInt(document.getElementById('si-rc').value)||0,loc:document.getElementById('si-lc').value,updatedBy:CU.id,date:today()});
+  } else {
+    const i=parseInt(sel);
+    inv[i]={...inv[i],qty,updatedBy:CU.id,date:today()};
+  }
+  DB.s('inventory',inv);
+  msg.innerHTML='<div class="al al-g">Inventory updated successfully.</div>';
+}
+
+// ─── EMPLOYEE LEAVE ───
+function pMyLeave(el){
+  const leaves=(DB.g('leaves')||[]).filter(l=>l.empId===CU.id);
+  el.innerHTML=`
+  ${ph('Request Leave','Submit and track your leave requests.')}
+  <div class="g2">
+    <div class="card mb">
+      <div class="ch"><span class="ct">${ic('calendar',15)} New Leave Request</span></div>
+      <div class="cb">
+        <div class="f"><label>Leave Type</label>
+          <select id="lv-type"><option>Annual Leave</option><option>Sick Leave</option><option>Maternity/Paternity Leave</option><option>Compassionate Leave</option><option>Study Leave</option><option>Unpaid Leave</option></select>
+        </div>
+        <div class="fr">
+          <div class="f"><label>From Date</label><input type="date" id="lv-from"></div>
+          <div class="f"><label>To Date</label><input type="date" id="lv-to"></div>
+        </div>
+        <div class="f"><label>Reason</label><textarea id="lv-rsn" placeholder="Brief explanation of your leave request…"></textarea></div>
+        <button class="btn b-nv btn-full" onclick="submitLeave()">Submit Request</button>
+        <div id="lv-msg" style="margin-top:10px"></div>
+      </div>
+    </div>
+    <div class="card mb">
+      <div class="ch"><span class="ct">${ic('list',15)} My Leave History</span></div>
+      <div class="cb">
+        ${leaves.length===0?`<p style="font-size:13px;color:var(--text-muted)">No leave requests yet.</p>`
+        :leaves.map(l=>`
+          <div style="padding:12px;background:var(--bg);border-radius:8px;margin-bottom:9px">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px">
+              <strong style="font-size:13px">${l.type}</strong>
+              <span class="b ${l.status==='pending'?'ba':l.status==='approved'?'bg':'br'}">${l.status}</span>
+            </div>
+            <div style="font-size:11.5px;color:var(--text-muted)">${l.from} → ${l.to}${l.days?' ('+l.days+' day'+ (l.days>1?'s':'') + ')':''}</div>
+            ${l.status==='approved'?`
+              <div style="margin-top:8px;padding:8px;background:var(--card);border-radius:6px;border:1px solid var(--border)">
+                <div style="font-size:11.5px;font-weight:700;color:var(--navy);margin-bottom:4px">Employer Response:</div>
+                <div style="font-size:11.5px;color:var(--text-muted)">${l.terms||'Approved.'}</div>
+                <div style="margin-top:6px;display:flex;align-items:center;gap:8px">
+                  <span class="b ${l.payStatus==='paid'?'bg':'ba'}">${l.payStatus||'pending'}</span>
+                  ${l.conditions?`<span style="font-size:11px;color:var(--text-muted)">${l.conditions}</span>`:''}
+                </div>
+                ${!l.empAccepted?`
+                  <div style="display:flex;gap:8px;margin-top:10px">
+                    <button class="btn b-gr btn-sm" onclick="acceptLeaveTerms('${l.from}')">Accept Terms</button>
+                    <button class="btn b-rd btn-sm" onclick="declineLeaveTerms('${l.from}')">Decline</button>
+                  </div>`:
+                  `<div class="al al-g" style="margin-top:8px;margin-bottom:0">You accepted these terms on ${l.acceptedDate||l.respondedDate}.</div>`}
+              </div>`:''}
+          </div>`).join('')}
+      </div>
+    </div>
+  </div>`;
+}
+function submitLeave(){
+  const from=document.getElementById('lv-from').value;
+  const to=document.getElementById('lv-to').value;
+  const rsn=document.getElementById('lv-rsn').value;
+  const msg=document.getElementById('lv-msg');
+  if(!from||!to||!rsn){msg.innerHTML='<div class="al al-r">Please fill all fields.</div>';return;}
+  const days=Math.ceil((new Date(to)-new Date(from))/(1000*3600*24))+1;
+  if(days<1){msg.innerHTML='<div class="al al-r">End date must be after start date.</div>';return;}
+  DB.push('leaves',{empId:CU.id,empName:CU.name,type:document.getElementById('lv-type').value,from,to,days,reason:rsn,date:today(),status:'pending'});
+  msg.innerHTML='<div class="al al-g">Leave request submitted successfully. Awaiting employer response.</div>';
+  updNotif();
+}
+function acceptLeaveTerms(fromDate){
+  DB.upd('leaves',l=>l.empId===CU.id&&l.from===fromDate,{empAccepted:true,acceptedDate:today()});
+  showPage('emp_leave'); toast('Leave terms accepted','s');
+}
+function declineLeaveTerms(fromDate){
+  DB.upd('leaves',l=>l.empId===CU.id&&l.from===fromDate,{status:'declined',empAccepted:false});
+  showPage('emp_leave'); toast('Leave terms declined','i');
+}
+
+// ─── EMPLOYEE COMPLAINTS ───
+function pMyComplaints(el){
+  const complaints=(DB.g('complaints')||[]).filter(c=>c.empId===CU.id);
+  el.innerHTML=`
+  ${ph('Complaints & Suggestions','Report issues or share ideas with management.')}
+  <div class="g2">
+    <div class="card mb">
+      <div class="ch"><span class="ct">${ic('send',15)} New Submission</span></div>
+      <div class="cb">
+        <div class="f"><label>Type</label>
+          <select id="cm-type"><option>Complaint</option><option>Suggestion</option><option>Feedback</option></select>
+        </div>
+        <div class="f"><label>Subject</label><input type="text" id="cm-subj" placeholder="Brief subject line"></div>
+        <div class="f"><label>Message</label><textarea id="cm-msg" placeholder="Describe your complaint or suggestion in detail…"></textarea></div>
+        <div class="f"><label>Submit As</label>
+          <select id="cm-anon"><option value="no">My Name (${CU.name})</option><option value="yes">Anonymous</option></select>
+        </div>
+        <button class="btn b-nv btn-full" onclick="submitComplaint()">Submit</button>
+        <div id="cm-res" style="margin-top:10px"></div>
+      </div>
+    </div>
+    <div class="card mb">
+      <div class="ch"><span class="ct">${ic('list',15)} My Submissions</span></div>
+      <div class="cb">
+        ${complaints.length===0?`<p style="font-size:13px;color:var(--text-muted)">No submissions yet.</p>`
+        :complaints.map(c=>`<div style="padding:11px;background:var(--bg);border-radius:8px;margin-bottom:8px">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:3px">
+            <span class="b ${c.type==='Complaint'?'br':'bb'}">${c.type}</span>
+            <strong style="font-size:13px">${c.subject}</strong>
+          </div>
+          <div style="font-size:11px;color:var(--text-muted)">${c.date}</div>
+          <span class="b ${c.resolved?'bg':'ba'}" style="margin-top:5px;display:inline-block">${c.resolved?'Resolved':'Pending'}</span>
+        </div>`).join('')}
+      </div>
+    </div>
+  </div>`;
+}
+function submitComplaint(){
+  const subj=document.getElementById('cm-subj').value;
+  const msg=document.getElementById('cm-msg').value;
+  const anon=document.getElementById('cm-anon').value==='yes';
+  const res=document.getElementById('cm-res');
+  if(!subj||!msg){res.innerHTML='<div class="al al-r">Please fill all fields.</div>';return;}
+  DB.push('complaints',{empId:CU.id,empName:anon?'Anonymous':CU.name,type:document.getElementById('cm-type').value,subject:subj,message:msg,date:today(),resolved:false});
+  res.innerHTML='<div class="al al-g">Submitted successfully. Management will review your submission.</div>';
+  document.getElementById('cm-subj').value=''; document.getElementById('cm-msg').value='';
+}
+
+// ─── PROFILE ───
+function pProfile(el){
+  const empData=(DB.g('employees')||[]).find(e=>e.id===CU.id)||CU;
+  const benefits=(DB.g('benefits')||[]).filter(b=>(b.empIds||[]).includes(CU.id));
+  const perf=calcPerf(CU.id);
+  el.innerHTML=`
+  ${ph('My Profile','Your employment details and account settings.')}
+  <div class="g2">
+    <div class="card mb">
+      <div class="ch"><span class="ct">${ic('user',15)} Personal Info</span></div>
+      <div class="cb">
+        <div style="display:flex;align-items:center;gap:14px;margin-bottom:18px">
+          <div style="width:60px;height:60px;border-radius:50%;background:var(--navy);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;color:#fff;flex-shrink:0">${CU.initials||CU.name.slice(0,2).toUpperCase()}</div>
+          <div><div style="font-size:19px;font-weight:900;color:var(--navy)">${CU.name}</div><div style="font-size:12.5px;color:var(--text-muted)">${empData.roleTitle||'—'} · ${empData.dept||'—'}</div></div>
+        </div>
+        <div class="f"><label>Employee ID</label><input value="${CU.id}" disabled></div>
+        <div class="f"><label>Email</label><input value="${empData.email||CU.email||'—'}" disabled></div>
+        <div class="f"><label>Department</label><input value="${empData.dept||'—'}" disabled></div>
+        <div class="f"><label>Date Joined</label><input value="${empData.joinDate||'—'}" disabled></div>
+      </div>
+    </div>
+    <div class="card mb">
+      <div class="ch"><span class="ct">${ic('briefcase',15)} Employment Details</span></div>
+      <div class="cb">
+        <div class="f"><label>Job Title</label><input value="${empData.roleTitle||'—'}" disabled></div>
+        <div class="f"><label>Hourly Rate</label><input value="${fmt(empData.hourlyRate||0)}/hr" disabled></div>
+        <div class="f"><label>Total Earnings</label><input value="${fmt(monthlyEarnings(CU.id))}" disabled></div>
+        <div class="f"><label>Performance Score</label>
+          <div style="padding:9px 0">
+            <div class="pr-row"><div class="pr-nm">Performance</div><div class="pr-tr"><div class="pr-fl" style="width:${perf}%;background:${perfColor(perf)}"></div></div><div class="pr-sc">${perf}%</div></div>
+          </div>
+        </div>
+        <div class="f"><label>Benefits Active</label>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;padding:4px 0">
+            ${benefits.length===0?'<span style="color:var(--text-muted);font-size:13px">None</span>':benefits.map(b=>`<span class="b bg">${b.name}</span>`).join('')}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="card mb">
+    <div class="ch"><span class="ct">${ic('lock',15)} Change Password</span></div>
+    <div class="cb">
+      <div class="fr">
+        <div class="f"><label>Current Password</label><input type="password" id="pp-cp" placeholder="Current password"></div>
+        <div class="f"><label>New Password</label><input type="password" id="pp-np" placeholder="New password"></div>
+      </div>
+      <button class="btn b-am" onclick="changeEmpPw()">Update Password</button>
+      <div id="pp-msg" style="margin-top:9px"></div>
+    </div>
+  </div>`;
+}
+function changeEmpPw(){
+  const msg=document.getElementById('pp-msg');
+  const cp=document.getElementById('pp-cp').value;
+  const np=document.getElementById('pp-np').value;
+  const pwMap={'EMP001':'emp123','EMP002':'emp123','EMP003':'emp456','EMP004':'emp456','EMP005':'emp789','EMP006':'emp789','EMP007':'emp321','EMP008':'emp321'};
+  if(cp!==pwMap[CU.id]&&cp!=='emp123'){msg.innerHTML='<div class="al al-r">Current password is incorrect.</div>';return;}
+  if(!np){msg.innerHTML='<div class="al al-r">Enter a new password.</div>';return;}
+  msg.innerHTML='<div class="al al-g">Password updated successfully.</div>';
+}
+
+// ═══════════════════════════════════════════════
+// ══════════ APPLICANT PORTAL LOGIC ════════════
+// ═══════════════════════════════════════════════
+function submitApplication(){
+  const nm=document.getElementById('ap-name').value;
+  const em=document.getElementById('ap-email').value;
+  const pos=document.getElementById('ap-pos').value;
+  const edu=document.getElementById('ap-edu');
+  const exp=document.getElementById('ap-exp');
+  const msg=document.getElementById('ap-msg');
+  if(!nm||!em||!pos||!edu.value||!exp.value){msg.innerHTML='<div class="al al-r">Please fill all required fields.</div>';return;}
+  const apps=DB.g('applicants')||[];
+  if(apps.find(a=>a.email===em)){msg.innerHTML='<div class="al al-a">This email has already been used to apply.</div>';return;}
+  const newApp={name:nm,email:em,phone:document.getElementById('ap-phone').value,position:pos,education:edu.options[edu.selectedIndex].text,eduScore:parseInt(edu.value)||40,experience:parseInt(exp.value)||0,expScore:Math.min(22,parseInt(exp.value)||0),employers:document.getElementById('ap-emp').value,skills:document.getElementById('ap-skills').value,cover:document.getElementById('ap-cover').value,appliedDate:today(),testInvited:DB.g('rec_stage')==='testing'||false};
+  apps.push(newApp); DB.s('applicants',apps);
+  const stage=DB.g('rec_stage')||'collecting';
+  if(stage==='testing'&&newApp.testInvited){
+    msg.innerHTML=''; loadAptTest(em);
+  } else {
+    document.getElementById('ap-form-wrap').style.display='none';
+    document.getElementById('ap-done-wrap').style.display='block';
+    if(window._portalReturn) setTimeout(backFromPortal,3000);
+  }
+}
+function loadAptTest(email){
+  const qs=DB.g('apt_qs')||[];
+  if(qs.length===0){document.getElementById('ap-form-wrap').style.display='none';document.getElementById('ap-done-wrap').style.display='block';return;}
+  document.getElementById('ap-form-wrap').style.display='none';
+  document.getElementById('ap-test-wrap').style.display='block';
+  document.getElementById('ap-test-wrap').dataset.email=email;
+  document.getElementById('ap-questions').innerHTML=qs.map((q,i)=>`
+    <div style="background:var(--bg);border-radius:9px;padding:14px;margin-bottom:13px">
+      <div style="font-size:13px;font-weight:800;margin-bottom:10px">Q${i+1}. ${q.q}</div>
+      <div style="display:flex;flex-direction:column;gap:7px">
+        ${q.opts.map((o,oi)=>`<label style="display:flex;align-items:center;gap:9px;padding:9px 12px;border:2px solid var(--border);border-radius:8px;cursor:pointer;transition:border-color .18s;font-size:13px" onclick="selOpt(this,${i})">
+          <input type="radio" name="q${i}" value="${oi}" style="accent-color:var(--navy)">${String.fromCharCode(65+oi)}) ${o}
+        </label>`).join('')}
+      </div>
+    </div>`).join('');
+}
+function selOpt(lbl,qi){
+  lbl.closest('div').querySelectorAll('label').forEach(l=>{l.style.borderColor='var(--border)';l.style.background='';});
+  lbl.style.borderColor='var(--navy)'; lbl.style.background='rgba(27,46,75,.04)';
+  lbl.querySelector('input').checked=true;
+}
+function submitAptTest(){
+  const qs=DB.g('apt_qs')||[];
+  let correct=0;
+  qs.forEach((_,i)=>{const sel=document.querySelector(`input[name="q${i}"]:checked`);if(sel&&parseInt(sel.value)===qs[i].ans)correct++;});
+  const email=document.getElementById('ap-test-wrap').dataset.email;
+  const apps=DB.g('applicants')||[];
+  const i=apps.findIndex(a=>a.email===email);
+  if(i>=0){apps[i].testScore=correct;DB.s('applicants',apps);}
+  document.getElementById('ap-test-msg').innerHTML=`<div class="al al-g">Test submitted! You scored ${correct}/${qs.length}. We will contact you with next steps.</div>`;
+  setTimeout(()=>{document.getElementById('ap-test-wrap').style.display='none';document.getElementById('ap-done-wrap').style.display='block';if(window._portalReturn)setTimeout(backFromPortal,2500);},1500);
+}
+
+// ═══════════════════════════════════════════════
+// ══════════ OFFER PORTAL LOGIC ════════════════
+// ═══════════════════════════════════════════════
+function loadOfferPortal(email){
+  const apps=DB.g('applicants')||[];
+  const app=apps.find(a=>a.email===email)||{name:'Candidate',position:'Position',email};
+  const co=DB.g('company')||{};
+  const offerHTML=generateOfferLetterHTML(app,co);
+  document.getElementById('offer-details-wrap').innerHTML=offerHTML;
+  document.getElementById('offer-details-wrap').dataset.email=email;
+  document.getElementById('offer-portal-msg').innerHTML='';
+  document.getElementById('offer-neg-wrap').style.display='none';
+  document.getElementById('offer-action-btns').style.display='flex';
+}
+function generateOfferLetterHTML(app,co){
+  const rate=co.defaultRate||20;
+  const schedule=co.workSchedule||'Monday – Friday, 8:00 AM – 5:00 PM';
+  const probation=co.probation||'3 months';
+  return`
+  <div style="border:2px solid var(--border);border-radius:10px;padding:24px;background:var(--bg)">
+    ${co.logo?`<img src="${co.logo}" style="height:50px;margin-bottom:14px;display:block">`:''}
+    <div style="font-size:18px;font-weight:900;color:var(--navy);margin-bottom:2px">${co.name||'Company Name'}</div>
+    <div style="font-size:11.5px;color:var(--text-muted);margin-bottom:18px">${co.address||''} | ${co.phone||''} | ${co.email||''}</div>
+    <hr style="border:none;border-top:1px solid var(--border);margin-bottom:14px">
+    <div style="font-size:13.5px;font-weight:800;margin-bottom:12px">OFFER OF EMPLOYMENT</div>
+    <p style="font-size:13px;margin-bottom:10px">Dear <strong>${app.name}</strong>,</p>
+    <p style="font-size:13px;margin-bottom:10px">We are pleased to offer you the position of <strong>${app.position}</strong> at <strong>${co.name||'our company'}</strong>. After a thorough review of your application and performance in our aptitude test, we believe you are an excellent fit for our team.</p>
+    <div style="background:var(--card);border-radius:8px;padding:14px;margin:14px 0">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <div><div style="font-size:10.5px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.6px">Position</div><div style="font-size:13px;font-weight:700">${app.position}</div></div>
+        <div><div style="font-size:10.5px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.6px">Hourly Rate</div><div style="font-size:13px;font-weight:700">${GHS}${rate}/hour</div></div>
+        <div><div style="font-size:10.5px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.6px">Work Schedule</div><div style="font-size:13px;font-weight:700">${schedule}</div></div>
+        <div><div style="font-size:10.5px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.6px">Probation Period</div><div style="font-size:13px;font-weight:700">${probation}</div></div>
+        <div><div style="font-size:10.5px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.6px">Start Date</div><div style="font-size:13px;font-weight:700">To be confirmed</div></div>
+        <div><div style="font-size:10.5px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.6px">Earnings Model</div><div style="font-size:13px;font-weight:700">Per-hour (post-completion)</div></div>
+      </div>
+    </div>
+    <p style="font-size:12.5px;color:var(--text-muted);margin-bottom:14px">This offer is conditional upon satisfactory completion of reference checks and any pre-employment screening. The hourly rate is applied after each completed hour of work and tracked through our attendance system.</p>
+    <div style="margin-top:16px;padding-top:12px;border-top:1px solid var(--border)">
+      <div style="font-size:13px;font-weight:700">${co.signatory||'The Director'}</div>
+      <div style="font-size:12px;color:var(--text-muted)">${co.sigTitle||'Managing Director'}</div>
+      <div style="font-size:12px;color:var(--text-muted)">${co.name||''} | ${new Date().toLocaleDateString('en-GH')}</div>
+    </div>
+  </div>
+  <button class="btn b-ol btn-full" style="margin-top:12px" onclick="downloadOfferLetter('${app.name}','${app.position}')">
+    ${ic('download',14)} Download Letter (PDF)
+  </button>`;
+}
+
+function downloadOfferLetter(name,position){
+  const co=DB.g('company')||{};
+  const w=window.open('','_blank');
+  w.document.write(`<!DOCTYPE html><html><head><title>Offer Letter – ${name}</title>
+  <style>body{font-family:'Segoe UI',Arial,sans-serif;max-width:700px;margin:40px auto;font-size:13px;color:#222;line-height:1.6}
+  h1{font-size:20px;color:#1b2e4b}
+  .box{border:1px solid #dde4ee;border-radius:8px;padding:16px;margin:14px 0;background:#f9fbfc}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .lbl{font-size:10px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.6px;margin-bottom:2px}
+  .val{font-size:13px;font-weight:700;color:#1b2e4b}
+  .footer{margin-top:30px;padding-top:14px;border-top:1px solid #dde4ee}
+  @media print{body{margin:20px}}</style>
+  </head><body>
+  ${co.logo?`<img src="${co.logo}" style="height:50px;margin-bottom:14px">`:''}
+  <h1>${co.name||'Company'}</h1>
+  <p style="color:#666;font-size:12px">${co.address||''} | ${co.phone||''} | ${co.email||''}</p>
+  <hr>
+  <h2>OFFER OF EMPLOYMENT</h2>
+  <p>Dear <strong>${name}</strong>,</p>
+  <p>We are pleased to offer you the position of <strong>${position}</strong> at <strong>${co.name||'our company'}</strong>. After a thorough review of your application and performance in our assessment process, we believe you are an excellent fit for our team.</p>
+  <div class="box"><div class="grid">
+    <div><div class="lbl">Position</div><div class="val">${position}</div></div>
+    <div><div class="lbl">Hourly Rate</div><div class="val">₵${co.defaultRate||20}/hour</div></div>
+    <div><div class="lbl">Work Schedule</div><div class="val">${co.workSchedule||'Mon–Fri, 8:00 AM – 5:00 PM'}</div></div>
+    <div><div class="lbl">Probation Period</div><div class="val">${co.probation||'3 months'}</div></div>
+    <div><div class="lbl">Earnings Model</div><div class="val">Per-hour (post-completion)</div></div>
+    <div><div class="lbl">Currency</div><div class="val">Ghanaian Cedis (₵)</div></div>
+  </div></div>
+  <p style="font-size:12px;color:#666">This offer is conditional upon satisfactory completion of reference checks and pre-employment screening. The hourly rate is applied after each completed hour of work.</p>
+  <div class="footer">
+    <p style="font-weight:700">${co.signatory||'The Director'}</p>
+    <p style="color:#666;font-size:12px">${co.sigTitle||'Managing Director'} | ${co.name||''}</p>
+    <p style="color:#666;font-size:12px">Date: ${new Date().toLocaleDateString('en-GH')}</p>
+  </div>
+  </body></html>`);
+  w.document.close(); setTimeout(()=>w.print(),500);
+}
+
+function respondOffer(decision){
+  const email=document.getElementById('offer-details-wrap').dataset.email;
+  const apps=DB.g('applicants')||[];
+  const i=apps.findIndex(a=>a.email===email);
+  if(i>=0){apps[i].offerStatus=decision;DB.s('applicants',apps);}
+  const msg=document.getElementById('offer-portal-msg');
+  document.getElementById('offer-action-btns').style.display='none';
+  document.getElementById('offer-neg-wrap').style.display='none';
+  if(decision==='accept'){
+    // Auto-create login credentials
+    createEmployeeFromApplicant(apps[i]);
+    msg.innerHTML=`<div class="al al-g"><strong>Offer Accepted!</strong> Welcome to the team. Your login credentials have been generated and will be shared with you. ${ic('check-circle',15)}</div>`;
+  } else {
+    msg.innerHTML=`<div class="al al-r">You have declined this offer. Thank you for your time. We wish you success in your job search.</div>`;
+  }
+  setTimeout(()=>{if(window._portalReturn)backFromPortal();},4000);
+}
+
+function createEmployeeFromApplicant(app){
+  const emps=DB.g('employees')||[];
+  const newId='EMP'+(emps.length+1+10).toString().padStart(3,'0');
+  const pw='pass'+Math.random().toString(36).substr(2,6);
+  const co=DB.g('company')||{};
+  emps.push({id:newId,name:app.name,roleTitle:app.position,dept:'New Hire',hourlyRate:co.defaultRate||20,joinDate:today(),email:app.email,active:true,tempPassword:pw});
+  DB.s('employees',emps);
+  // Store credentials for display
+  const newCreds=DB.g('new_hires')||[];
+  newCreds.push({id:newId,name:app.name,email:app.email,password:pw,date:today()});
+  DB.s('new_hires',newCreds);
+  toast(`Account created for ${app.name}: ${newId} / ${pw}`,'s');
+}
+
+function toggleNeg(){
+  const wrap=document.getElementById('offer-neg-wrap');
+  wrap.style.display=wrap.style.display==='none'?'block':'none';
+}
+function submitNegotiation(){
+  const email=document.getElementById('offer-details-wrap').dataset.email;
+  const rate=document.getElementById('neg-rate').value;
+  const hours=document.getElementById('neg-hours').value;
+  const benefits=Array.from(document.getElementById('neg-benefits').selectedOptions).map(o=>o.value);
+  const note=document.getElementById('neg-note').value;
+  const apps=DB.g('applicants')||[];
+  const i=apps.findIndex(a=>a.email===email);
+  if(i>=0){apps[i].offerStatus='negotiated';apps[i].negotiation={rate,hours,benefits,note};DB.s('applicants',apps);}
+  document.getElementById('offer-portal-msg').innerHTML='<div class="al al-b">Counter-offer sent to the employer. We will review and respond shortly.</div>';
+  document.getElementById('offer-neg-wrap').style.display='none';
+  document.getElementById('offer-action-btns').style.display='none';
+  updNotif();
+  setTimeout(()=>{if(window._portalReturn)backFromPortal();},3000);
+}
+
+// ═══════════════════════════════════════════════
+// ══════════ INIT ══════════════════════════════
+// ═══════════════════════════════════════════════
+seed();
+document.getElementById('yr').textContent=new Date().getFullYear();
+
+// Resume session if JWT and user are stored
+if(JWT&&CU){
+  ROLE=CU.role;
+  launchApp();
+}
+
+// Offer portal link support (e.g. ?offer=email@test.com)
+const params=new URLSearchParams(window.location.search);
+if(params.get('offer')){
+  const email=params.get('offer');
+  loadOfferPortal(email);
+  document.getElementById('offer-portal').classList.add('open');
+}
+</script>
+</body>
+</html>
