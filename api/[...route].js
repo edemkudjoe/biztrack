@@ -75,6 +75,12 @@ function seed() {
       roleTitle: 'Operations Analyst', dept: 'Operations', hourlyRate: 19,
       joinDate: '2024-03-20', active: true,
     },
+    {
+      id: 'EMP009', role: 'employee', name: 'Deladem Avudzega',
+      email: 'dela@biztrack.com', password: '7474', initials: 'DA',
+      roleTitle: 'Branch Supervisor', dept: 'Sales', hourlyRate: 25,
+      joinDate: '2022-01-15', active: true,
+    },
   ];
 }
 
