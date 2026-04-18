@@ -216,13 +216,15 @@ module.exports = async function handler(req, res) {
   cors(res);
   if (req.method === 'OPTIONS') return res.status(200).end();
 
+// Vercel names the catch-all param '...route' (with dots), not 'route'
+  const catchAll = req.query['...route'] || req.query.route;
   let parts;
-  if (!req.query.route) {
+  if (!catchAll) {
     parts = [];
-  } else if (Array.isArray(req.query.route)) {
-    parts = req.query.route;
+  } else if (Array.isArray(catchAll)) {
+    parts = catchAll;
   } else {
-    parts = req.query.route.split('/').filter(Boolean);
+    parts = catchAll.split('/').filter(Boolean);
   }
   const route = parts[0];
 
