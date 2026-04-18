@@ -1576,7 +1576,7 @@ function pLeaves(el){
         ${leaves.map((l,i)=>`<tr>
           <td><strong>${l.empName}</strong></td>
           <td><span class="b bb">${l.type}</span></td>
-          <td>${l.from}</td><td>${l.to}</td><td>${l.days||'—'}</td>
+          <td>${l.fromDate}</td><td>${l.toDate}</td><td>${l.days||'—'}</td>
           <td style="max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${l.reason}</td>
           <td><span class="b ${l.status==='pending'?'ba':l.status==='approved'?'bg':'br'}">${l.status}</span></td>
           <td>${l.status==='pending'?`<button class="btn b-gr btn-sm" onclick="respondLeave(${i})">Respond</button>`:`${l.payStatus?`<span class="b ${l.payStatus==='paid'?'bg':'ba'}">${l.payStatus}</span>`:'—'}`}</td>
@@ -1590,7 +1590,7 @@ function respondLeave(i){
   const from=new Date(l.from),to=new Date(l.to);
   const days=Math.ceil((to-from)/(1000*3600*24))+1;
   openModal(`Leave Response — ${l.empName}`,`
-    <div class="al al-b">Request: <strong>${l.type}</strong> | ${l.from} to ${l.to} (${days} day${days>1?'s':''})</div>
+    <div class="al al-b">Request: <strong>${l.type}</strong> | ${l.fromDate} to ${l.toDate} (${days} day${days>1?'s':''})</div>
     <div class="f"><label>Decision</label><select id="lv-dec"><option value="approved">Approve</option><option value="rejected">Reject</option></select></div>
     <div class="f"><label>Pay Status</label><select id="lv-pay"><option value="paid">Paid Leave</option><option value="unpaid">Unpaid Leave</option><option value="half-pay">Half Pay</option></select></div>
     <div class="f"><label>Terms / Notes for Employee</label><textarea id="lv-terms" placeholder="e.g. Approved for 5 days paid leave. Please ensure handover is completed before departure…"></textarea></div>
@@ -1888,7 +1888,7 @@ function submitAdvance(){
   const amt=parseFloat(document.getElementById('adv-amt').value);
   const rsn=document.getElementById('adv-rsn').value;
   if(!amt||!rsn){document.getElementById('adv-msg').innerHTML='<div class="al al-r">Please fill all fields.</div>';return;}
-  const rec={empId:CU.id,empName:CU.name,amount:amt,reason:rsn,repay:document.getElementById('adv-rep').value,date:today(),status:'pending'};
+  const rec={empId:CU.id,empName:CU.name,type:document.getElementById('lv-type').value,fromDate:from,toDate:to,days,reason:rsn,date:today(),status:'pending'};
   DB.push('advances',rec);
   apiFetch('POST','/data/advances',rec)
     .then(r=>{if(r.record){const adv=DB.g('advances')||[];const i=adv.findIndex(a=>a.empId===rec.empId&&a.date===rec.date);if(i>=0){adv[i].id=r.record.id;DB.s('advances',adv);}}})
@@ -2152,7 +2152,7 @@ function pMyLeave(el){
               <strong style="font-size:13px">${l.type}</strong>
               <span class="b ${l.status==='pending'?'ba':l.status==='approved'?'bg':'br'}">${l.status}</span>
             </div>
-            <div style="font-size:11.5px;color:var(--text-muted)">${l.from} → ${l.to}${l.days?' ('+l.days+' day'+ (l.days>1?'s':'') + ')':''}</div>
+            <div style="font-size:11.5px;color:var(--text-muted)">${l.fromDate} → ${l.toDate}${l.days?' ('+l.days+' day'+ (l.days>1?'s':'') + ')':''}</div>
             ${l.status==='approved'?`
               <div style="margin-top:8px;padding:8px;background:var(--card);border-radius:6px;border:1px solid var(--border)">
                 <div style="font-size:11.5px;font-weight:700;color:var(--navy);margin-bottom:4px">Employer Response:</div>
@@ -2163,8 +2163,8 @@ function pMyLeave(el){
                 </div>
                 ${!l.empAccepted?`
                   <div style="display:flex;gap:8px;margin-top:10px">
-                    <button class="btn b-gr btn-sm" onclick="acceptLeaveTerms('${l.from}')">Accept Terms</button>
-                    <button class="btn b-rd btn-sm" onclick="declineLeaveTerms('${l.from}')">Decline</button>
+                    <button class="btn b-gr btn-sm" onclick="acceptLeaveTerms('${l.fromDate}')">Accept Terms</button>
+                    <button class="btn b-rd btn-sm" onclick="declineLeaveTerms('${l.fromDate}')">Decline</button>
                   </div>`:
                   `<div class="al al-g" style="margin-top:8px;margin-bottom:0">You accepted these terms on ${l.acceptedDate||l.respondedDate}.</div>`}
               </div>`:''}
@@ -2184,17 +2184,17 @@ function submitLeave(){
   const rec={empId:CU.id,empName:CU.name,type:document.getElementById('lv-type').value,from,to,days,reason:rsn,date:today(),status:'pending'};
   DB.push('leaves',rec);
   apiFetch('POST','/data/leaves',rec)
-    .then(r=>{if(r.record){const leaves=DB.g('leaves')||[];const i=leaves.findIndex(l=>l.empId===rec.empId&&l.from===rec.from);if(i>=0){leaves[i].id=r.record.id;DB.s('leaves',leaves);}}})
+    .then(r=>{if(r.record){const leaves=DB.g('leaves')||[];const i=leaves.findIndex(l=>l.empId===rec.empId&&l.fromDate===rec.fromDate);if(i>=0){leaves[i].id=r.record.id;DB.s('leaves',leaves);}}})`
     .catch(()=>{});
   msg.innerHTML='<div class="al al-g">Leave request submitted successfully. Awaiting employer response.</div>';
   updNotif();
 }
 function acceptLeaveTerms(fromDate){
-  DB.upd('leaves',l=>l.empId===CU.id&&l.from===fromDate,{empAccepted:true,acceptedDate:today()});
+  DB.upd('leaves',l=>l.empId===CU.id&&l.fromDate===fromDate,{empAccepted:true,acceptedDate:today()});
   showPage('emp_leave'); toast('Leave terms accepted','s');
 }
 function declineLeaveTerms(fromDate){
-  DB.upd('leaves',l=>l.empId===CU.id&&l.from===fromDate,{status:'declined',empAccepted:false});
+  DB.upd('leaves',l=>l.empId===CU.id&&l.fromDate===fromDate,{status:'declined',empAccepted:false});
   showPage('emp_leave'); toast('Leave terms declined','i');
 }
 
