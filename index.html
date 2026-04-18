@@ -689,24 +689,34 @@ function logout(){
   document.getElementById('login-screen').style.display='flex';
 }
 
-// ═══════════════════════════ LAUNCH ═══════════════════════════
+// ═══════════════════════════ LAUNCH (SUPABASE SYNC) ═══════════════════════════
 async function launchApp(){
-  seed();
   document.getElementById('login-screen').style.display='none';
   ['applicant-portal','offer-portal'].forEach(id=>document.getElementById(id).classList.remove('open'));
   document.getElementById('app').style.display='block';
 
-  // ─── FIX #13: Load ALL tables from Supabase, not just employees ───
-  const tables=['attendance','costs','revenue','inventory','tasks','leaves','advances','promos','complaints','applicants'];
-  try{
-    const [usersRes,...tableResults]=await Promise.all([
-      apiFetch('GET','/users'),
-      ...tables.map(t=>apiFetch('GET',`/data/${t}`))
+  // 1. Define the security headers so Supabase knows you are logged in
+  const authHeaders = { 
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${JWT}` 
+  };
+
+  // 2. Fetch all data using the correct /data/ routing path
+  try {
+    const [uRes, tRes, iRes, aRes] = await Promise.all([
+      fetch(`${API}/users`, { headers: authHeaders }),
+      fetch(`${API}/data/tasks`, { headers: authHeaders }),
+      fetch(`${API}/data/inventory`, { headers: authHeaders }),
+      fetch(`${API}/data/attendance`, { headers: authHeaders })
     ]);
-    if(usersRes.users) DB.s('employees',usersRes.users);
-    tables.forEach((t,i)=>{if(tableResults[i].records) DB.s(t,tableResults[i].records);});
-  }catch(e){
-    console.error('Failed to sync from server — using cached local data',e);
+    
+    if (uRes.ok) DB.s('employees', (await uRes.json()).users);
+    if (tRes.ok) DB.s('tasks', (await tRes.json()).data || []);
+    if (iRes.ok) DB.s('inventory', (await iRes.json()).data || []);
+    if (aRes.ok) DB.s('attendance', (await aRes.json()).data || []);
+  } 
+  catch(e) { 
+    console.error('Failed to sync with Supabase', e); 
   }
 
   ROLE=CU.role;
@@ -718,7 +728,7 @@ async function launchApp(){
   const p=document.getElementById('dk-pill'); if(p) p.classList.toggle('on',DARK);
   buildNav(); showPage(ROLE==='employer'?'e_dash':'emp_dash'); updNotif();
 }
-// ═══════════════════════════ NAV ═══════════════════════════
+  // ═══════════════════════════ NAV ═══════════════════════════
 const EMP_NAV=[
   {s:'MAIN',items:[{id:'e_dash',ic:'grid',l:'Dashboard'},{id:'notifications',ic:'bell',l:'Notifications'}]},
   {s:'BUSINESS',items:[{id:'e_finance',ic:'dollar-sign',l:'Finance & Revenue'},{id:'e_performance',ic:'trending-up',l:'Performance'},{id:'e_attendance_mgr',ic:'clock',l:'Attendance'},{id:'e_inventory',ic:'package',l:'Inventory'}]},
