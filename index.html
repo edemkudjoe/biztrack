@@ -1336,10 +1336,10 @@ function openEditEmp(eid){
     {l:'Save',c:'b-gr',fn:()=>{
       const i=emps.findIndex(e=>e.id===eid);
       emps[i]={...emps[i],roleTitle:document.getElementById('ee-rl').value,dept:document.getElementById('ee-dt').value,hourlyRate:parseFloat(document.getElementById('ee-rt').value)||emp.hourlyRate,email:document.getElementById('ee-em').value};
-      DB.s('employees',emps);apiFetch('PUT',`/users/${eid}`,{roleTitle:...,dept:...,hourlyRate:...,email:...}).catch(()=>{});closeModal();showPage('e_employees');toast('Updated','s');
+      DB.s('employees',emps);closeModal();showPage('e_employees');toast('Updated','s');
     }},
     {l:'Remove',c:'b-rd',fn:()=>{
-      if(confirm(`Remove ${emp.name}?`)){const i=emps.findIndex(e=>e.id===eid);emps.splice(i,1);DB.s('employees',emps);apiFetch('DELETE',`/users/${eid}`).catch(()=>{});closeModal();showPage('e_employees');toast('Removed','i');}
+      if(confirm(`Remove ${emp.name}?`)){const i=emps.findIndex(e=>e.id===eid);emps.splice(i,1);DB.s('employees',emps);closeModal();showPage('e_employees');toast('Removed','i');}
     }},
   ]);
 }
