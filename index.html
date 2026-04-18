@@ -587,68 +587,31 @@ const DB={
 };
 
 // ═══════════════════════════ SEED ═══════════════════════════
+// ═══════════════════════════ SEED ═══════════════════════════
 function seed(){
   if(DB.g('seeded')) return;
+  
   DB.s('employees', []);
-  DB.s('costs',[
-    {id:1,cat:'Rent',desc:'Office rent – March',amount:2500,date:'2025-03-01'},
-    {id:2,cat:'Utilities',desc:'Electricity & Water',amount:340,date:'2025-03-10'},
-    {id:3,cat:'Marketing',desc:'Social media ads',amount:600,date:'2025-03-15'},
-    {id:4,cat:'Equipment',desc:'Printer cartridges',amount:120,date:'2025-03-22'},
-  ]);
-  DB.s('revenue',[
-    {date:'2025-04-01',amount:8200,note:'Sales revenue'},
-    {date:'2025-04-02',amount:6400,note:'Service fees'},
-    {date:'2025-04-07',amount:9100,note:'Sales revenue'},
-    {date:'2025-04-10',amount:7300,note:'Consulting'},
-    {date:'2025-04-14',amount:11200,note:'Sales revenue'},
-  ]);
-  DB.s('inventory',[
-    {id:1,item:'Printer Paper (Ream)',qty:45,unit:'Ream',min:20,rec:50,loc:'Store A',updatedBy:'EMP003',date:'2025-03-10'},
-    {id:2,item:'Office Chairs',qty:12,unit:'Pcs',min:10,rec:15,loc:'Main Office',updatedBy:'EMP003',date:'2025-03-08'},
-    {id:3,item:'Laptops',qty:7,unit:'Pcs',min:5,rec:10,loc:'IT Store',updatedBy:'EMP002',date:'2025-03-12'},
-    {id:4,item:'Bottled Water (24-pack)',qty:5,unit:'Pack',min:10,rec:20,loc:'Kitchen',updatedBy:'EMP001',date:'2025-03-20'},
-    {id:5,item:'Toner Cartridges',qty:3,unit:'Pcs',min:5,rec:10,loc:'Store A',updatedBy:'EMP007',date:'2025-04-01'},
-  ]);
-  DB.s('tasks',[
-    {id:1,empId:'EMP001',title:'Close Q1 sales deals',status:'done',date:'2025-03-28'},
-    {id:2,empId:'EMP001',title:'Client presentation delivered',status:'done',date:'2025-04-02'},
-    {id:3,empId:'EMP002',title:'Monthly financial report',status:'done',date:'2025-03-31'},
-    {id:4,empId:'EMP003',title:'Warehouse inventory audit',status:'done',date:'2025-04-03'},
-    {id:5,empId:'EMP004',title:'New hire onboarding',status:'done',date:'2025-04-05'},
-    {id:6,empId:'EMP005',title:'Q2 marketing campaign',status:'done',date:'2025-04-08'},
-    {id:7,empId:'EMP006',title:'Customer satisfaction survey',status:'done',date:'2025-04-09'},
-    {id:8,empId:'EMP007',title:'Server maintenance completed',status:'done',date:'2025-04-10'},
-  ]);
-  DB.s('attendance',[]);
-  DB.s('leaves',[]);
-  DB.s('advances',[]);
-  DB.s('promos',[]);
-  DB.s('complaints',[]);
-  DB.s('applicants',[]);
-  DB.s('apt_qs',[
-    {q:'What is 20% of 350?',opts:['60','70','80','90'],ans:1},
-    {q:'A product costs ₵120 sold at 30% profit. Selling price?',opts:['₵144','₵150','₵156','₵160'],ans:2},
-    {q:'Complete the series: 3, 6, 12, 24, ___',opts:['36','48','42','54'],ans:1},
-    {q:'4 workers finish a job in 6 days. How long for 8 workers?',opts:['2 days','3 days','4 days','5 days'],ans:1},
-    {q:'Which is NOT a primary colour?',opts:['Red','Yellow','Green','Blue'],ans:2},
-  ]);
+  DB.s('costs', []);
+  DB.s('revenue', []);
+  DB.s('inventory', []);
+  DB.s('tasks', []);
+  DB.s('attendance', []);
+  DB.s('leaves', []);
+  DB.s('advances', []);
+  DB.s('promos', []);
+  DB.s('complaints', []);
+  DB.s('applicants', []);
+  
+  // Keep the configuration defaults so the app doesn't break
   DB.s('rec_stage','collecting');
   DB.s('rec_link','https://biztrack.app/apply/'+Math.random().toString(36).substr(2,9));
   DB.s('offer_link','https://biztrack.app/offer/'+Math.random().toString(36).substr(2,9));
   DB.s('company',{name:'My Business Ltd',address:'Accra, Ghana',phone:'+233 XX XXX XXXX',email:'info@mybusiness.com',web:'www.mybusiness.com',signatory:'The Director',sigTitle:'Managing Director',logo:''});
   DB.s('work_location',{lat:5.6037,lng:-0.1870,radius:500,name:'Head Office, Accra'});
-  DB.s('benefits',[
-    {id:1,name:'Health Insurance',value:'Full medical cover',empIds:[]},
-    {id:2,name:'Life Insurance',value:'2× annual salary cover',empIds:[]},
-    {id:3,name:'Data Allowance',value:'₵100/month',empIds:[]},
-    {id:4,name:'Transport Allowance',value:'₵200/month',empIds:[]},
-    {id:5,name:'Housing Allowance',value:'₵500/month',empIds:[]},
-    {id:6,name:'Pension Contribution',value:'5% employer match',empIds:[]},
-  ]);
+  
   DB.s('seeded',true);
 }
-
 // ═══════════════════════════ CLOCK ═══════════════════════════
 function tickClock(){
   const el=document.getElementById('tb-clock'); if(!el) return;
