@@ -278,11 +278,20 @@ module.exports = async function handler(req, res) {
   cors(res);
   if (req.method === 'OPTIONS') return res.status(200).end();
 
-  const parts = Array.isArray(req.query.route)
-    ? req.query.route
-    : [req.query.route].filter(Boolean);
-  const route = parts[0];
-
+// Vercel passes [...route] differently depending on the path
+// /api/auth        -> req.query.route = 'auth'
+// /api/data/tasks  -> req.query.route = ['data', 'tasks']
+// /api/users/EMP001 -> req.query.route = ['users', 'EMP001']
+let parts;
+if (!req.query.route) {
+  parts = [];
+} else if (Array.isArray(req.query.route)) {
+  parts = req.query.route;
+} else {
+  // Single string — could be 'auth' or 'data/tasks' depending on Vercel version
+  parts = req.query.route.split('/').filter(Boolean);
+}
+const route = parts[0];
   try {
     switch (route) {
       case 'auth':            return await handleAuth(req, res);
