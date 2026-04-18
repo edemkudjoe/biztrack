@@ -15,7 +15,14 @@
       "maxDuration": 30
     }
   },
-  "rewrites": [
-    { "source": "/((?!api/).*)", "destination": "/index.html" }
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/api/[...route].js"
+    },
+    {
+      "src": "/((?!api/).*)",
+      "dest": "/index.html"
+    }
   ]
 }
