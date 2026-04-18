@@ -1,9 +1,12 @@
 const { createClient } = require('@supabase/supabase-js');
 const jwt = require('jsonwebtoken');
 
-// Initialize Supabase using the Environment Variables from Vercel
-const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
-const JWT_SECRET = process.env.JWT_SECRET || 'fallback_secret_for_local_testing';
+// Automatically hunt down the correct Vercel keys, whatever they are named
+const supabaseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+const JWT_SECRET = process.env.SUPABASE_JWT_SECRET || process.env.JWT_SECRET || 'fallback_secret_for_local_testing';
+
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 // Helper: Standardize response headers
 function cors(res) {
