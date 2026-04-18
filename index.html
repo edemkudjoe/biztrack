@@ -33,7 +33,7 @@ a{text-decoration:none;color:inherit}
 /* ══════════════════ LOGIN ══════════════════ */
 #login-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;
   background:linear-gradient(135deg,#1b2e4b 0%,#2d4f80 100%)}
-.login-box{background:var(--white);border-radius:16px;padding:44px 40px 36px;width:420px;
+.login-box{background:var(--white);border-radius:16px;padding:44px 40px 36px;width:90%; max-width:420px;
   box-shadow:0 20px 60px rgba(0,0,0,.28);animation:slideUp .45s ease}
 @keyframes slideUp{from{opacity:0;transform:translateY(26px)}to{opacity:1;transform:translateY(0)}}
 .login-logo{font-size:28px;font-weight:900;color:var(--navy);letter-spacing:-1px;margin-bottom:4px}
@@ -306,6 +306,26 @@ footer{background:#1b2e4b;color:rgba(255,255,255,.42);text-align:center;
 ::-webkit-scrollbar{width:5px;height:5px}
 ::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
 ::-webkit-scrollbar-track{background:transparent}
+
+/* ── Mobile Responsiveness ── */
+.mobile-toggle { display: none; background: transparent; border: none; color: var(--navy); cursor: pointer; margin-right: 12px; }
+[data-theme=dark] .mobile-toggle { color: var(--text); }
+.sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 98; }
+.sidebar-overlay.active { display: block; }
+
+@media (max-width: 768px) {
+  .sidebar { transform: translateX(-100%); transition: transform 0.3s ease; box-shadow: 4px 0 20px rgba(0,0,0,0.3); }
+  .sidebar.mobile-open { transform: translateX(0); }
+  .main { margin-left: 0; }
+  .mobile-toggle { display: flex; align-items: center; }
+  .sg { grid-template-columns: 1fr 1fr; } /* 2 columns on tablets */
+}
+
+@media (max-width: 480px) {
+  .sg { grid-template-columns: 1fr; } /* 1 column on phones */
+  .fr, .fr3 { grid-template-columns: 1fr; } /* Stack forms on phones */
+  .tb-clock { display: none; } /* Hide clock on tiny screens to save space */
+}
 </style>
 </head>
 <body>
@@ -439,20 +459,24 @@ footer{background:#1b2e4b;color:rgba(255,255,255,.42);text-align:center;
       </button>
     </div>
   </div>
+<div class="sidebar-overlay" id="mobile-overlay" onclick="toggleMobileMenu()"></div>
+
   <div class="main">
-<div class="topbar">
-      <div style="display:flex; align-items:center; gap:16px;">
-        <div style="display:flex; gap:4px;">
-          <button class="nb" onclick="history.back()" title="Go Back">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-          </button>
-          <button class="nb" onclick="history.forward()" title="Go Forward">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-          </button>
-          <button class="nb" onclick="location.reload()" title="Refresh">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
-          </button>
-        </div>
+    <div class="topbar">
+      <div style="display:flex; align-items:center;">
+        <button class="mobile-toggle" onclick="toggleMobileMenu()">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
+        <div class="tb-title" id="tb-title">Dashboard</div>
+      </div>
+      <div class="tb-right">
+        <div class="tb-clock" id="tb-clock"></div>
+        <button class="nb" id="notif-btn" onclick="showPage('notifications')">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          <span class="nb-dot" id="nb-dot"></span>
+        </button>
+      </div>
+    </div>
         <div class="tb-title" id="tb-title">Dashboard</div>
       </div>
       <div class="tb-right">
@@ -768,6 +792,12 @@ function showPage(pid, skipHistory = false){
   // This is the new part: It creates a history trail!
   if (!skipHistory) {
     history.pushState({ page: pid }, '', '#' + pid);
+  }
+
+// Auto-close mobile menu after selecting a page
+  if (window.innerWidth <= 768) {
+    document.querySelector('.sidebar').classList.remove('mobile-open');
+    document.getElementById('mobile-overlay').classList.remove('active');
   }
 }
 function updNotif(){
@@ -2447,6 +2477,11 @@ window.addEventListener('popstate', (event) => {
     showPage(event.state.page, true); 
   }
 });
+
+function toggleMobileMenu() {
+  document.querySelector('.sidebar').classList.toggle('mobile-open');
+  document.getElementById('mobile-overlay').classList.toggle('active');
+}
 </script>
 </body>
 </html>
