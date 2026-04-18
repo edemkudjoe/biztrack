@@ -79,7 +79,7 @@ function seed() {
       id: 'EMP009', role: 'employee', name: 'Deladem Avudzega',
       email: 'dela@biztrack.com', password: '7474', initials: 'DA',
       roleTitle: 'Branch Supervisor', dept: 'Sales', hourlyRate: 25,
-      joinDate: '2022-01-15', active: true,
+      joinDate: '2023-01-15', active: true,
     },
   ];
 }
