@@ -2,16 +2,28 @@ const { createClient } = require('@supabase/supabase-js');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 
-// ─── BULLETPROOF ENV VARS ───
+// ─── ENV VARS ───
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY;
-const JWT_SECRET   = process.env.SUPABASE_JWT_SECRET || process.env.JWT_SECRET;
+const JWT_SECRET  = process.env.SUPABASE_JWT_SECRET || process.env.JWT_SECRET;
 
 if (!supabaseUrl || !supabaseKey || !JWT_SECRET) {
   console.error('[BizTrack] FATAL: Missing env vars.');
 }
 
-const supabase = createClient(supabaseUrl, supabaseKey);
+// ─── SAFE SUPABASE INIT ───
+// Client is created lazily so that if env vars are missing, every request
+// gets a clear error message instead of a silent crash at module load time.
+let _supabase;
+function getSupabase() {
+  if (!_supabase) {
+    if (!supabaseUrl || !supabaseKey) {
+      throw new Error('Supabase env vars (SUPABASE_URL, SUPABASE_ANON_KEY) are not set in Vercel.');
+    }
+    _supabase = createClient(supabaseUrl, supabaseKey);
+  }
+  return _supabase;
+}
 
 // Tables employees can only see their own rows in
 const EMPLOYEE_FILTERED = ['attendance', 'leaves', 'advances', 'promos', 'complaints'];
@@ -35,7 +47,6 @@ function safe(user) {
   return u;
 }
 
-// ─── FIX #3: JWT verification helper used on all protected routes ───
 function verifyToken(req) {
   const auth = req.headers.authorization || '';
   const token = auth.replace('Bearer ', '').trim();
@@ -54,7 +65,7 @@ async function handleAuth(req, res) {
     return res.status(400).json({ error: 'Missing credentials' });
   }
 
-  const { data: user, error } = await supabase
+  const { data: user, error } = await getSupabase()
     .from('users')
     .select('*')
     .eq('id', id)
@@ -66,22 +77,16 @@ async function handleAuth(req, res) {
     return res.status(401).json({ error: 'Invalid credentials' });
   }
 
-  // ─── FIX #2: bcrypt password verification ───
-  // Supports both hashed passwords (new) and plain-text (legacy).
-  // On a successful plain-text login, the password is automatically
-  // re-hashed so future logins use bcrypt.
   const isHashed = user.password && user.password.startsWith('$2');
   let passwordValid = false;
 
   if (isHashed) {
     passwordValid = await bcrypt.compare(password, user.password);
   } else {
-    // Legacy plain-text comparison
     passwordValid = (user.password === password);
     if (passwordValid) {
-      // Auto-migrate: hash and save for next login
       const hashed = await bcrypt.hash(password, 10);
-      await supabase.from('users').update({ password: hashed }).eq('id', user.id);
+      await getSupabase().from('users').update({ password: hashed }).eq('id', user.id);
     }
   }
 
@@ -102,33 +107,31 @@ async function handleAuth(req, res) {
 // ─── USERS  (GET|POST|PUT|DELETE /api/users[/:id]) ───
 // ═══════════════════════════════════════════════════
 async function handleUsers(req, res, parts) {
-  // ─── FIX #3: every user route requires a valid JWT ───
   let decoded;
   try { decoded = verifyToken(req); }
   catch (e) { return res.status(401).json({ error: 'Unauthorized' }); }
 
   const userId = parts[1];
 
+  // ─── FIX: Only employers may access user records at all ───
+  if (decoded.role !== 'employer') {
+    return res.status(403).json({ error: 'Forbidden' });
+  }
+
   if (req.method === 'GET') {
-    const { data, error } = await supabase
+    const { data, error } = await getSupabase()
       .from('users').select('*').eq('active', true);
     if (error) return res.status(500).json({ error: error.message });
     return res.status(200).json({ users: data.map(safe) });
   }
 
-  // Only employers may create, edit, or remove users
-  if (decoded.role !== 'employer') {
-    return res.status(403).json({ error: 'Forbidden' });
-  }
-
   if (req.method === 'POST') {
     const body = { ...req.body };
-    // ─── FIX #2: hash password on creation ───
     if (body.password) {
       body.password = await bcrypt.hash(body.password, 10);
     }
     body.active = true;
-    const { data, error } = await supabase
+    const { data, error } = await getSupabase()
       .from('users').insert([body]).select().single();
     if (error) return res.status(400).json({ error: error.message });
     return res.status(201).json({ user: safe(data) });
@@ -136,19 +139,17 @@ async function handleUsers(req, res, parts) {
 
   if (req.method === 'PUT' && userId) {
     const body = { ...req.body };
-    // ─── FIX #2: hash password if being changed ───
     if (body.password) {
       body.password = await bcrypt.hash(body.password, 10);
     }
-    const { data, error } = await supabase
+    const { data, error } = await getSupabase()
       .from('users').update(body).eq('id', userId).select().single();
     if (error) return res.status(400).json({ error: error.message });
     return res.status(200).json({ user: safe(data) });
   }
 
   if (req.method === 'DELETE' && userId) {
-    // Soft-delete: set active = false
-    await supabase.from('users').update({ active: false }).eq('id', userId);
+    await getSupabase().from('users').update({ active: false }).eq('id', userId);
     return res.status(200).json({ success: true });
   }
 
@@ -164,7 +165,7 @@ async function handleData(req, res, parts) {
   catch (e) { return res.status(401).json({ error: 'Unauthorized' }); }
 
   const table    = parts[1];
-  const recordId = parts[2]; // undefined for list/create, 'bulk' for batch ops
+  const recordId = parts[2];
 
   if (!ALLOWED_TABLES.includes(table)) {
     return res.status(404).json({ error: `Table "${table}" not found` });
@@ -173,10 +174,9 @@ async function handleData(req, res, parts) {
   const isEmployee = decoded.role === 'employee';
   const isFiltered = EMPLOYEE_FILTERED.includes(table);
 
-  // ── GET: list records ──
+  // ── GET ──
   if (req.method === 'GET') {
-    let query = supabase.from(table).select('*').order('created_at', { ascending: false });
-    // Employees only see their own rows for sensitive tables
+    let query = getSupabase().from(table).select('*').order('created_at', { ascending: false });
     if (isEmployee && isFiltered) {
       query = query.eq('empId', decoded.id);
     }
@@ -185,52 +185,48 @@ async function handleData(req, res, parts) {
     return res.status(200).json({ records: data });
   }
 
-  // ── POST: insert one or bulk-replace ──
+  // ── POST ──
   if (req.method === 'POST') {
-    // Bulk replace: delete all existing rows then insert new batch
     if (recordId === 'bulk') {
       if (isEmployee) return res.status(403).json({ error: 'Forbidden' });
       const records = req.body.records || [];
-      // Delete using a condition that matches all rows (id is never null)
-      await supabase.from(table).delete().not('id', 'is', null);
+      await getSupabase().from(table).delete().not('id', 'is', null);
       if (records.length > 0) {
-        const { error } = await supabase.from(table).insert(records);
+        const { error } = await getSupabase().from(table).insert(records);
         if (error) return res.status(400).json({ error: error.message });
       }
       return res.status(200).json({ success: true });
     }
 
     const body = { ...req.body };
-    // Stamp the logged-in employee's identity for filtered tables
     if (isEmployee && isFiltered) {
       body.empId   = decoded.id;
       body.empName = decoded.name;
     }
     body.created_at = new Date().toISOString();
-    const { data, error } = await supabase.from(table).insert([body]).select().single();
+    const { data, error } = await getSupabase().from(table).insert([body]).select().single();
     if (error) return res.status(400).json({ error: error.message });
     return res.status(201).json({ record: data });
   }
 
-  // ── PUT: update one record by ID ──
+  // ── PUT ──
   if (req.method === 'PUT' && recordId && recordId !== 'bulk') {
-    // Employees cannot approve/reject their own requests
     if (isEmployee && ['leaves', 'advances', 'promos'].includes(table)) {
       const s = req.body.status;
       if (s && s !== 'pending') {
         return res.status(403).json({ error: 'Forbidden' });
       }
     }
-    const { data, error } = await supabase
+    const { data, error } = await getSupabase()
       .from(table).update(req.body).eq('id', recordId).select().single();
     if (error) return res.status(400).json({ error: error.message });
     return res.status(200).json({ record: data });
   }
 
-  // ── DELETE: remove one record by ID ──
+  // ── DELETE ──
   if (req.method === 'DELETE' && recordId) {
     if (isEmployee) return res.status(403).json({ error: 'Forbidden' });
-    const { error } = await supabase.from(table).delete().eq('id', recordId);
+    const { error } = await getSupabase().from(table).delete().eq('id', recordId);
     if (error) return res.status(400).json({ error: error.message });
     return res.status(200).json({ success: true });
   }
@@ -240,8 +236,6 @@ async function handleData(req, res, parts) {
 
 // ═══════════════════════════════════════════════════════
 // ─── CHANGE PASSWORD  (POST /api/change-password) ───
-// ─── FIX #1 & #10: Both admin and employee password ───
-// ─── changes now actually work and persist to Supabase ───
 // ═══════════════════════════════════════════════════════
 async function handleChangePassword(req, res) {
   if (req.method !== 'POST') return res.status(405).end();
@@ -258,11 +252,10 @@ async function handleChangePassword(req, res) {
     return res.status(400).json({ error: 'New password must be at least 6 characters' });
   }
 
-  const { data: user } = await supabase
+  const { data: user } = await getSupabase()
     .from('users').select('*').eq('id', decoded.id).single();
   if (!user) return res.status(404).json({ error: 'User not found' });
 
-  // Verify current password (supports both hashed and legacy plain-text)
   const isHashed = user.password && user.password.startsWith('$2');
   const valid = isHashed
     ? await bcrypt.compare(currentPassword, user.password)
@@ -273,7 +266,7 @@ async function handleChangePassword(req, res) {
   }
 
   const hashed = await bcrypt.hash(newPassword, 10);
-  await supabase.from('users').update({ password: hashed }).eq('id', decoded.id);
+  await getSupabase().from('users').update({ password: hashed }).eq('id', decoded.id);
 
   return res.status(200).json({ success: true });
 }
