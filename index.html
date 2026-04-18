@@ -739,11 +739,25 @@ function logout(){
 }
 
 // ═══════════════════════════ LAUNCH ═══════════════════════════
-function launchApp(){
+async function launchApp(){
   seed();
   document.getElementById('login-screen').style.display='none';
   ['applicant-portal','offer-portal'].forEach(id=>document.getElementById(id).classList.remove('open'));
   document.getElementById('app').style.display='block';
+
+
+  try {
+    const res = await fetch(`${API}/users`);
+    if (res.ok) {
+      const data = await res.json();
+      if (data.users) {
+        DB.s('employees', data.users); // Wipes out the 8 ghosts, puts in the real DB users
+      }
+    }
+  } catch(e) { 
+    console.error('Network offline: Using local memory fallback'); 
+  }
+
   ROLE=CU.role;
   document.getElementById('sb-nm').textContent=CU.name;
   document.getElementById('sb-em').textContent=CU.email||CU.id||'';
@@ -753,7 +767,6 @@ function launchApp(){
   const p=document.getElementById('dk-pill'); if(p) p.classList.toggle('on',DARK);
   buildNav(); showPage(ROLE==='employer'?'e_dash':'emp_dash'); updNotif();
 }
-
 // ═══════════════════════════ NAV ═══════════════════════════
 const EMP_NAV=[
   {s:'MAIN',items:[{id:'e_dash',ic:'grid',l:'Dashboard'},{id:'notifications',ic:'bell',l:'Notifications'}]},
