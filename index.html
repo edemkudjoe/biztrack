@@ -297,10 +297,16 @@ tbody tr:hover td{background:rgba(27,46,75,.025)}
 @media print{.sidebar,.topbar,footer,button,.btn{display:none!important}.main{margin-left:0!important}body{background:#fff!important;color:#000!important}}
 
 /* ── Footer ── */
-footer{background:#1b2e4b;color:rgba(255,255,255,.42);text-align:center;
-  padding:13px 20px;font-size:11.5px;font-weight:600;letter-spacing:.3px;
-  margin-left:var(--sidebar-w)}
-[data-theme=dark] footer{background:#0b1825}
+footer {
+  background: #1b2e4b;
+  color: rgba(255,255,255,.42);
+  text-align: center;
+  padding: 13px 20px;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: .3px;
+  margin-left: var(--sidebar-w); /* Put this back for PCs! */
+}
 
 /* scrollbar */
 ::-webkit-scrollbar{width:5px;height:5px}
@@ -319,6 +325,7 @@ footer{background:#1b2e4b;color:rgba(255,255,255,.42);text-align:center;
   .main { margin-left: 0; }
   .mobile-toggle { display: flex; align-items: center; }
   .sg { grid-template-columns: 1fr 1fr; } /* 2 columns on tablets */
+  footer { margin-left: 0; }
 }
 
 @media (max-width: 480px) {
