@@ -292,6 +292,7 @@ if (!req.query.route) {
   parts = req.query.route.split('/').filter(Boolean);
 }
 const route = parts[0];
+  
   try {
     switch (route) {
       case 'auth':            return await handleAuth(req, res);
