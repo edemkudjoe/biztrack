@@ -703,41 +703,42 @@ async function launchApp(){
   ['applicant-portal','offer-portal'].forEach(id=>document.getElementById(id).classList.remove('open'));
   document.getElementById('app').style.display='block';
 
-  // 1. Define the security headers so Supabase knows you are logged in
-  const authHeaders = { 
+  const authHeaders = {
     'Content-Type': 'application/json',
-    'Authorization': `Bearer ${JWT}` 
+    'Authorization': `Bearer ${JWT}`
   };
 
-  // 2. Fetch all data using the correct /data/ routing path
-try {
-  const [uRes,tRes,iRes,aRes,cRes,rRes,lRes,adRes,prRes,cmRes,apRes] = await Promise.all([
-    fetch(`${API}/users`,           { headers: authHeaders }),
-    fetch(`${API}/data/tasks`,      { headers: authHeaders }),
-    fetch(`${API}/data/inventory`,  { headers: authHeaders }),
-    fetch(`${API}/data/attendance`, { headers: authHeaders }),
-    fetch(`${API}/data/costs`,      { headers: authHeaders }),
-    fetch(`${API}/data/revenue`,    { headers: authHeaders }),
-    fetch(`${API}/data/leaves`,     { headers: authHeaders }),
-    fetch(`${API}/data/advances`,   { headers: authHeaders }),
-    fetch(`${API}/data/promos`,     { headers: authHeaders }),
-    fetch(`${API}/data/complaints`, { headers: authHeaders }),
-    fetch(`${API}/data/applicants`, { headers: authHeaders }),
-  ]);
-  if (uRes.ok)  DB.s('employees',  (await uRes.json()).users    || []);
-  if (tRes.ok)  DB.s('tasks',      (await tRes.json()).records  || []);
-  if (iRes.ok)  DB.s('inventory',  (await iRes.json()).records  || []);
-  if (aRes.ok)  DB.s('attendance', (await aRes.json()).records  || []);
-  if (cRes.ok)  DB.s('costs',      (await cRes.json()).records  || []);
-  if (rRes.ok)  DB.s('revenue',    (await rRes.json()).records  || []);
-  if (lRes.ok)  DB.s('leaves',     (await lRes.json()).records  || []);
-  if (adRes.ok) DB.s('advances',   (await adRes.json()).records || []);
-  if (prRes.ok) DB.s('promos',     (await prRes.json()).records || []);
-  if (cmRes.ok) DB.s('complaints', (await cmRes.json()).records || []);
-  if (apRes.ok) DB.s('applicants', (await apRes.json()).records || []);
-} catch(e) {
-  console.error('Failed to sync with Supabase', e);
-}
+  try {
+    const [uRes, tRes, iRes, aRes, cRes, rRes, lRes, adRes, prRes, cmRes, apRes] = await Promise.all([
+      fetch(`${API}/users`,              { headers: authHeaders }),
+      fetch(`${API}/data/tasks`,         { headers: authHeaders }),
+      fetch(`${API}/data/inventory`,     { headers: authHeaders }),
+      fetch(`${API}/data/attendance`,    { headers: authHeaders }),
+      fetch(`${API}/data/costs`,         { headers: authHeaders }),
+      fetch(`${API}/data/revenue`,       { headers: authHeaders }),
+      fetch(`${API}/data/leaves`,        { headers: authHeaders }),
+      fetch(`${API}/data/advances`,      { headers: authHeaders }),
+      fetch(`${API}/data/promos`,        { headers: authHeaders }),
+      fetch(`${API}/data/complaints`,    { headers: authHeaders }),
+      fetch(`${API}/data/applicants`,    { headers: authHeaders }),
+    ]);
+
+    if (uRes.ok)  DB.s('employees',  (await uRes.json()).users    || []);
+    if (tRes.ok)  DB.s('tasks',      (await tRes.json()).records  || []);
+    if (iRes.ok)  DB.s('inventory',  (await iRes.json()).records  || []);
+    if (aRes.ok)  DB.s('attendance', (await aRes.json()).records  || []);
+    if (cRes.ok)  DB.s('costs',      (await cRes.json()).records  || []);
+    if (rRes.ok)  DB.s('revenue',    (await rRes.json()).records  || []);
+    if (lRes.ok)  DB.s('leaves',     (await lRes.json()).records  || []);
+    if (adRes.ok) DB.s('advances',   (await adRes.json()).records || []);
+    if (prRes.ok) DB.s('promos',     (await prRes.json()).records || []);
+    if (cmRes.ok) DB.s('complaints', (await cmRes.json()).records || []);
+    if (apRes.ok) DB.s('applicants', (await apRes.json()).records || []);
+  }
+  catch(e) {
+    console.error('Failed to sync with Supabase', e);
+  }
+
   ROLE=CU.role;
   document.getElementById('sb-nm').textContent=CU.name;
   document.getElementById('sb-em').textContent=CU.email||CU.id||'';
@@ -746,7 +747,7 @@ try {
   document.getElementById('yr').textContent=new Date().getFullYear();
   const p=document.getElementById('dk-pill'); if(p) p.classList.toggle('on',DARK);
   buildNav(); showPage(ROLE==='employer'?'e_dash':'emp_dash'); updNotif();
-}
+} 
   // ═══════════════════════════ NAV ═══════════════════════════
 const EMP_NAV=[
   {s:'MAIN',items:[{id:'e_dash',ic:'grid',l:'Dashboard'},{id:'notifications',ic:'bell',l:'Notifications'}]},
