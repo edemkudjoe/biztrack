@@ -1322,8 +1322,11 @@ function openAddEmp(){
     const newEmp={id,name:nm,roleTitle:document.getElementById('ne-rl').value,dept:document.getElementById('ne-dt').value,hourlyRate:parseFloat(document.getElementById('ne-rt').value)||0,joinDate:document.getElementById('ne-sd').value,email:document.getElementById('ne-em').value,active:true};
     emps.push(newEmp); DB.s('employees',emps);
     // Try to sync to backend
-    try{await fetch(`${API}/users`,{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${JWT}`},body:JSON.stringify({...newEmp,password:document.getElementById('ne-pw').value,initials:nm.split(' ').map(n=>n[0]).join('').toUpperCase()})});}catch{}
-    closeModal();showPage('e_employees');toast('Employee added','s');
+try{
+  const r=await fetch(`${API}/users`,{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${JWT}`},body:JSON.stringify({...newEmp,role:'employee',password:document.getElementById('ne-pw').value,initials:nm.split(' ').map(n=>n[0]).join('').toUpperCase()})});
+  if(!r.ok){const e=await r.json();toast('Sync failed: '+e.error,'e');return;}
+}catch(e){toast('Network error: '+e.message,'e');return;}
+closeModal();showPage('e_employees');toast('Employee added','s');
   }}]);
 }
 function openEditEmp(eid){
