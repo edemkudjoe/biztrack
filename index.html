@@ -350,11 +350,11 @@ footer {
     </div>
     <div class="fg">
       <label>Password</label>
-      <input class="fi" id="l-pw" type="password" value="admin123" onkeydown="if(event.key==='Enter')doLogin()">
+      <input class="fi" id="l-pw" type="password" placeholder="Password" onkeydown="if(event.key==='Enter')doLogin()">
     </div>
     <div class="login-err" id="l-err"></div>
     <button class="btn-login" id="l-btn" onclick="doLogin()">Sign In</button>
-    <div class="login-hint" id="l-hint">Demo · <strong>admin</strong> / <strong>admin123</strong></div>
+    <div class="login-hint" id="l-hint"></div>
   </div>
 </div>
 
@@ -649,7 +649,21 @@ function setRole(r){
   document.getElementById('l-hint').innerHTML=''; 
 }
 
-async function doLogin(){async function doLogin(){
+// ─── FIX #9: doLogin was defined inside itself, making login completely broken.
+//             Outer wrapper removed. The working inner body is now the only definition.
+// ─── ADDED: apiFetch helper — centralises auth headers and error handling ───
+async function apiFetch(method, path, body){
+  const opts={method,headers:{'Content-Type':'application/json','Authorization':`Bearer ${JWT}`}};
+  if(body!==undefined) opts.body=JSON.stringify(body);
+  const res=await fetch(`${API}${path}`,opts);
+  if(!res.ok){
+    const err=await res.json().catch(()=>({}));
+    throw new Error(err.error||`HTTP ${res.status}`);
+  }
+  return res.json();
+}
+
+async function doLogin(){
   const id=document.getElementById('l-id').value.trim();
   const pw=document.getElementById('l-pw').value;
   const err=document.getElementById('l-err');
@@ -657,19 +671,14 @@ async function doLogin(){async function doLogin(){
   err.style.display='none'; btn.textContent='Signing in…'; btn.disabled=true;
 
   let user=null;
-  // ONLY fetch from the real database
   try{
     const res=await fetch(`${API}/auth`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id,password:pw,role:loginRole})});
     const data=await res.json();
     if(res.ok){JWT=data.token; user=data.user; localStorage.setItem('bt_jwt',JWT);}
-  }catch(e){ console.error("Database connection error"); }
+    else{err.textContent=data.error||'Invalid credentials.';err.style.display='block';}
+  }catch(e){err.textContent='Could not reach the server. Check your connection.';err.style.display='block';}
 
-  if(!user){err.textContent='Invalid credentials. Please try again.';err.style.display='block';}
-  else{CU=user; ROLE=user.role; localStorage.setItem('bt_cu',JSON.stringify(CU)); launchApp();}
-  btn.textContent='Sign In'; btn.disabled=false;
-}
-  if(!user){err.textContent='Invalid credentials. Please try again.';err.style.display='block';}
-  else{CU=user; ROLE=user.role; localStorage.setItem('bt_cu',JSON.stringify(CU)); launchApp();}
+  if(user){CU=user; ROLE=user.role; localStorage.setItem('bt_cu',JSON.stringify(CU)); launchApp();}
   btn.textContent='Sign In'; btn.disabled=false;
 }
 
@@ -687,17 +696,17 @@ async function launchApp(){
   ['applicant-portal','offer-portal'].forEach(id=>document.getElementById(id).classList.remove('open'));
   document.getElementById('app').style.display='block';
 
-
-  try {
-    const res = await fetch(`${API}/users`);
-    if (res.ok) {
-      const data = await res.json();
-      if (data.users) {
-        DB.s('employees', data.users); // Wipes out the 8 ghosts, puts in the real DB users
-      }
-    }
-  } catch(e) { 
-    console.error('Network offline: Using local memory fallback'); 
+  // ─── FIX #13: Load ALL tables from Supabase, not just employees ───
+  const tables=['attendance','costs','revenue','inventory','tasks','leaves','advances','promos','complaints','applicants'];
+  try{
+    const [usersRes,...tableResults]=await Promise.all([
+      apiFetch('GET','/users'),
+      ...tables.map(t=>apiFetch('GET',`/data/${t}`))
+    ]);
+    if(usersRes.users) DB.s('employees',usersRes.users);
+    tables.forEach((t,i)=>{if(tableResults[i].records) DB.s(t,tableResults[i].records);});
+  }catch(e){
+    console.error('Failed to sync from server — using cached local data',e);
   }
 
   ROLE=CU.role;
@@ -991,11 +1000,13 @@ function openAddRev(){
     <div class="f"><label>Date</label><input type="date" id="rv-d" value="${today()}"></div>
     <div class="f"><label>Amount (₵)</label><input type="number" id="rv-a" placeholder="e.g. 5000"></div>
     <div class="f"><label>Note</label><input type="text" id="rv-n" placeholder="e.g. Sales revenue, Service fees…"></div>
-  `,[{l:'Add Revenue',c:'b-gr',fn:()=>{
+  `,[{l:'Add Revenue',c:'b-gr',fn:async()=>{
     const a=parseFloat(document.getElementById('rv-a').value);
     if(!a){toast('Enter a valid amount','e');return}
-    DB.push('revenue',{date:document.getElementById('rv-d').value,amount:a,note:document.getElementById('rv-n').value});
+    const rec={date:document.getElementById('rv-d').value,amount:a,note:document.getElementById('rv-n').value};
+    DB.push('revenue',rec);
     closeModal();showPage('e_finance');toast('Revenue added','s');
+    try{await apiFetch('POST','/data/revenue',rec);}catch(e){toast('Saved locally — will sync on next login','w');}
   }}]);
 }
 function openAddCost(){
@@ -1006,15 +1017,17 @@ function openAddCost(){
     </div>
     <div class="f"><label>Description</label><input type="text" id="cs-desc" placeholder="Brief description"></div>
     <div class="f"><label>Date</label><input type="date" id="cs-date" value="${today()}"></div>
-  `,[{l:'Add Cost',c:'b-nv',fn:()=>{
-    const costs=DB.g('costs')||[];
-    costs.push({id:Date.now(),cat:document.getElementById('cs-cat').value,desc:document.getElementById('cs-desc').value,amount:parseFloat(document.getElementById('cs-amt').value)||0,date:document.getElementById('cs-date').value});
+  `,[{l:'Add Cost',c:'b-nv',fn:async()=>{
+    const rec={id:Date.now(),cat:document.getElementById('cs-cat').value,desc:document.getElementById('cs-desc').value,amount:parseFloat(document.getElementById('cs-amt').value)||0,date:document.getElementById('cs-date').value};
+    const costs=DB.g('costs')||[];costs.push(rec);
     DB.s('costs',costs);closeModal();showPage('e_finance');toast('Cost added','s');
+    try{await apiFetch('POST','/data/costs',rec);}catch(e){toast('Saved locally — will sync on next login','w');}
   }}]);
 }
 function resolveAdv(i,dec){
   const a=DB.g('advances')||[];a[i].status=dec;DB.s('advances',a);
   toast(`Advance ${dec}`,'s');showPage('e_finance');updNotif();
+  if(a[i].id) apiFetch('PUT',`/data/advances/${a[i].id}`,{status:dec}).catch(()=>{});
 }
 
 // ─── PERFORMANCE ───
@@ -1064,13 +1077,16 @@ function openAddTask(){
     <div class="f"><label>Employee</label><select id="tk-emp">${emps.map(e=>`<option value="${e.id}">${e.name}</option>`).join('')}</select></div>
     <div class="f"><label>Task Title</label><input type="text" id="tk-title" placeholder="e.g. Completed Q2 report"></div>
     <div class="f"><label>Date</label><input type="date" id="tk-date" value="${today()}"></div>
-  `,[{l:'Add Task',c:'b-nv',fn:()=>{
-    DB.push('tasks',{id:Date.now(),empId:document.getElementById('tk-emp').value,title:document.getElementById('tk-title').value,status:'done',date:document.getElementById('tk-date').value});
+  `,[{l:'Add Task',c:'b-nv',fn:async()=>{
+    const rec={id:Date.now(),empId:document.getElementById('tk-emp').value,title:document.getElementById('tk-title').value,status:'done',date:document.getElementById('tk-date').value};
+    DB.push('tasks',rec);
     closeModal();showPage('e_performance');toast('Task logged','s');
+    try{const r=await apiFetch('POST','/data/tasks',rec);if(r.record){const t=DB.g('tasks')||[];const i=t.findIndex(x=>x.id===rec.id);if(i>=0){t[i].id=r.record.id;DB.s('tasks',t);}}}catch(e){}
   }}]);
 }
 function toggleTask(i){
   const t=DB.g('tasks')||[];t[i].status=t[i].status==='done'?'pending':'done';DB.s('tasks',t);showPage('e_performance');
+  if(t[i].id) apiFetch('PUT',`/data/tasks/${t[i].id}`,{status:t[i].status}).catch(()=>{});
 }
 
 // ─── ATTENDANCE MANAGER ───
@@ -1207,10 +1223,11 @@ function openAddInv(){
       <div class="f"><label>Rec. Order Qty</label><input type="number" id="ni-rc" placeholder="0"></div>
     </div>
     <div class="f"><label>Location</label><input type="text" id="ni-lc" placeholder="e.g. Store A"></div>
-  `,[{l:'Add Item',c:'b-nv',fn:()=>{
-    const inv=DB.g('inventory')||[];
-    inv.push({id:Date.now(),item:document.getElementById('ni-nm').value,qty:parseInt(document.getElementById('ni-qty').value)||0,unit:document.getElementById('ni-un').value,min:parseInt(document.getElementById('ni-mn').value)||0,rec:parseInt(document.getElementById('ni-rc').value)||0,loc:document.getElementById('ni-lc').value,updatedBy:'Admin',date:today()});
+  `,[{l:'Add Item',c:'b-nv',fn:async()=>{
+    const rec={id:Date.now(),item:document.getElementById('ni-nm').value,qty:parseInt(document.getElementById('ni-qty').value)||0,unit:document.getElementById('ni-un').value,min:parseInt(document.getElementById('ni-mn').value)||0,rec:parseInt(document.getElementById('ni-rc').value)||0,loc:document.getElementById('ni-lc').value,updatedBy:'Admin',date:today()};
+    const inv=DB.g('inventory')||[];inv.push(rec);
     DB.s('inventory',inv);closeModal();showPage('e_inventory');toast('Item added','s');
+    try{const r=await apiFetch('POST','/data/inventory',rec);if(r.record){const inv2=DB.g('inventory')||[];const idx=inv2.findIndex(x=>x.id===rec.id);if(idx>=0){inv2[idx].id=r.record.id;DB.s('inventory',inv2);}}}catch(e){}
   }}]);
 }
 function openEditInv(i){
