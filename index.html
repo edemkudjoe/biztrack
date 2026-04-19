@@ -914,7 +914,7 @@ const EMP_NAV=[
 const EE_NAV=[
   {s:'MAIN',items:[{id:'emp_dash',ic:'home',l:'My Dashboard'},{id:'notifications',ic:'bell',l:'Notifications'}]},
   {s:'FINANCE',items:[{id:'emp_finance',ic:'dollar-sign',l:'My Finance'},{id:'emp_advance',ic:'credit-card',l:'Request Advance'},{id:'emp_promo',ic:'arrow-up',l:'Request Promotion'}]},
-  {s:'WORK',items:[{id:'emp_attendance',ic:'clock',l:'Attendance'},{id:'emp_inventory',ic:'package',l:'Submit Inventory'},{id:'emp_leave',ic:'calendar',l:'Request Leave'},{id:'emp_complaints',ic:'message-square',l:'Complaints'}]},
+  {s:'WORK',items:[{id:'emp_attendance',ic:'clock',l:'Attendance'},{id:'emp_tasks',ic:'check-square',l:'My Tasks'},{id:'emp_inventory',ic:'package',l:'Submit Inventory'},{id:'emp_leave',ic:'calendar',l:'Request Leave'},{id:'emp_complaints',ic:'message-square',l:'Complaints'}]},
   {s:'PROFILE',items:[{id:'emp_profile',ic:'user',l:'My Profile'}]},
 ];
 const PT={
@@ -924,7 +924,7 @@ const PT={
   e_leaves:'Leave Management',e_benefits:'Benefits',e_complaints:'Complaints & Suggestions',
   e_settings:'Settings',emp_dash:'My Dashboard',emp_finance:'My Finance',
   emp_advance:'Salary Advance',emp_promo:'Promotion Request',emp_attendance:'Attendance',
-  emp_inventory:'Submit Inventory',emp_leave:'Leave Request',emp_complaints:'Complaints',emp_profile:'My Profile',
+  emp_tasks:'My Tasks',emp_inventory:'Submit Inventory',emp_leave:'Leave Request',emp_complaints:'Complaints',emp_profile:'My Profile',
 };
 function buildNav(){
   const nav=document.getElementById('sidebar-nav');
@@ -946,7 +946,7 @@ function showPage(pid, skipHistory = false){
     e_employees:pEmployees,e_recruitment:pRecruitment,e_leaves:pLeaves,
     e_benefits:pBenefits,e_complaints:pComplaints,e_settings:pSettings,
     emp_dash:pEmpDash,emp_finance:pEmpFinance,emp_advance:pAdvance,
-    emp_promo:pPromo,emp_attendance:pMyAtt,emp_inventory:pMyInventory,
+    emp_promo:pPromo,emp_attendance:pMyAtt,emp_tasks:pMyTasks,emp_inventory:pMyInventory,
     emp_leave:pMyLeave,emp_complaints:pMyComplaints,emp_profile:pProfile,
   };
   if(R[pid]) R[pid](pg); else pg.innerHTML='<p style="color:var(--text-muted)">Page not found.</p>';
@@ -1259,20 +1259,39 @@ function pPerformance(el){
 }
 function openAddTask(){
   const emps=DB.g('employees')||[];
-  openModal('Log Employee Task',`
+  openModal('Assign Task',`
     <div class="f"><label>Employee</label><select id="tk-emp">${emps.map(e=>`<option value="${e.id}">${e.name}</option>`).join('')}</select></div>
-    <div class="f"><label>Task Title</label><input type="text" id="tk-title" placeholder="e.g. Completed Q2 report"></div>
-    <div class="f"><label>Date</label><input type="date" id="tk-date" value="${today()}"></div>
-  `,[{l:'Add Task',c:'b-nv',fn:async()=>{
-    const rec={empId:document.getElementById('tk-emp').value,empName:(DB.g('employees')||[]).find(e=>e.id===document.getElementById('tk-emp').value)?.name||'',title:document.getElementById('tk-title').value,status:'done',date:document.getElementById('tk-date').value};
+    <div class="f"><label>Task Title</label><input type="text" id="tk-title" placeholder="e.g. Prepare Q2 report"></div>
+    <div class="f"><label>Description (optional)</label><textarea id="tk-desc" placeholder="Additional details about the task…"></textarea></div>
+    <div class="f"><label>Due Date</label><input type="date" id="tk-due" value="${today()}"></div>
+  `,[{l:'Assign Task',c:'b-nv',fn:async()=>{
+    const empId=document.getElementById('tk-emp').value;
+    const empName=(emps.find(e=>e.id===empId)||{}).name||'';
+    const title=document.getElementById('tk-title').value;
+    if(!title){toast('Please enter a task title','e');return;}
+    const rec={empId,empName,title,desc:document.getElementById('tk-desc').value,dueDate:document.getElementById('tk-due').value,status:'pending',assignedDate:today()};
     DB.push('tasks',rec);
-    closeModal();showPage('e_performance');toast('Task logged','s');
-    try{const r=await apiFetch('POST','/data/tasks',rec);if(r.record){const t=DB.g('tasks')||[];const i=t.findIndex(x=>x.empId===rec.empId&&x.title===rec.title&&x.date===rec.date);if(i>=0){t[i].id=r.record.id;DB.s('tasks',t);}}}catch(e){}
+    closeModal();showPage('e_performance');toast('Task assigned','s');
+    try{
+      const r=await apiFetch('POST','/data/tasks',rec);
+      if(r.record){
+        const t=DB.g('tasks')||[];
+        const i=t.findIndex(x=>x.empId===rec.empId&&x.title===rec.title&&x.dueDate===rec.dueDate);
+        if(i>=0){t[i].id=r.record.id;DB.s('tasks',t);}
+      }
+    }catch(e){toast('Task saved locally','w');}
   }}]);
 }
 function toggleTask(i){
-  const t=DB.g('tasks')||[];t[i].status=t[i].status==='done'?'pending':'done';DB.s('tasks',t);showPage('e_performance');
-  if(t[i].id) apiFetch('PUT',`/data/tasks/${t[i].id}`,{status:t[i].status}).catch(()=>{});
+  // Employer can cancel a pending task
+  const t=DB.g('tasks')||[];
+  if(t[i].status==='done'){toast('Task already completed by employee','i');return;}
+  if(!confirm('Cancel this task?')) return;
+  t[i].status='cancelled';
+  DB.s('tasks',t);
+  showPage('e_performance');
+  if(t[i].id) apiFetch('PUT',`/data/tasks/${t[i].id}`,{status:'cancelled'}).catch(()=>{});
+  toast('Task cancelled','i');
 }
 
 // ─── ATTENDANCE MANAGER ───
@@ -2277,6 +2296,64 @@ function submitPromo(){
 }
 
 // ─── EMPLOYEE ATTENDANCE ───
+
+function pMyTasks(el){
+  const tasks=(DB.g('tasks')||[]).filter(t=>t.empId===CU.id);
+  const pending=tasks.filter(t=>t.status==='pending');
+  const done=tasks.filter(t=>t.status==='done');
+  el.innerHTML=`
+  ${ph('My Tasks','Tasks assigned to you by your employer.')}
+  <div class="card mb">
+    <div class="ch"><span class="ct">${ic('clock',15)} Pending Tasks (${pending.length})</span></div>
+    <div class="cb">
+      ${pending.length===0?'<p style="color:var(--text-muted);font-size:13px">No pending tasks.</p>':pending.map((t,i)=>{
+        const idx=tasks.indexOf(t);
+        return `<div class="card mb" style="border-left:3px solid var(--amber)">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start">
+            <div>
+              <div style="font-weight:700;font-size:14px">${t.title}</div>
+              ${t.desc?`<div style="font-size:12px;color:var(--text-muted);margin-top:2px">${t.desc}</div>`:''}
+              <div style="font-size:11.5px;color:var(--text-muted);margin-top:4px">Due: ${t.dueDate||'—'} &nbsp;|&nbsp; Assigned: ${t.assignedDate||'—'}</div>
+            </div>
+            <button class="btn b-gr btn-sm" onclick="completeTask(${idx})">Mark Complete</button>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>
+  </div>
+  <div class="card mb">
+    <div class="ch"><span class="ct">${ic('check-circle',15)} Completed Tasks (${done.length})</span></div>
+    <div class="cb">
+      ${done.length===0?'<p style="color:var(--text-muted);font-size:13px">No completed tasks yet.</p>':done.map(t=>`
+        <div class="card mb" style="border-left:3px solid var(--green);opacity:0.8">
+          <div style="font-weight:700;font-size:14px">${t.title}</div>
+          ${t.desc?`<div style="font-size:12px;color:var(--text-muted);margin-top:2px">${t.desc}</div>`:''}
+          <div style="font-size:11.5px;color:var(--text-muted);margin-top:4px">Completed: ${t.completedDate||'—'}</div>
+        </div>`).join('')}
+    </div>
+  </div>`;
+}
+
+async function completeTask(i){
+  const t=DB.g('tasks')||[];
+  if(!t[i]){toast('Task not found','e');return;}
+  t[i].status='done';
+  t[i].completedDate=today();
+  DB.s('tasks',t);
+  showPage('emp_tasks');
+  toast('Task marked as complete','s');
+  updNotif();
+  if(t[i].id){
+    try{
+      await apiFetch('PUT',`/data/tasks/${t[i].id}`,{status:'done',completedDate:today()});
+    }catch(e){
+      toast('Sync failed — will update on next login','w');
+    }
+  }
+}
+
+function pMyAtt(el){  
+  
 function pMyAtt(el){
   const att=(DB.g('attendance')||[]).filter(a=>a.empId===CU.id);
   const todayRec=att.find(a=>a.date===today());
