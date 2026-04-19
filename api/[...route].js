@@ -240,7 +240,101 @@ async function handleSettings(req, res) {
 
   return res.status(405).end();
 }
+// ═══════════════════════════════════════════════════
+// ─── PORTAL SIGNUP (POST /api/portal-signup) ───
+// ═══════════════════════════════════════════════════
+async function handlePortalSignup(req, res) {
+  if (req.method !== 'POST') return res.status(405).end();
+  const { name, email, password, securityQuestion, securityAnswer } = req.body || {};
+  if (!name || !email || !password || !securityQuestion || !securityAnswer) {
+    return res.status(400).json({ error: 'All fields are required' });
+  }
+  // Check if email already exists
+  const { data: existing } = await getSupabase()
+    .from('applicants').select('id').eq('email', email).eq('portalAccount', true).single();
+  if (existing) return res.status(400).json({ error: 'An account with this email already exists' });
+  const hashed = await bcrypt.hash(password, 10);
+  const hashedAnswer = await bcrypt.hash(securityAnswer.toLowerCase().trim(), 10);
+  const { data, error } = await getSupabase()
+    .from('applicants')
+    .insert([{ name, email, password: hashed, securityQuestion, securityAnswer: hashedAnswer, portalAccount: true, appliedDate: new Date().toISOString().split('T')[0] }])
+    .select().single();
+  if (error) return res.status(400).json({ error: error.message });
+  const token = jwt.sign({ id: data.id, email: data.email, type: 'portal' }, JWT_SECRET, { expiresIn: '10h' });
+  const { password: _, securityAnswer: __, ...safe } = data;
+  return res.status(201).json({ token, applicant: safe });
+}
 
+// ═══════════════════════════════════════════════════
+// ─── PORTAL LOGIN (POST /api/portal-login) ───
+// ═══════════════════════════════════════════════════
+async function handlePortalLogin(req, res) {
+  if (req.method !== 'POST') return res.status(405).end();
+  const { email, password } = req.body || {};
+  if (!email || !password) return res.status(400).json({ error: 'Email and password required' });
+  const { data: applicant, error } = await getSupabase()
+    .from('applicants').select('*').eq('email', email).eq('portalAccount', true).single();
+  if (error || !applicant) return res.status(401).json({ error: 'Invalid email or password' });
+  const valid = await bcrypt.compare(password, applicant.password);
+  if (!valid) return res.status(401).json({ error: 'Invalid email or password' });
+  const token = jwt.sign({ id: applicant.id, email: applicant.email, type: 'portal' }, JWT_SECRET, { expiresIn: '10h' });
+  const { password: _, securityAnswer: __, ...safe } = applicant;
+  return res.status(200).json({ token, applicant: safe });
+}
+
+// ═══════════════════════════════════════════════════
+// ─── PORTAL RESET (POST /api/portal-reset) ───
+// ═══════════════════════════════════════════════════
+async function handlePortalReset(req, res) {
+  if (req.method !== 'POST') return res.status(405).end();
+  const { email, securityAnswer, newPassword, step } = req.body || {};
+  if (!email) return res.status(400).json({ error: 'Email required' });
+  const { data: applicant } = await getSupabase()
+    .from('applicants').select('*').eq('email', email).eq('portalAccount', true).single();
+  if (!applicant) return res.status(404).json({ error: 'No account found with this email' });
+  if (step === 'verify') {
+    const valid = await bcrypt.compare(securityAnswer.toLowerCase().trim(), applicant.securityAnswer);
+    if (!valid) return res.status(401).json({ error: 'Incorrect answer' });
+    return res.status(200).json({ success: true, question: applicant.securityQuestion });
+  }
+  if (step === 'reset') {
+    const answerValid = await bcrypt.compare(securityAnswer.toLowerCase().trim(), applicant.securityAnswer);
+    if (!answerValid) return res.status(401).json({ error: 'Incorrect answer' });
+    const hashed = await bcrypt.hash(newPassword, 10);
+    await getSupabase().from('applicants').update({ password: hashed }).eq('id', applicant.id);
+    return res.status(200).json({ success: true });
+  }
+  if (step === 'question') {
+    return res.status(200).json({ question: applicant.securityQuestion });
+  }
+  return res.status(400).json({ error: 'Invalid step' });
+}
+
+// ═══════════════════════════════════════════════════
+// ─── USER RESET (POST /api/user-reset) ───
+// ═══════════════════════════════════════════════════
+async function handleUserReset(req, res) {
+  if (req.method !== 'POST') return res.status(405).end();
+  const { id, name, phone, newPassword, step } = req.body || {};
+  if (!id) return res.status(400).json({ error: 'Employee ID required' });
+  const { data: user } = await getSupabase()
+    .from('users').select('*').eq('id', id).single();
+  if (!user) return res.status(404).json({ error: 'No account found with this ID' });
+  if (step === 'verify') {
+    const nameMatch = user.name.toLowerCase().trim() === name.toLowerCase().trim();
+    const phoneMatch = !user.phone || !phone || user.phone.replace(/\s/g,'') === phone.replace(/\s/g,'');
+    if (!nameMatch || !phoneMatch) return res.status(401).json({ error: 'Details do not match our records' });
+    return res.status(200).json({ success: true });
+  }
+  if (step === 'reset') {
+    const nameMatch = user.name.toLowerCase().trim() === name.toLowerCase().trim();
+    if (!nameMatch) return res.status(401).json({ error: 'Details do not match' });
+    const hashed = await bcrypt.hash(newPassword, 10);
+    await getSupabase().from('users').update({ password: hashed }).eq('id', id);
+    return res.status(200).json({ success: true });
+  }
+  return res.status(400).json({ error: 'Invalid step' });
+}
 // ═══════════════════════════════════════
 // ─── MAIN ROUTER ───
 // ═══════════════════════════════════════
@@ -267,6 +361,10 @@ module.exports = async function handler(req, res) {
       case 'data':            return await handleData(req, res, parts);
       case 'settings':        return await handleSettings(req, res);
       case 'change-password': return await handleChangePassword(req, res);
+      case 'portal-signup':   return await handlePortalSignup(req, res);
+      case 'portal-login':    return await handlePortalLogin(req, res);
+      case 'portal-reset':    return await handlePortalReset(req, res);
+      case 'user-reset':      return await handleUserReset(req, res);
       default:                return res.status(404).json({ error: 'Not found' });
     }
   } catch (err) {
