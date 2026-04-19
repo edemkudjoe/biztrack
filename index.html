@@ -1204,7 +1204,7 @@ function openAddCost(){
     <div class="f"><label>Description</label><input type="text" id="cs-desc" placeholder="Brief description"></div>
     <div class="f"><label>Date</label><input type="date" id="cs-date" value="${today()}"></div>
   `,[{l:'Add Cost',c:'b-nv',fn:async()=>{
-    const rec={id:Date.now(),cat:document.getElementById('cs-cat').value,desc:document.getElementById('cs-desc').value,amount:parseFloat(document.getElementById('cs-amt').value)||0,date:document.getElementById('cs-date').value};
+    const rec={cat:document.getElementById('cs-cat').value,desc:document.getElementById('cs-desc').value,amount:parseFloat(document.getElementById('cs-amt').value)||0,date:document.getElementById('cs-date').value};
     const costs=DB.g('costs')||[];costs.push(rec);
     DB.s('costs',costs);closeModal();showPage('e_finance');toast('Cost added','s');
    try{await apiFetch('POST','/data/costs',rec);}catch(e){toast('Cost error: '+e.message,'e');}
