@@ -1264,10 +1264,10 @@ function openAddTask(){
     <div class="f"><label>Task Title</label><input type="text" id="tk-title" placeholder="e.g. Completed Q2 report"></div>
     <div class="f"><label>Date</label><input type="date" id="tk-date" value="${today()}"></div>
   `,[{l:'Add Task',c:'b-nv',fn:async()=>{
-    const rec={id:Date.now(),empId:document.getElementById('tk-emp').value,title:document.getElementById('tk-title').value,status:'done',date:document.getElementById('tk-date').value};
+    const rec={empId:document.getElementById('tk-emp').value,empName:(DB.g('employees')||[]).find(e=>e.id===document.getElementById('tk-emp').value)?.name||'',title:document.getElementById('tk-title').value,status:'done',date:document.getElementById('tk-date').value};
     DB.push('tasks',rec);
     closeModal();showPage('e_performance');toast('Task logged','s');
-    try{const r=await apiFetch('POST','/data/tasks',rec);if(r.record){const t=DB.g('tasks')||[];const i=t.findIndex(x=>x.id===rec.id);if(i>=0){t[i].id=r.record.id;DB.s('tasks',t);}}}catch(e){}
+    try{const r=await apiFetch('POST','/data/tasks',rec);if(r.record){const t=DB.g('tasks')||[];const i=t.findIndex(x=>x.empId===rec.empId&&x.title===rec.title&&x.date===rec.date);if(i>=0){t[i].id=r.record.id;DB.s('tasks',t);}}}catch(e){}
   }}]);
 }
 function toggleTask(i){
