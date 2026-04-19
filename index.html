@@ -39,6 +39,9 @@ a{text-decoration:none;color:inherit}
   background:linear-gradient(135deg,#1b2e4b 0%,#2d4f80 100%)}
 .login-box{background:var(--white);border-radius:16px;padding:44px 40px 36px;width:90%; max-width:420px;
   box-shadow:0 20px 60px rgba(0,0,0,.28);animation:slideUp .45s ease}
+<div class="login-careers-link" onclick="openCareersPortal()">
+  Looking for a job? <span>Visit our Careers Portal →</span>
+</div>
 @keyframes slideUp{from{opacity:0;transform:translateY(26px)}to{opacity:1;transform:translateY(0)}}
 .login-logo{font-size:28px;font-weight:900;color:var(--navy);letter-spacing:-1px;margin-bottom:4px}
 .login-logo span{color:var(--accent)}
@@ -72,6 +75,64 @@ a{text-decoration:none;color:inherit}
 .portal-logo{font-size:22px;font-weight:900;color:var(--navy);margin-bottom:4px;letter-spacing:-.5px}
 .portal-logo span{color:var(--accent)}
 [data-theme=dark] .portal-logo{color:var(--text)}
+
+/* ══════════════════ CAREERS PORTAL ══════════════════ */
+#careers-portal{display:none;min-height:100vh;background:linear-gradient(135deg,#1b2e4b 0%,#2d4f80 100%);
+  flex-direction:column;align-items:center;padding:0}
+#careers-portal.open{display:flex}
+.cp-header{width:100%;background:rgba(0,0,0,.25);backdrop-filter:blur(10px);
+  padding:16px 32px;display:flex;align-items:center;justify-content:space-between;
+  border-bottom:1px solid rgba(255,255,255,.1);position:sticky;top:0;z-index:10}
+.cp-header-logo{font-size:22px;font-weight:900;color:#fff;letter-spacing:-1px}
+.cp-header-logo span{color:var(--accent)}
+.cp-header-sub{font-size:11px;color:rgba(255,255,255,.5);font-weight:600;text-transform:uppercase;letter-spacing:1px}
+.cp-body{width:100%;max-width:900px;padding:40px 20px 60px}
+.cp-hero{text-align:center;margin-bottom:44px;animation:slideUp .5s ease}
+.cp-hero h1{font-size:36px;font-weight:900;color:#fff;margin-bottom:8px;letter-spacing:-1.5px}
+.cp-hero p{font-size:15px;color:rgba(255,255,255,.6);max-width:480px;margin:0 auto}
+.cp-section-title{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;
+  color:rgba(255,255,255,.4);margin-bottom:16px}
+.job-card{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);
+  border-radius:14px;padding:22px 26px;margin-bottom:14px;cursor:pointer;
+  transition:all .22s;animation:slideUp .4s ease}
+.job-card:hover{background:rgba(255,255,255,.13);border-color:rgba(46,204,113,.4);transform:translateY(-2px)}
+.job-card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.job-card-title{font-size:17px;font-weight:800;color:#fff;margin-bottom:4px}
+.job-card-dept{font-size:12px;color:var(--accent);font-weight:700;text-transform:uppercase;letter-spacing:.8px}
+.job-card-meta{display:flex;gap:12px;margin-top:10px;flex-wrap:wrap}
+.job-meta-pill{font-size:11.5px;color:rgba(255,255,255,.55);background:rgba(255,255,255,.07);
+  padding:4px 10px;border-radius:20px;border:1px solid rgba(255,255,255,.1)}
+.job-card-desc{font-size:13px;color:rgba(255,255,255,.55);margin-top:10px;line-height:1.6}
+.job-apply-btn{background:var(--accent);color:#fff;border-radius:8px;padding:9px 18px;
+  font-weight:800;font-size:13px;white-space:nowrap;transition:all .2s;flex-shrink:0}
+.job-apply-btn:hover{background:#27ae60;transform:translateY(-1px)}
+.cp-empty{text-align:center;padding:60px 20px;color:rgba(255,255,255,.35)}
+.cp-empty-ico{font-size:48px;margin-bottom:14px;opacity:.4}
+.cp-form-card{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);
+  border-radius:16px;padding:32px;animation:slideUp .4s ease}
+.cp-form-card .fg label{color:rgba(255,255,255,.6)}
+.cp-form-card .fi{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.15);color:#fff}
+.cp-form-card .fi:focus{border-color:var(--accent);background:rgba(255,255,255,.12)}
+.cp-form-card .fi::placeholder{color:rgba(255,255,255,.3)}
+.cp-back-link{color:rgba(255,255,255,.55);font-size:13px;font-weight:600;cursor:pointer;
+  display:inline-flex;align-items:center;gap:6px;transition:color .2s;margin-bottom:20px}
+.cp-back-link:hover{color:#fff}
+.cp-progress{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);
+  border-radius:12px;padding:18px 22px;margin-bottom:20px}
+.cp-progress-title{font-size:12px;font-weight:700;color:rgba(255,255,255,.5);text-transform:uppercase;
+  letter-spacing:.8px;margin-bottom:12px}
+.cp-stage{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.06)}
+.cp-stage:last-child{border-bottom:none}
+.cp-stage-dot{width:10px;height:10px;border-radius:50%;background:rgba(255,255,255,.2);flex-shrink:0}
+.cp-stage-dot.done{background:var(--accent)}
+.cp-stage-dot.current{background:#f39c12;box-shadow:0 0 0 3px rgba(243,156,18,.25)}
+.cp-stage-label{font-size:13px;font-weight:600;color:rgba(255,255,255,.5)}
+.cp-stage-label.current{color:#f39c12;font-weight:700}
+.cp-stage-label.done{color:var(--accent)}
+.login-careers-link{display:block;text-align:center;margin-top:18px;font-size:13px;
+  color:rgba(255,255,255,.7);font-weight:600;cursor:pointer;transition:color .2s}
+.login-careers-link:hover{color:#fff}
+.login-careers-link span{color:var(--accent);text-decoration:underline}
 
 /* ══════════════════ APP SHELL ══════════════════ */
 #app{display:none;min-height:100vh}
@@ -363,6 +424,98 @@ footer {
     <div class="login-err" id="l-err"></div>
     <button class="btn-login" id="l-btn" onclick="doLogin()">Sign In</button>
     <div class="login-hint" id="l-hint"></div>
+  </div>
+</div>
+
+<!-- ════ CAREERS PORTAL ════ -->
+<div id="careers-portal">
+  <div class="cp-header">
+    <div>
+      <div class="cp-header-logo">Biz<span>Track</span></div>
+      <div class="cp-header-sub">Careers Portal</div>
+    </div>
+    <button class="btn b-ol btn-sm" onclick="closeCareersPortal()">← Back to Login</button>
+  </div>
+  <div class="cp-body">
+    <div class="cp-hero">
+      <h1 id="cp-company-name">Join Our Team</h1>
+      <p>Explore open positions and apply directly. We'd love to hear from you.</p>
+    </div>
+
+    <!-- Jobs list view -->
+    <div id="cp-jobs-view">
+      <div class="cp-section-title">Open Positions</div>
+      <div id="cp-jobs-list"></div>
+    </div>
+
+    <!-- Apply view -->
+    <div id="cp-apply-view" style="display:none">
+      <div class="cp-back-link" onclick="showJobsList()">← Back to all positions</div>
+      <div class="cp-form-card">
+        <div class="portal-logo" style="color:#fff;margin-bottom:4px">Biz<span>Track</span></div>
+        <div id="cp-apply-role-title" style="font-size:20px;font-weight:800;color:#fff;margin-bottom:4px"></div>
+        <p style="color:rgba(255,255,255,.5);font-size:13px;margin-bottom:24px">Complete all fields and submit your application.</p>
+        <div id="cp-apply-form">
+          <div class="fr">
+            <div class="fg"><label>Full Name *</label><input class="fi" id="cp-name" placeholder="Your full name"></div>
+            <div class="fg"><label>Email *</label><input class="fi" type="email" id="cp-email" placeholder="you@email.com"></div>
+          </div>
+          <div class="fr">
+            <div class="fg"><label>Phone</label><input class="fi" id="cp-phone" placeholder="+233 XX XXX XXXX"></div>
+            <div class="fg"><label>Highest Education *</label>
+              <select class="fi" id="cp-edu">
+                <option value="">Select…</option>
+                <option value="40">High School / SSCE</option>
+                <option value="52">OND / HND</option>
+                <option value="66">Bachelor's Degree</option>
+                <option value="79">Master's Degree</option>
+                <option value="93">PhD / Doctorate</option>
+                <option value="73">Professional Certification</option>
+              </select>
+            </div>
+          </div>
+          <div class="fr">
+            <div class="fg"><label>Years of Experience *</label>
+              <select class="fi" id="cp-exp">
+                <option value="">Select…</option>
+                <option value="0">Fresh Graduate</option>
+                <option value="3">Under 1 year</option>
+                <option value="7">1–2 years</option>
+                <option value="13">3–5 years</option>
+                <option value="19">6–10 years</option>
+                <option value="23">10+ years</option>
+              </select>
+            </div>
+            <div class="fg"><label>Field of Study</label><input class="fi" id="cp-field" placeholder="e.g. Business Administration"></div>
+          </div>
+          <div class="fg"><label>Previous Employers</label><textarea class="fi" id="cp-emp" placeholder="e.g. 2020–2022: Sales Rep, XYZ Ltd…" rows="3"></textarea></div>
+          <div class="fg"><label>Key Skills / Certifications</label><textarea class="fi" id="cp-skills" placeholder="List relevant skills, certifications…" rows="3"></textarea></div>
+          <div class="fg"><label>Cover Letter</label><textarea class="fi" id="cp-cover" placeholder="Why are you the best fit for this role?" rows="4"></textarea></div>
+          <div id="cp-apply-msg" style="margin-bottom:12px"></div>
+          <button class="btn-login" onclick="submitCareersApplication()">Submit Application</button>
+        </div>
+        <div id="cp-apply-done" style="display:none;text-align:center;padding:28px 0">
+          <div style="font-size:52px;margin-bottom:12px">✅</div>
+          <h3 style="font-size:20px;font-weight:900;color:#fff;margin-bottom:8px">Application Submitted!</h3>
+          <p style="color:rgba(255,255,255,.55);font-size:14px;margin-bottom:20px">Thank you for applying. We'll be in touch if you are shortlisted.</p>
+          <div id="cp-track-section"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Track view -->
+    <div id="cp-track-view" style="display:none">
+      <div class="cp-back-link" onclick="showJobsList()">← Back to all positions</div>
+      <div class="cp-form-card" style="max-width:480px;margin:0 auto">
+        <div style="font-size:18px;font-weight:900;color:#fff;margin-bottom:4px">Track Your Application</div>
+        <p style="color:rgba(255,255,255,.5);font-size:13px;margin-bottom:20px">Enter your email to check your application status.</p>
+        <div class="fg"><label>Your Email Address</label><input class="fi" id="cp-track-email" placeholder="you@email.com" type="email"></div>
+        <div id="cp-track-msg" style="margin-bottom:12px"></div>
+        <button class="btn-login" onclick="trackCareersApplication()">Check Status</button>
+        <div id="cp-track-result" style="margin-top:20px"></div>
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -1390,6 +1543,16 @@ function pRecruitment(el){
       </div>
     </div>
     <div class="card mb">
+      <div class="ch"><span class="ct">${ic('briefcase',15)} Careers Portal</span><button class="btn b-gr btn-sm" onclick="openPublicCareersPreview()">${ic('external-link',13)} Preview</button></div>
+      <div class="cb">
+        <p style="font-size:12.5px;color:var(--text-muted);margin-bottom:11px">Publicly visible on the login page. Candidates can browse jobs and apply without a link.</p>
+      <div style="display:flex;align-items:center;justify-content:space-between;background:var(--bg);padding:10px 13px;border-radius:8px;border:1px solid var(--border)">
+        <span style="font-size:12px;font-weight:600;color:var(--text-muted)">Active Job Postings</span>
+        <strong style="font-size:18px;color:var(--navy)">${(DB.g('job_postings')||[]).filter(j=>j.active).length}</strong>
+      </div>
+    </div>
+  </div>
+    <div class="card mb">
       <div class="ch"><span class="ct">${ic('bar-chart-2',15)} Pipeline Stats</span></div>
       <div class="cb">
         <div class="sg" style="grid-template-columns:1fr 1fr;margin:0">
@@ -1406,6 +1569,31 @@ function pRecruitment(el){
       <div class="ch"><span class="ct">${ic('settings',15)} Aptitude Test</span><button class="btn b-nv btn-sm" onclick="openAptSetup()">Manage (${qs.length} Qs)</button></div>
       <div class="cb"><p style="font-size:12.5px;color:var(--text-muted)">Set questions with pre-keyed answers for the top-50 shortlisted candidates.</p></div>
     </div>
+    <div class="card mb">
+  <div class="ch">
+    <span class="ct">${ic('briefcase',15)} Job Postings (${(DB.g('job_postings')||[]).length})</span>
+    <button class="btn b-nv btn-sm" onclick="openAddJobPosting()">${ic('plus',13)} Add Posting</button>
+  </div>
+  <div class="cb">
+    ${(DB.g('job_postings')||[]).length===0
+      ? `<div class="es"><div class="es-ico">${ic('briefcase',44)}</div><h3>No job postings yet</h3><p>Add postings to advertise open roles on your Careers Portal.</p></div>`
+      : `<div class="tw"><table><thead><tr><th>Role</th><th>Department</th><th>Type</th><th>Location</th><th>Status</th><th>Actions</th></tr></thead><tbody>
+          ${(DB.g('job_postings')||[]).map((j,i)=>`<tr>
+            <td><strong>${j.title}</strong></td>
+            <td>${j.dept||'—'}</td>
+            <td>${j.type||'Full-time'}</td>
+            <td>${j.location||'—'}</td>
+            <td><span class="b ${j.active?'bg':'ba'}">${j.active?'Active':'Inactive'}</span></td>
+            <td style="display:flex;gap:6px;flex-wrap:wrap">
+              <button class="btn b-nv btn-sm" onclick="openEditJobPosting(${i})">${ic('edit-2',12)}</button>
+              <button class="btn ${j.active?'b-am':'b-gr'} btn-sm" onclick="toggleJobPosting(${i})">${j.active?'Pause':'Activate'}</button>
+              <button class="btn b-rd btn-sm" onclick="deleteJobPosting(${i})">${ic('trash-2',12)}</button>
+            </td>
+          </tr>`).join('')}
+        </tbody></table></div>`
+    }
+  </div>
+</div>
     <div class="card mb">
       <div class="ch"><span class="ct">${ic('file-text',15)} Employment Letter</span><button class="btn b-nv btn-sm" onclick="openLetterSetup()">${ic('edit-2',13)} Configure</button></div>
       <div class="cb">
@@ -1447,6 +1635,172 @@ function pRecruitment(el){
 }
 
 function copyText(t){navigator.clipboard.writeText(t).then(()=>toast('Copied!','s')).catch(()=>toast('Link: '+t,'i'));}
+// ─── JOB POSTINGS (Employer) ───
+function openAddJobPosting(){
+  openModal('Add Job Posting',`
+    <div class="fr"><div class="f"><label>Job Title *</label><input type="text" id="jp-title" placeholder="e.g. Marketing Officer"></div><div class="f"><label>Department</label><input type="text" id="jp-dept" placeholder="e.g. Sales"></div></div>
+    <div class="fr"><div class="f"><label>Employment Type</label>
+      <select id="jp-type"><option>Full-time</option><option>Part-time</option><option>Contract</option><option>Internship</option><option>Remote</option></select>
+    </div><div class="f"><label>Location</label><input type="text" id="jp-loc" placeholder="e.g. Accra, Ghana"></div></div>
+    <div class="fr"><div class="f"><label>Salary Range (optional)</label><input type="text" id="jp-sal" placeholder="e.g. ₵2,000 – ₵3,500/mo"></div><div class="f"><label>Deadline (optional)</label><input type="date" id="jp-dead"></div></div>
+    <div class="f"><label>Job Description *</label><textarea id="jp-desc" placeholder="Describe the role and responsibilities…" rows="4"></textarea></div>
+    <div class="f"><label>Requirements</label><textarea id="jp-req" placeholder="List qualifications, skills, experience required…" rows="3"></textarea></div>
+  `,[{l:'Post Job',c:'b-gr',fn:()=>{
+    const title=document.getElementById('jp-title').value.trim();
+    const desc=document.getElementById('jp-desc').value.trim();
+    if(!title||!desc){toast('Title and Description required','e');return;}
+    const jobs=DB.g('job_postings')||[];
+    jobs.push({id:Date.now(),title,dept:document.getElementById('jp-dept').value,type:document.getElementById('jp-type').value,location:document.getElementById('jp-loc').value,salary:document.getElementById('jp-sal').value,deadline:document.getElementById('jp-dead').value,description:desc,requirements:document.getElementById('jp-req').value,active:true,postedDate:today()});
+    DB.s('job_postings',jobs);closeModal();showPage('e_recruitment');toast('Job posted to Careers Portal','s');
+  }}]);
+}
+
+function openEditJobPosting(idx){
+  const jobs=DB.g('job_postings')||[];const j=jobs[idx];
+  openModal('Edit Job Posting',`
+    <div class="fr"><div class="f"><label>Job Title</label><input type="text" id="ep-title" value="${j.title}"></div><div class="f"><label>Department</label><input type="text" id="ep-dept" value="${j.dept||''}"></div></div>
+    <div class="fr"><div class="f"><label>Employment Type</label>
+      <select id="ep-type"><option ${j.type==='Full-time'?'selected':''}>Full-time</option><option ${j.type==='Part-time'?'selected':''}>Part-time</option><option ${j.type==='Contract'?'selected':''}>Contract</option><option ${j.type==='Internship'?'selected':''}>Internship</option><option ${j.type==='Remote'?'selected':''}>Remote</option></select>
+    </div><div class="f"><label>Location</label><input type="text" id="ep-loc" value="${j.location||''}"></div></div>
+    <div class="fr"><div class="f"><label>Salary Range</label><input type="text" id="ep-sal" value="${j.salary||''}"></div><div class="f"><label>Deadline</label><input type="date" id="ep-dead" value="${j.deadline||''}"></div></div>
+    <div class="f"><label>Job Description</label><textarea id="ep-desc" rows="4">${j.description}</textarea></div>
+    <div class="f"><label>Requirements</label><textarea id="ep-req" rows="3">${j.requirements||''}</textarea></div>
+  `,[{l:'Save Changes',c:'b-gr',fn:()=>{
+    jobs[idx]={...jobs[idx],title:document.getElementById('ep-title').value,dept:document.getElementById('ep-dept').value,type:document.getElementById('ep-type').value,location:document.getElementById('ep-loc').value,salary:document.getElementById('ep-sal').value,deadline:document.getElementById('ep-dead').value,description:document.getElementById('ep-desc').value,requirements:document.getElementById('ep-req').value};
+    DB.s('job_postings',jobs);closeModal();showPage('e_recruitment');toast('Job posting updated','s');
+  }}]);
+}
+
+function toggleJobPosting(idx){
+  const jobs=DB.g('job_postings')||[];
+  jobs[idx].active=!jobs[idx].active;
+  DB.s('job_postings',jobs);showPage('e_recruitment');
+  toast(jobs[idx].active?'Job posting activated':'Job posting paused','i');
+}
+
+function deleteJobPosting(idx){
+  if(!confirm('Delete this job posting?'))return;
+  const jobs=DB.g('job_postings')||[];
+  jobs.splice(idx,1);DB.s('job_postings',jobs);showPage('e_recruitment');toast('Deleted','i');
+}
+
+function openPublicCareersPreview(){openCareersPortal();}
+
+// ─── CAREERS PORTAL (Public) ───
+let _cpSelectedJob=null;
+
+function openCareersPortal(){
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('app').style.display='none';
+  const co=DB.g('company')||{};
+  document.getElementById('cp-company-name').textContent=(co.name?'Careers at '+co.name:'Join Our Team');
+  showJobsList();
+  document.getElementById('careers-portal').classList.add('open');
+}
+
+function closeCareersPortal(){
+  document.getElementById('careers-portal').classList.remove('open');
+  document.getElementById('login-screen').style.display='flex';
+}
+
+function showJobsList(){
+  document.getElementById('cp-jobs-view').style.display='block';
+  document.getElementById('cp-apply-view').style.display='none';
+  document.getElementById('cp-track-view').style.display='none';
+  const jobs=(DB.g('job_postings')||[]).filter(j=>j.active);
+  const list=document.getElementById('cp-jobs-list');
+  if(jobs.length===0){
+    list.innerHTML=`<div class="cp-empty"><div class="cp-empty-ico">💼</div><p>No open positions at the moment. Check back soon!</p></div>
+    <div style="text-align:center;margin-top:20px"><button class="btn b-ol btn-sm" onclick="showTrackView()">🔍 Track my application</button></div>`;
+  } else {
+    list.innerHTML=jobs.map((j,i)=>`
+      <div class="job-card" onclick="openJobApply(${i})">
+        <div class="job-card-top">
+          <div>
+            <div class="job-card-dept">${j.dept||'Open Role'}</div>
+            <div class="job-card-title">${j.title}</div>
+          </div>
+          <button class="job-apply-btn" onclick="event.stopPropagation();openJobApply(${i})">Apply Now</button>
+        </div>
+        <div class="job-card-meta">
+          ${j.type?`<span class="job-meta-pill">📋 ${j.type}</span>`:''}
+          ${j.location?`<span class="job-meta-pill">📍 ${j.location}</span>`:''}
+          ${j.salary?`<span class="job-meta-pill">💰 ${j.salary}</span>`:''}
+          ${j.deadline?`<span class="job-meta-pill">⏰ Deadline: ${j.deadline}</span>`:''}
+          <span class="job-meta-pill">📅 Posted: ${j.postedDate||'Recently'}</span>
+        </div>
+        ${j.description?`<div class="job-card-desc">${j.description.substring(0,160)}${j.description.length>160?'…':''}</div>`:''}
+      </div>`).join('')+
+      `<div style="text-align:center;margin-top:24px"><button class="btn b-ol btn-sm" onclick="showTrackView()">🔍 Already applied? Track your application</button></div>`;
+  }
+}
+
+function openJobApply(idx){
+  const jobs=(DB.g('job_postings')||[]).filter(j=>j.active);
+  _cpSelectedJob=jobs[idx];
+  document.getElementById('cp-jobs-view').style.display='none';
+  document.getElementById('cp-apply-view').style.display='block';
+  document.getElementById('cp-track-view').style.display='none';
+  document.getElementById('cp-apply-role-title').textContent='Apply for: '+_cpSelectedJob.title;
+  document.getElementById('cp-apply-form').style.display='block';
+  document.getElementById('cp-apply-done').style.display='none';
+  document.getElementById('cp-apply-msg').innerHTML='';
+  ['cp-name','cp-email','cp-phone','cp-field','cp-emp','cp-skills','cp-cover'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  ['cp-edu','cp-exp'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+}
+
+function submitCareersApplication(){
+  const name=document.getElementById('cp-name').value.trim();
+  const email=document.getElementById('cp-email').value.trim();
+  const edu=document.getElementById('cp-edu').value;
+  const exp=document.getElementById('cp-exp').value;
+  const msg=document.getElementById('cp-apply-msg');
+  if(!name||!email||!edu||!exp){msg.innerHTML='<div class="al al-r">Please fill all required fields.</div>';return;}
+  const apps=DB.g('applicants')||[];
+  if(apps.find(a=>a.email===email&&a.position===(_cpSelectedJob?.title||''))){msg.innerHTML='<div class="al al-a">You have already applied for this position.</div>';return;}
+  const newApp={name,email,phone:document.getElementById('cp-phone').value,position:_cpSelectedJob?.title||'General Application',dept:_cpSelectedJob?.dept||'',education:document.getElementById('cp-edu').options[document.getElementById('cp-edu').selectedIndex]?.text,eduScore:parseInt(edu)||50,experience:parseInt(exp)||0,expScore:parseInt(exp)||0,field:document.getElementById('cp-field').value,previousEmployers:document.getElementById('cp-emp').value,skills:document.getElementById('cp-skills').value,coverLetter:document.getElementById('cp-cover').value,date:today(),status:'pending',source:'careers_portal'};
+  apps.push(newApp);DB.s('applicants',apps);
+  apiFetch('POST','/data/applicants',newApp).then(r=>{if(r.record){const a2=DB.g('applicants')||[];const i=a2.findIndex(x=>x.email===newApp.email&&x.position===newApp.position);if(i>=0){a2[i].id=r.record.id;DB.s('applicants',a2);}}}).catch(()=>{});
+  document.getElementById('cp-apply-form').style.display='none';
+  document.getElementById('cp-apply-done').style.display='block';
+  document.getElementById('cp-track-section').innerHTML=`<div class="al al-g" style="text-align:left"><strong>Your tracking email:</strong> ${email}<br><small>Use your email to check your application status anytime.</small></div>`;
+}
+
+function showTrackView(){
+  document.getElementById('cp-jobs-view').style.display='none';
+  document.getElementById('cp-apply-view').style.display='none';
+  document.getElementById('cp-track-view').style.display='block';
+  document.getElementById('cp-track-result').innerHTML='';
+  document.getElementById('cp-track-msg').innerHTML='';
+  const el=document.getElementById('cp-track-email');if(el)el.value='';
+}
+
+function trackCareersApplication(){
+  const email=document.getElementById('cp-track-email').value.trim();
+  const msg=document.getElementById('cp-track-msg');
+  const res=document.getElementById('cp-track-result');
+  if(!email){msg.innerHTML='<div class="al al-r">Please enter your email.</div>';return;}
+  msg.innerHTML='';
+  const apps=(DB.g('applicants')||[]).filter(a=>a.email===email);
+  if(apps.length===0){res.innerHTML=`<div class="al al-r">No application found for <strong>${email}</strong>. Please check your email or submit a new application.</div>`;return;}
+  const stageMap={pending:'Under Review',shortlisted:'Shortlisted',testing:'Aptitude Test',interviewing:'Interview Stage',accepted:'Offer Extended',rejected:'Not Selected'};
+  res.innerHTML=apps.map(a=>{
+    const stage=a.offerStatus==='accepted'?'accepted':a.offerStatus==='rejected'?'rejected':a.invited?'interviewing':a.testInvited?'testing':a.score!==undefined?'shortlisted':'pending';
+    const stages=['pending','shortlisted','testing','interviewing','accepted'];
+    const si=stages.indexOf(stage);
+    return `<div class="cp-progress">
+      <div class="cp-progress-title">📋 ${a.position||'Application'}</div>
+      <div style="font-size:12px;color:rgba(255,255,255,.4);margin-bottom:12px">Applied: ${a.date||'—'}</div>
+      ${stages.map((s,i)=>`<div class="cp-stage">
+        <div class="cp-stage-dot ${i<si?'done':i===si?'current':''}"></div>
+        <div class="cp-stage-label ${i<si?'done':i===si?'current':''}">${stageMap[s]||s}</div>
+        ${i===si?`<span style="font-size:11px;color:rgba(255,255,255,.35);margin-left:auto">● Current</span>`:''}
+      </div>`).join('')}
+      ${stage==='rejected'?`<div class="al al-r" style="margin-top:12px;margin-bottom:0">Thank you for applying. We have moved forward with other candidates.</div>`:''}
+      ${stage==='accepted'?`<div class="al al-g" style="margin-top:12px;margin-bottom:0">🎉 Congratulations! An offer has been extended to you.</div>`:''}
+    </div>`;
+  }).join('');
+}
 function genNewLink(){DB.s('rec_link','https://biztrack.app/apply/'+Math.random().toString(36).substr(2,9));showPage('e_recruitment');}
 function openApplicantPortal(){
   document.getElementById('app').style.display='none';
