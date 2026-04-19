@@ -496,7 +496,7 @@ footer {
           <button class="btn-login" onclick="submitCareersApplication()">Submit Application</button>
         </div>
         <div id="cp-apply-done" style="display:none;text-align:center;padding:28px 0">
-          <div style="font-size:52px;margin-bottom:12px">✅</div>
+  <div style="margin-bottom:12px;color:var(--accent)">${ic('check-circle',52)}</div>
           <h3 style="font-size:20px;font-weight:900;color:#fff;margin-bottom:8px">Application Submitted!</h3>
           <p style="color:rgba(255,255,255,.55);font-size:14px;margin-bottom:20px">Thank you for applying. We'll be in touch if you are shortlisted.</p>
           <div id="cp-track-section"></div>
@@ -1652,7 +1652,7 @@ function openAddJobPosting(){
     if(!title||!desc){toast('Title and Description required','e');return;}
     const jobs=DB.g('job_postings')||[];
     jobs.push({id:Date.now(),title,dept:document.getElementById('jp-dept').value,type:document.getElementById('jp-type').value,location:document.getElementById('jp-loc').value,salary:document.getElementById('jp-sal').value,deadline:document.getElementById('jp-dead').value,description:desc,requirements:document.getElementById('jp-req').value,active:true,postedDate:today()});
-    DB.s('job_postings',jobs);closeModal();showPage('e_recruitment');toast('Job posted to Careers Portal','s');
+    DB.s('job_postings',jobs);apiFetch('POST', '/data/job_postings', jobs[jobs.length-1]).catch(()=>{});closeModal();showPage('e_recruitment');toast('Job posted to Careers Portal','s');
   }}]);
 }
 
@@ -1668,7 +1668,7 @@ function openEditJobPosting(idx){
     <div class="f"><label>Requirements</label><textarea id="ep-req" rows="3">${j.requirements||''}</textarea></div>
   `,[{l:'Save Changes',c:'b-gr',fn:()=>{
     jobs[idx]={...jobs[idx],title:document.getElementById('ep-title').value,dept:document.getElementById('ep-dept').value,type:document.getElementById('ep-type').value,location:document.getElementById('ep-loc').value,salary:document.getElementById('ep-sal').value,deadline:document.getElementById('ep-dead').value,description:document.getElementById('ep-desc').value,requirements:document.getElementById('ep-req').value};
-    DB.s('job_postings',jobs);closeModal();showPage('e_recruitment');toast('Job posting updated','s');
+    DB.s('job_postings',jobs);apiFetch('PUT', '/data/job_postings', jobs[idx]).catch(()=>{});closeModal();showPage('e_recruitment');toast('Job posting updated','s');
   }}]);
 }
 
@@ -1704,15 +1704,12 @@ function closeCareersPortal(){
   document.getElementById('login-screen').style.display='flex';
 }
 
-function showJobsList(){
-  document.getElementById('cp-jobs-view').style.display='block';
-  document.getElementById('cp-apply-view').style.display='none';
-  document.getElementById('cp-track-view').style.display='none';
+function renderJobsList(){
   const jobs=(DB.g('job_postings')||[]).filter(j=>j.active);
   const list=document.getElementById('cp-jobs-list');
   if(jobs.length===0){
-    list.innerHTML=`<div class="cp-empty"><div class="cp-empty-ico">💼</div><p>No open positions at the moment. Check back soon!</p></div>
-    <div style="text-align:center;margin-top:20px"><button class="btn b-ol btn-sm" onclick="showTrackView()">🔍 Track my application</button></div>`;
+    list.innerHTML=`<div class="cp-empty"><div class="cp-empty-ico">${ic('briefcase',44)}</div><p>No open positions at the moment. Check back soon!</p></div>
+    <div style="text-align:center;margin-top:20px"><button class="btn b-ol btn-sm" onclick="showTrackView()">${ic('search',13)} Track my application</button></div>`;
   } else {
     list.innerHTML=jobs.map((j,i)=>`
       <div class="job-card" onclick="openJobApply(${i})">
@@ -1724,15 +1721,15 @@ function showJobsList(){
           <button class="job-apply-btn" onclick="event.stopPropagation();openJobApply(${i})">Apply Now</button>
         </div>
         <div class="job-card-meta">
-          ${j.type?`<span class="job-meta-pill">📋 ${j.type}</span>`:''}
-          ${j.location?`<span class="job-meta-pill">📍 ${j.location}</span>`:''}
-          ${j.salary?`<span class="job-meta-pill">💰 ${j.salary}</span>`:''}
-          ${j.deadline?`<span class="job-meta-pill">⏰ Deadline: ${j.deadline}</span>`:''}
-          <span class="job-meta-pill">📅 Posted: ${j.postedDate||'Recently'}</span>
+          ${j.type?`<span class="job-meta-pill">${ic('briefcase',12)} ${j.type}</span>`:''}
+          ${j.location?`<span class="job-meta-pill">${ic('map-pin',12)} ${j.location}</span>`:''}
+          ${j.salary?`<span class="job-meta-pill">${ic('dollar-sign',12)} ${j.salary}</span>`:''}
+          ${j.deadline?`<span class="job-meta-pill">${ic('clock',12)} Deadline: ${j.deadline}</span>`:''}
+          <span class="job-meta-pill">${ic('calendar',12)} Posted: ${j.postedDate||'Recently'}</span>
         </div>
         ${j.description?`<div class="job-card-desc">${j.description.substring(0,160)}${j.description.length>160?'…':''}</div>`:''}
       </div>`).join('')+
-      `<div style="text-align:center;margin-top:24px"><button class="btn b-ol btn-sm" onclick="showTrackView()">🔍 Already applied? Track your application</button></div>`;
+      `<div style="text-align:center;margin-top:24px"><button class="btn b-ol btn-sm" onclick="showTrackView()">${ic('search',13)} Already applied? Track your application</button></div>`;
   }
 }
 
@@ -1763,7 +1760,11 @@ function submitCareersApplication(){
   apps.push(newApp);DB.s('applicants',apps);
   apiFetch('POST','/data/applicants',newApp).then(r=>{if(r.record){const a2=DB.g('applicants')||[];const i=a2.findIndex(x=>x.email===newApp.email&&x.position===newApp.position);if(i>=0){a2[i].id=r.record.id;DB.s('applicants',a2);}}}).catch(()=>{});
   document.getElementById('cp-apply-form').style.display='none';
-  document.getElementById('cp-apply-done').style.display='block';
+  document.getElementById('cp-apply-done').innerHTML=`
+  <div style="font-size:52px;margin-bottom:12px">${ic('check-circle',52)}</div>
+  <h3 style="font-size:20px;font-weight:900;color:#fff;margin-bottom:8px">Application Submitted!</h3>
+  <p style="color:rgba(255,255,255,.55);font-size:14px;margin-bottom:20px">Thank you for applying. We'll be in touch if you are shortlisted.</p>
+  <div id="cp-track-section"></div>`;
   document.getElementById('cp-track-section').innerHTML=`<div class="al al-g" style="text-align:left"><strong>Your tracking email:</strong> ${email}<br><small>Use your email to check your application status anytime.</small></div>`;
 }
 
