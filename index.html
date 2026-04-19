@@ -2344,22 +2344,16 @@ function clockIn(){
   const msg=document.getElementById('att-msg');
   msg.innerHTML=`<div class="al al-b"><span class="ldr"></span> Verifying your location…</div>`;
   if(!navigator.geolocation){
-    // No geolocation — allow with warning (demo mode)
-    completeClock(true, 'Location unavailable (demo mode — clocking in anyway)');
+    msg.innerHTML='<div class="al al-r">Geolocation is not supported by your browser.</div>';
     return;
   }
-  navigator.geolocation.getCurrentPosition(pos=>{
-    const s=DB.g('att_settings')||{};
-    const wl={lat:parseFloat(s.work_lat)||5.6037,lng:parseFloat(s.work_lng)||-0.1870,radius:parseFloat(s.work_radius)||500};
-    if(dist<=wl.radius){
-      completeClock(true,null);
-    } else {
-      // Demo override — in a real system this would be blocked
-      completeClock(true,`Note: ${Math.round(dist)}m from office (demo: allowed anyway).`);
-    }
-  },err=>{
-    completeClock(true,'Location access denied — clocking in (demo mode).');
-  },{timeout:8000,maximumAge:0,enableHighAccuracy:true});
+  navigator.geolocation.getCurrentPosition(
+    pos=>completeClock(pos),
+    err=>{
+      msg.innerHTML=`<div class="al al-r">Could not get your location: ${err.message}. Please enable location access and try again.</div>`;
+    },
+    {timeout:10000,maximumAge:0,enableHighAccuracy:true}
+  );
 }
 
 function completeClock(pos){
@@ -2377,15 +2371,18 @@ function completeClock(pos){
 
   // Calculate distance from office using Haversine formula
   const R=6371000;
-  const lat1=pos.coords.latitude*Math.PI/180;
+  const empLat=pos.coords.latitude;
+  const empLng=pos.coords.longitude;
+  const lat1=empLat*Math.PI/180;
   const lat2=workLat*Math.PI/180;
-  const dLat=(workLat-pos.coords.latitude)*Math.PI/180;
-  const dLng=(workLng-pos.coords.longitude)*Math.PI/180;
+  const dLat=(workLat-empLat)*Math.PI/180;
+  const dLng=(workLng-empLng)*Math.PI/180;
   const a=Math.sin(dLat/2)*Math.sin(dLat/2)+Math.cos(lat1)*Math.cos(lat2)*Math.sin(dLng/2)*Math.sin(dLng/2);
   const dist=R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
 
   if(dist>radius){
-    toast(`You are ${Math.round(dist)}m away from ${workAddress}. Must be within ${radius}m to clock in.`,'e');
+    const msg=document.getElementById('att-msg');
+    msg.innerHTML=`<div class="al al-r">You are ${Math.round(dist)}m away from ${workAddress}. You must be within ${radius}m to clock in.</div>`;
     return;
   }
 
@@ -2410,7 +2407,6 @@ function completeClock(pos){
   showPage('emp_attendance');
   toast(`Clocked in — ${status}`,'s');
 }
-
 function clockOut(){
   const att=DB.g('attendance')||[];
   const i=att.slice().reverse().findIndex(a=>a.empId===CU.id&&a.date===today()&&!a.clockOut);
