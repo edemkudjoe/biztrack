@@ -2219,17 +2219,18 @@ function pAdvance(el){
 function submitAdvance(){
   const amt=parseFloat(document.getElementById('adv-amt').value);
   const rsn=document.getElementById('adv-rsn').value;
-  if(!amt||!rsn){document.getElementById('adv-msg').innerHTML='<div class="al al-r">Please fill all fields.</div>';return;}
-  const rec={empId:CU.id,empName:CU.name,type:document.getElementById('lv-type').value,fromDate:from,toDate:to,days,reason:rsn,date:today(),status:'pending'};
+  const msg=document.getElementById('adv-msg');
+  if(!amt||!rsn){msg.innerHTML='<div class="al al-r">Please fill all fields.</div>';return;}
+  const rec={empId:CU.id,empName:CU.name,amount:amt,reason:rsn,repay:document.getElementById('adv-rep').value,date:today(),status:'pending'};
   DB.push('advances',rec);
   apiFetch('POST','/data/advances',rec)
     .then(r=>{if(r.record){const adv=DB.g('advances')||[];const i=adv.findIndex(a=>a.empId===rec.empId&&a.date===rec.date);if(i>=0){adv[i].id=r.record.id;DB.s('advances',adv);}}})
     .catch(()=>{});
-  document.getElementById('adv-msg').innerHTML='<div class="al al-g">Request submitted successfully. Awaiting employer approval.</div>';
-  document.getElementById('adv-amt').value=''; document.getElementById('adv-rsn').value='';
+  msg.innerHTML='<div class="al al-g">Request submitted successfully. Awaiting employer approval.</div>';
+  document.getElementById('adv-amt').value='';
+  document.getElementById('adv-rsn').value='';
   updNotif();
 }
-
 // ─── PROMOTION ───
 function pPromo(el){
   const pr=(DB.g('promos')||[]).filter(p=>p.empId===CU.id);
