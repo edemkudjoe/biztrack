@@ -2473,12 +2473,22 @@ function submitInvUpdate(){
   if(sel==='new'){
     const nm=document.getElementById('si-nm').value;
     if(!nm){msg.innerHTML='<div class="al al-r">Please enter item name.</div>';return;}
-    inv.push({id:Date.now(),item:nm,qty,unit:document.getElementById('si-un').value||'Pcs',min:parseInt(document.getElementById('si-mn').value)||0,rec:parseInt(document.getElementById('si-rc').value)||0,loc:document.getElementById('si-lc').value,updatedBy:CU.id,date:today()});
+    const rec={item:nm,qty,unit:document.getElementById('si-un').value||'Pcs',min:parseInt(document.getElementById('si-mn').value)||0,rec:parseInt(document.getElementById('si-rc').value)||0,loc:document.getElementById('si-lc').value,updatedBy:CU.id,date:today()};
+    inv.push(rec);
+    DB.s('inventory',inv);
+    apiFetch('POST','/data/inventory',rec)
+      .then(r=>{if(r.record){const inv2=DB.g('inventory')||[];const i=inv2.length-1;inv2[i].id=r.record.id;DB.s('inventory',inv2);}})
+      .catch(()=>{});
   } else {
     const i=parseInt(sel);
     inv[i]={...inv[i],qty,updatedBy:CU.id,date:today()};
+    DB.s('inventory',inv);
+    if(inv[i].id){
+      apiFetch('PUT',`/data/inventory/${inv[i].id}`,{qty,updatedBy:CU.id,date:today()}).catch(()=>{});
+    } else {
+      apiFetch('POST','/data/inventory',inv[i]).catch(()=>{});
+    }
   }
-  DB.s('inventory',inv);
   msg.innerHTML='<div class="al al-g">Inventory updated successfully.</div>';
 }
 
