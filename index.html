@@ -924,7 +924,7 @@ const PT={
   e_leaves:'Leave Management',e_benefits:'Benefits',e_complaints:'Complaints & Suggestions',
   e_settings:'Settings',emp_dash:'My Dashboard',emp_finance:'My Finance',
   emp_advance:'Salary Advance',emp_promo:'Promotion Request',emp_attendance:'Attendance',
-  emp_tasks:'My Tasks',,emp_inventory:'Submit Inventory',emp_leave:'Leave Request',emp_complaints:'Complaints',emp_profile:'My Profile',
+  emp_tasks:'My Tasks',emp_inventory:'Submit Inventory',emp_leave:'Leave Request',emp_complaints:'Complaints',emp_profile:'My Profile',
 };
 function buildNav(){
   const nav=document.getElementById('sidebar-nav');
@@ -2297,60 +2297,7 @@ function submitPromo(){
 
 // ─── EMPLOYEE ATTENDANCE ───
 
-function pMyTasks(el){
-  const tasks=(DB.g('tasks')||[]).filter(t=>t.empId===CU.id);
-  const pending=tasks.filter(t=>t.status==='pending');
-  const done=tasks.filter(t=>t.status==='done');
-  el.innerHTML=`
-  ${ph('My Tasks','Tasks assigned to you by your employer.')}
-  <div class="card mb">
-    <div class="ch"><span class="ct">${ic('clock',15)} Pending Tasks (${pending.length})</span></div>
-    <div class="cb">
-      ${pending.length===0?'<p style="color:var(--text-muted);font-size:13px">No pending tasks.</p>':pending.map((t,i)=>{
-        const idx=tasks.indexOf(t);
-        return `<div class="card mb" style="border-left:3px solid var(--amber)">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start">
-            <div>
-              <div style="font-weight:700;font-size:14px">${t.title}</div>
-              ${t.desc?`<div style="font-size:12px;color:var(--text-muted);margin-top:2px">${t.desc}</div>`:''}
-              <div style="font-size:11.5px;color:var(--text-muted);margin-top:4px">Due: ${t.dueDate||'—'} &nbsp;|&nbsp; Assigned: ${t.assignedDate||'—'}</div>
-            </div>
-            <button class="btn b-gr btn-sm" onclick="completeTask(${idx})">Mark Complete</button>
-          </div>
-        </div>`;
-      }).join('')}
-    </div>
-  </div>
-  <div class="card mb">
-    <div class="ch"><span class="ct">${ic('check-circle',15)} Completed Tasks (${done.length})</span></div>
-    <div class="cb">
-      ${done.length===0?'<p style="color:var(--text-muted);font-size:13px">No completed tasks yet.</p>':done.map(t=>`
-        <div class="card mb" style="border-left:3px solid var(--green);opacity:0.8">
-          <div style="font-weight:700;font-size:14px">${t.title}</div>
-          ${t.desc?`<div style="font-size:12px;color:var(--text-muted);margin-top:2px">${t.desc}</div>`:''}
-          <div style="font-size:11.5px;color:var(--text-muted);margin-top:4px">Completed: ${t.completedDate||'—'}</div>
-        </div>`).join('')}
-    </div>
-  </div>`;
-}
 
-async function completeTask(i){
-  const t=DB.g('tasks')||[];
-  if(!t[i]){toast('Task not found','e');return;}
-  t[i].status='done';
-  t[i].completedDate=today();
-  DB.s('tasks',t);
-  showPage('emp_tasks');
-  toast('Task marked as complete','s');
-  updNotif();
-  if(t[i].id){
-    try{
-      await apiFetch('PUT',`/data/tasks/${t[i].id}`,{status:'done',completedDate:today()});
-    }catch(e){
-      toast('Sync failed — will update on next login','w');
-    }
-  }
-}
 function pMyTasks(el){
   const allTasks=DB.g('tasks')||[];
   const tasks=allTasks.filter(t=>t.empId===CU.id);
@@ -2407,7 +2354,6 @@ async function completeTask(i){
   }
 }
 
-function pMyAtt(el){
 function pMyAtt(el){
   const att=(DB.g('attendance')||[]).filter(a=>a.empId===CU.id);
   const todayRec=att.find(a=>a.date===today());
