@@ -734,6 +734,8 @@ async function launchApp(){
     if (prRes.ok) DB.s('promos',     (await prRes.json()).records || []);
     if (cmRes.ok) DB.s('complaints', (await cmRes.json()).records || []);
     if (apRes.ok) DB.s('applicants', (await apRes.json()).records || []);
+    const stRes = await fetch(`${API}/settings`, { headers: authHeaders });
+    if (stRes.ok) DB.s('att_settings', (await stRes.json()).settings || {});
   }
   catch(e) {
     console.error('Failed to sync with Supabase', e);
@@ -1689,6 +1691,7 @@ function resolveComp(i){
 // ─── SETTINGS ───
 function pSettings(el){
   const co=DB.g('company')||{};
+  const as=DB.g('att_settings')||{};
   el.innerHTML=`
   ${ph('Settings','System configuration and preferences.')}
   <div class="g2">
@@ -1721,6 +1724,24 @@ function pSettings(el){
     </div>
   </div>
   <div class="card mb">
+    <div class="ch"><span class="ct">${ic('map-pin',15)} Attendance Settings</span></div>
+    <div class="cb">
+      <div class="f"><label>Office Address (display only)</label><input type="text" id="att-addr" placeholder="e.g. 12 Independence Ave, Accra" value="${as.work_address||''}"></div>
+      <div class="fr">
+        <div class="f"><label>Latitude</label><input type="number" step="any" id="att-lat" placeholder="e.g. 5.6037" value="${as.work_lat||''}"></div>
+        <div class="f"><label>Longitude</label><input type="number" step="any" id="att-lng" placeholder="e.g. -0.1870" value="${as.work_lng||''}"></div>
+        <div class="f"><label>Allowed Radius (metres)</label><input type="number" id="att-rad" placeholder="e.g. 100" value="${as.work_radius||'100'}"></div>
+      </div>
+      <div class="fr">
+        <div class="f"><label>Shift Start Time</label><input type="time" id="att-start" value="${as.shift_start||'08:00'}"></div>
+        <div class="f"><label>Shift End Time</label><input type="time" id="att-end" value="${as.shift_end||'17:00'}"></div>
+      </div>
+      <button class="btn b-nv" style="margin-top:4px" onclick="getCurrentLocation()">${ic('map-pin',14)} Use My Current Location</button>
+      <button class="btn b-gr" style="margin-top:4px;margin-left:8px" onclick="saveAttSettings()">${ic('save',14)} Save Attendance Settings</button>
+      <div id="att-msg" style="margin-top:10px"></div>
+    </div>
+  </div>
+  <div class="card mb">
     <div class="ch"><span class="ct">${ic('alert-triangle',15)} Data Management</span></div>
     <div class="cb" style="display:flex;gap:10px;flex-wrap:wrap">
       <button class="btn b-ol" onclick="clearTable('applicants')">Clear Applicants</button>
@@ -1740,6 +1761,52 @@ async function clearTable(table){
   DB.s(table,[]);
   toast('Cleared','i');
   showPage('e_settings');
+}
+function getCurrentLocation(){
+  const msg=document.getElementById('att-msg');
+  msg.innerHTML='<div class="al al-b">Getting your location…</div>';
+  if(!navigator.geolocation){
+    msg.innerHTML='<div class="al al-r">Geolocation is not supported by your browser.</div>';
+    return;
+  }
+  navigator.geolocation.getCurrentPosition(
+    pos=>{
+      document.getElementById('att-lat').value=pos.coords.latitude.toFixed(6);
+      document.getElementById('att-lng').value=pos.coords.longitude.toFixed(6);
+      msg.innerHTML=`<div class="al al-g">Location captured: ${pos.coords.latitude.toFixed(6)}, ${pos.coords.longitude.toFixed(6)}</div>`;
+    },
+    err=>{
+      msg.innerHTML=`<div class="al al-r">Could not get location: ${err.message}</div>`;
+    },
+    {enableHighAccuracy:true,timeout:10000}
+  );
+}
+
+async function saveAttSettings(){
+  const msg=document.getElementById('att-msg');
+  const lat=parseFloat(document.getElementById('att-lat').value);
+  const lng=parseFloat(document.getElementById('att-lng').value);
+  const rad=parseInt(document.getElementById('att-rad').value)||100;
+  const start=document.getElementById('att-start').value;
+  const end=document.getElementById('att-end').value;
+  const addr=document.getElementById('att-addr').value;
+  if(!lat||!lng){msg.innerHTML='<div class="al al-r">Please enter or capture a valid location.</div>';return;}
+  if(!start||!end){msg.innerHTML='<div class="al al-r">Please set shift start and end times.</div>';return;}
+  try{
+    await apiFetch('POST','/settings',{
+      work_lat:lat,
+      work_lng:lng,
+      work_radius:rad,
+      shift_start:start,
+      shift_end:end,
+      work_address:addr
+    });
+    const current=DB.g('att_settings')||{};
+    DB.s('att_settings',{...current,work_lat:String(lat),work_lng:String(lng),work_radius:String(rad),shift_start:start,shift_end:end,work_address:addr});
+    msg.innerHTML='<div class="al al-g">Attendance settings saved successfully.</div>';
+  }catch(e){
+    msg.innerHTML=`<div class="al al-r">Failed to save: ${e.message}</div>`;
+  }
 }
 function saveBizInfo(){
   const co=DB.g('company')||{};
@@ -2030,21 +2097,53 @@ function clockIn(){
   },{timeout:8000,maximumAge:0,enableHighAccuracy:true});
 }
 
-function completeClock(allowed, note){
-  if(!allowed){document.getElementById('att-msg').innerHTML=`<div class="al al-r">You are too far from the work location.</div>`;return;}
+function completeClock(pos){
+  const as=DB.g('att_settings')||{};
+  const workLat=parseFloat(as.work_lat||'0');
+  const workLng=parseFloat(as.work_lng||'0');
+  const radius=parseFloat(as.work_radius||'100');
+  const shiftStart=as.shift_start||'08:00';
+  const workAddress=as.work_address||'Office';
+
+  if(!workLat||!workLng){
+    toast('Attendance not configured yet. Contact your employer.','e');
+    return;
+  }
+
+  // Calculate distance from office using Haversine formula
+  const R=6371000;
+  const lat1=pos.coords.latitude*Math.PI/180;
+  const lat2=workLat*Math.PI/180;
+  const dLat=(workLat-pos.coords.latitude)*Math.PI/180;
+  const dLng=(workLng-pos.coords.longitude)*Math.PI/180;
+  const a=Math.sin(dLat/2)*Math.sin(dLat/2)+Math.cos(lat1)*Math.cos(lat2)*Math.sin(dLng/2)*Math.sin(dLng/2);
+  const dist=R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+
+  if(dist>radius){
+    toast(`You are ${Math.round(dist)}m away from ${workAddress}. Must be within ${radius}m to clock in.`,'e');
+    return;
+  }
+
   const now=new Date();
-  const hour=now.getHours();
-  const status=hour<8?'present':hour<9?'late':'late';
+  const timeStr=now.toISOString();
+  const dateStr=now.toISOString().split('T')[0];
+  const [sh,sm]=shiftStart.split(':').map(Number);
+  const shiftMinutes=sh*60+sm;
+  const nowMinutes=now.getHours()*60+now.getMinutes();
+  const status=nowMinutes<=shiftMinutes?'present':'late';
+
   const att=DB.g('attendance')||[];
-  att.push({empId:CU.id,empName:CU.name,date:today(),clockIn:now.toISOString(),clockOut:null,status});
+  const newRec={empId:CU.id,empName:CU.name,date:dateStr,status,clockIn:timeStr,clockOut:null};
+  att.push(newRec);
   DB.s('attendance',att);
-  const newRec=att[att.length-1];
+  DB.s('clocked_in','1');
+
   apiFetch('POST','/data/attendance',newRec)
     .then(r=>{if(r.record){newRec.id=r.record.id;DB.s('attendance',att);}})
     .catch(()=>{});
-  const noteHtml=note?`<div class="al al-a" style="margin-top:8px">${note}</div>`:'';
-  document.getElementById('att-msg').innerHTML=`<div class="al al-g">Clocked in at ${now.toLocaleTimeString('en-GH',{hour:'2-digit',minute:'2-digit'})}. Status: <strong>${status}</strong></div>${noteHtml}`;
-  setTimeout(()=>showPage('emp_attendance'),1200);
+
+  showPage('emp_attendance');
+  toast(`Clocked in — ${status}`,'s');
 }
 
 function clockOut(){
