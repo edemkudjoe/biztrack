@@ -2541,7 +2541,7 @@ function submitLeave(){
   if(!from||!to||!rsn){msg.innerHTML='<div class="al al-r">Please fill all fields.</div>';return;}
   const days=Math.ceil((new Date(to)-new Date(from))/(1000*3600*24))+1;
   if(days<1){msg.innerHTML='<div class="al al-r">End date must be after start date.</div>';return;}
-  const rec={empId:CU.id,empName:CU.name,type:document.getElementById('lv-type').value,from,to,days,reason:rsn,date:today(),status:'pending'};
+  const rec={empId:CU.id,empName:CU.name,type:document.getElementById('lv-type').value,fromDate:from,toDate:to,days,reason:rsn,date:today(),status:'pending'};
   DB.push('leaves',rec);
   apiFetch('POST','/data/leaves',rec)
     .then(r=>{if(r.record){const leaves=DB.g('leaves')||[];const i=leaves.findIndex(l=>l.empId===rec.empId&&l.fromDate===rec.fromDate);if(i>=0){leaves[i].id=r.record.id;DB.s('leaves',leaves);}}})
