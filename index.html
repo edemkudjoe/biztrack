@@ -1651,8 +1651,11 @@ function openAddJobPosting(){
     const desc=document.getElementById('jp-desc').value.trim();
     if(!title||!desc){toast('Title and Description required','e');return;}
     const jobs=DB.g('job_postings')||[];
-    jobs.push({id:Date.now(),title,dept:document.getElementById('jp-dept').value,type:document.getElementById('jp-type').value,location:document.getElementById('jp-loc').value,salary:document.getElementById('jp-sal').value,deadline:document.getElementById('jp-dead').value,description:desc,requirements:document.getElementById('jp-req').value,active:true,postedDate:today()});
-    DB.s('job_postings',jobs);apiFetch('POST', '/data/job_postings', jobs[jobs.length-1]).catch(()=>{});closeModal();showPage('e_recruitment');toast('Job posted to Careers Portal','s');
+    const newJob={id:Date.now(),title,dept:document.getElementById('jp-dept').value,type:document.getElementById('jp-type').value,location:document.getElementById('jp-loc').value,salary:document.getElementById('jp-sal').value,deadline:document.getElementById('jp-dead').value,description:desc,requirements:document.getElementById('jp-req').value,active:true,postedDate:today()};
+    jobs.push(newJob);
+    DB.s('job_postings',jobs);
+    apiFetch('POST','/data/job_postings',newJob).catch(()=>{});
+    closeModal();showPage('e_recruitment');toast('Job posted to Careers Portal','s');
   }}]);
 }
 
@@ -1668,21 +1671,28 @@ function openEditJobPosting(idx){
     <div class="f"><label>Requirements</label><textarea id="ep-req" rows="3">${j.requirements||''}</textarea></div>
   `,[{l:'Save Changes',c:'b-gr',fn:()=>{
     jobs[idx]={...jobs[idx],title:document.getElementById('ep-title').value,dept:document.getElementById('ep-dept').value,type:document.getElementById('ep-type').value,location:document.getElementById('ep-loc').value,salary:document.getElementById('ep-sal').value,deadline:document.getElementById('ep-dead').value,description:document.getElementById('ep-desc').value,requirements:document.getElementById('ep-req').value};
-    DB.s('job_postings',jobs);apiFetch('PUT', '/data/job_postings', jobs[idx]).catch(()=>{});closeModal();showPage('e_recruitment');toast('Job posting updated','s');
+    DB.s('job_postings',jobs);
+    apiFetch('PUT','/data/job_postings',jobs[idx]).catch(()=>{});
+    closeModal();showPage('e_recruitment');toast('Job posting updated','s');
   }}]);
 }
 
 function toggleJobPosting(idx){
   const jobs=DB.g('job_postings')||[];
   jobs[idx].active=!jobs[idx].active;
-  DB.s('job_postings',jobs);showPage('e_recruitment');
+  DB.s('job_postings',jobs);
+  apiFetch('PUT','/data/job_postings',jobs[idx]).catch(()=>{});
+  showPage('e_recruitment');
   toast(jobs[idx].active?'Job posting activated':'Job posting paused','i');
 }
 
 function deleteJobPosting(idx){
   if(!confirm('Delete this job posting?'))return;
   const jobs=DB.g('job_postings')||[];
-  jobs.splice(idx,1);DB.s('job_postings',jobs);showPage('e_recruitment');toast('Deleted','i');
+  jobs.splice(idx,1);
+  DB.s('job_postings',jobs);
+  showPage('e_recruitment');
+  toast('Deleted','i');
 }
 
 function openPublicCareersPreview(){openCareersPortal();}
@@ -1702,6 +1712,16 @@ function openCareersPortal(){
 function closeCareersPortal(){
   document.getElementById('careers-portal').classList.remove('open');
   document.getElementById('login-screen').style.display='flex';
+}
+
+function showJobsList(){
+  document.getElementById('cp-jobs-view').style.display='block';
+  document.getElementById('cp-apply-view').style.display='none';
+  document.getElementById('cp-track-view').style.display='none';
+  apiFetch('GET','/data/job_postings').then(r=>{
+    if(r.records) DB.s('job_postings',r.records);
+    renderJobsList();
+  }).catch(()=>renderJobsList());
 }
 
 function renderJobsList(){
@@ -1760,12 +1780,12 @@ function submitCareersApplication(){
   apps.push(newApp);DB.s('applicants',apps);
   apiFetch('POST','/data/applicants',newApp).then(r=>{if(r.record){const a2=DB.g('applicants')||[];const i=a2.findIndex(x=>x.email===newApp.email&&x.position===newApp.position);if(i>=0){a2[i].id=r.record.id;DB.s('applicants',a2);}}}).catch(()=>{});
   document.getElementById('cp-apply-form').style.display='none';
+  document.getElementById('cp-apply-done').style.display='block';
   document.getElementById('cp-apply-done').innerHTML=`
-  <div style="font-size:52px;margin-bottom:12px">${ic('check-circle',52)}</div>
-  <h3 style="font-size:20px;font-weight:900;color:#fff;margin-bottom:8px">Application Submitted!</h3>
-  <p style="color:rgba(255,255,255,.55);font-size:14px;margin-bottom:20px">Thank you for applying. We'll be in touch if you are shortlisted.</p>
-  <div id="cp-track-section"></div>`;
-  document.getElementById('cp-track-section').innerHTML=`<div class="al al-g" style="text-align:left"><strong>Your tracking email:</strong> ${email}<br><small>Use your email to check your application status anytime.</small></div>`;
+    <div style="margin-bottom:12px;color:var(--accent)">${ic('check-circle',52)}</div>
+    <h3 style="font-size:20px;font-weight:900;color:#fff;margin-bottom:8px">Application Submitted!</h3>
+    <p style="color:rgba(255,255,255,.55);font-size:14px;margin-bottom:20px">Thank you for applying. We'll be in touch if you are shortlisted.</p>
+    <div class="al al-g" style="text-align:left"><strong>Your tracking email:</strong> ${email}<br><small>Use your email to check your application status anytime.</small></div>`;
 }
 
 function showTrackView(){
@@ -1791,7 +1811,7 @@ function trackCareersApplication(){
     const stages=['pending','shortlisted','testing','interviewing','accepted'];
     const si=stages.indexOf(stage);
     return `<div class="cp-progress">
-      <div class="cp-progress-title">📋 ${a.position||'Application'}</div>
+      <div class="cp-progress-title">${ic('file-text',13)} ${a.position||'Application'}</div>
       <div style="font-size:12px;color:rgba(255,255,255,.4);margin-bottom:12px">Applied: ${a.date||'—'}</div>
       ${stages.map((s,i)=>`<div class="cp-stage">
         <div class="cp-stage-dot ${i<si?'done':i===si?'current':''}"></div>
@@ -1799,120 +1819,9 @@ function trackCareersApplication(){
         ${i===si?`<span style="font-size:11px;color:rgba(255,255,255,.35);margin-left:auto">● Current</span>`:''}
       </div>`).join('')}
       ${stage==='rejected'?`<div class="al al-r" style="margin-top:12px;margin-bottom:0">Thank you for applying. We have moved forward with other candidates.</div>`:''}
-      ${stage==='accepted'?`<div class="al al-g" style="margin-top:12px;margin-bottom:0">🎉 Congratulations! An offer has been extended to you.</div>`:''}
+      ${stage==='accepted'?`<div class="al al-g" style="margin-top:12px;margin-bottom:0">${ic('check-circle',13)} Congratulations! An offer has been extended to you.</div>`:''}
     </div>`;
   }).join('');
-}
-function genNewLink(){DB.s('rec_link','https://biztrack.app/apply/'+Math.random().toString(36).substr(2,9));showPage('e_recruitment');}
-function openApplicantPortal(){
-  document.getElementById('app').style.display='none';
-  document.getElementById('ap-form-wrap').style.display='block';
-  document.getElementById('ap-test-wrap').style.display='none';
-  document.getElementById('ap-done-wrap').style.display='none';
-  document.getElementById('ap-msg').innerHTML='';
-  document.getElementById('applicant-portal').classList.add('open');
-  window._portalReturn=true;
-}
-function backFromPortal(){
-  document.getElementById('applicant-portal').classList.remove('open');
-  document.getElementById('offer-portal').classList.remove('open');
-  document.getElementById('app').style.display='block';
-  window._portalReturn=false;
-  showPage('e_recruitment');
-}
-
-async function rankApplicants(){
-  const btn=document.getElementById('rank-btn');
-  if(btn){btn.innerHTML=`<span class="ldr"></span> Ranking…`;btn.disabled=true;}
-  const apps=DB.g('applicants')||[];
-  if(apps.length===0){toast('No applications to rank','w');return;}
-
-  // Score locally: edu score + exp score + random variance
-  const updated=apps.map(a=>{
-    const eduScore=parseInt(a.eduScore||50);
-    const expScore=parseInt(a.expScore||0);
-    const score=Math.min(100,Math.max(5,eduScore+expScore+Math.floor(Math.random()*8)));
-    return{...a,score};
-  });
-  DB.s('applicants',updated);
-  DB.s('rec_stage','shortlisted');
-  setTimeout(()=>{showPage('e_recruitment');toast('Candidates ranked by merit','s');},600);
-}
-
-function inviteTop50(){
-  const apps=DB.g('applicants')||[];
-  const top=apps.slice().sort((a,b)=>(b.score||0)-(a.score||0)).slice(0,50);
-  const updated=apps.map(a=>({...a,testInvited:top.some(t=>t.email===a.email)}));
-  DB.s('applicants',updated); DB.s('rec_stage','testing');
-  toast(`Top ${Math.min(50,top.length)} candidates invited for aptitude test`,'s');
-  showPage('e_recruitment');
-}
-function selectTop10(){
-  const apps=DB.g('applicants')||[];
-  const tested=apps.filter(a=>a.testScore!==undefined).sort((a,b)=>b.testScore-a.testScore).slice(0,10);
-  const updated=apps.map(a=>({...a,invited:tested.some(t=>t.email===a.email)}));
-  DB.s('applicants',updated); DB.s('rec_stage','interviewing');
-  toast(`Top ${tested.length} candidates selected for interviews`,'s');
-  showPage('e_recruitment');
-}
-function sendOffers(){
-  const apps=DB.g('applicants')||[];
-  const updated=apps.map(a=>a.invited&&!a.offerSent?{...a,offerSent:true}:a);
-  DB.s('applicants',updated);
-  toast('Offer links sent to top-10 candidates','s');
-  showPage('e_recruitment');
-}
-function openAptSetup(){
-  const qs=DB.g('apt_qs')||[];
-  openModal('Aptitude Test Questions',`
-    <div style="max-height:260px;overflow-y:auto;margin-bottom:16px">
-      ${qs.length===0?'<p style="color:var(--text-muted);font-size:13px">No questions yet.</p>':qs.map((q,i)=>`
-        <div style="background:var(--bg);border-radius:8px;padding:12px;margin-bottom:9px">
-          <div style="font-size:11px;font-weight:700;color:var(--text-muted);margin-bottom:5px">Q${i+1}</div>
-          <div style="font-size:13px;font-weight:700">${q.q}</div>
-          <div style="margin-top:6px;font-size:12px">${q.opts.map((o,oi)=>`<span style="margin-right:9px;${oi===q.ans?'color:var(--accent);font-weight:700':'color:var(--text-muted)'}">${String.fromCharCode(65+oi)}) ${o}</span>`).join('')}</div>
-        </div>`).join('')}
-    </div>
-    <hr class="divider">
-    <div style="font-size:12px;font-weight:700;margin-bottom:11px">+ Add New Question</div>
-    <div class="f"><label>Question</label><input type="text" id="nq-q" placeholder="Enter question text"></div>
-    <div class="fr"><div class="f"><label>Option A</label><input type="text" id="nq-a"></div><div class="f"><label>Option B</label><input type="text" id="nq-b"></div></div>
-    <div class="fr"><div class="f"><label>Option C</label><input type="text" id="nq-c"></div><div class="f"><label>Option D</label><input type="text" id="nq-d"></div></div>
-    <div class="f"><label>Correct Answer</label><select id="nq-ans"><option value="0">A</option><option value="1">B</option><option value="2">C</option><option value="3">D</option></select></div>
-  `,[{l:'Add Question',c:'b-nv',fn:()=>{
-    const q=document.getElementById('nq-q').value;
-    if(!q){toast('Enter question text','e');return;}
-    const qs=DB.g('apt_qs')||[];
-    qs.push({q,opts:[document.getElementById('nq-a').value,document.getElementById('nq-b').value,document.getElementById('nq-c').value,document.getElementById('nq-d').value],ans:parseInt(document.getElementById('nq-ans').value)});
-    DB.s('apt_qs',qs);closeModal();showPage('e_recruitment');toast('Question added','s');
-  }}]);
-}
-
-function openLetterSetup(){
-  const co=DB.g('company')||{};
-  openModal('Employment Letter Configuration',`
-    <div class="al al-b">These details will appear on the automated employment letter sent to top-10 candidates.</div>
-    <div class="fr"><div class="f"><label>Company Name</label><input type="text" id="cl-nm" value="${co.name||''}"></div><div class="f"><label>Company Email</label><input type="email" id="cl-em" value="${co.email||''}"></div></div>
-    <div class="fr"><div class="f"><label>Company Phone</label><input type="text" id="cl-ph" value="${co.phone||''}"></div><div class="f"><label>Website</label><input type="text" id="cl-wb" value="${co.web||''}"></div></div>
-    <div class="f"><label>Company Address</label><input type="text" id="cl-ad" value="${co.address||''}"></div>
-    <div class="fr"><div class="f"><label>Signatory Name</label><input type="text" id="cl-sg" value="${co.signatory||''}"></div><div class="f"><label>Signatory Title</label><input type="text" id="cl-st" value="${co.sigTitle||''}"></div></div>
-    <div class="f"><label>Company Logo URL (optional)</label><input type="url" id="cl-lg" value="${co.logo||''}" placeholder="https://…/logo.png"></div>
-    <div class="f"><label>Default Hourly Rate for New Hires (₵)</label><input type="number" id="cl-rt" value="${co.defaultRate||20}"></div>
-    <div class="f"><label>Work Schedule</label><input type="text" id="cl-ws" value="${co.workSchedule||'Monday – Friday, 8:00 AM – 5:00 PM'}"></div>
-    <div class="f"><label>Probation Period</label><input type="text" id="cl-pb" value="${co.probation||'3 months'}"></div>
-  `,[{l:'Save & Generate Link',c:'b-gr',fn:()=>{
-    DB.s('company',{name:document.getElementById('cl-nm').value,email:document.getElementById('cl-em').value,phone:document.getElementById('cl-ph').value,web:document.getElementById('cl-wb').value,address:document.getElementById('cl-ad').value,signatory:document.getElementById('cl-sg').value,sigTitle:document.getElementById('cl-st').value,logo:document.getElementById('cl-lg').value,defaultRate:parseFloat(document.getElementById('cl-rt').value)||20,workSchedule:document.getElementById('cl-ws').value,probation:document.getElementById('cl-pb').value});
-    closeModal();showPage('e_recruitment');toast('Letter configuration saved','s');
-  }}]);
-}
-function previewOfferPortal(){
-  document.getElementById('app').style.display='none';
-  // Load first invited applicant or demo
-  const apps=DB.g('applicants')||[];
-  const app=apps.find(a=>a.invited)||{name:'Demo Candidate',position:'Test Role',email:'demo@test.com'};
-  loadOfferPortal(app.email||'demo@test.com');
-  document.getElementById('offer-portal').classList.add('open');
-  window._portalReturn=true;
 }
 
 // ─── LEAVES ───
