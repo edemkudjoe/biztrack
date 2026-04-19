@@ -2349,8 +2349,8 @@ function clockIn(){
     return;
   }
   navigator.geolocation.getCurrentPosition(pos=>{
-    const wl=DB.g('work_location')||{lat:5.6037,lng:-0.1870,radius:500};
-    const dist=getDistance(pos.coords.latitude,pos.coords.longitude,wl.lat,wl.lng);
+    const s=DB.g('att_settings')||{};
+    const wl={lat:parseFloat(s.work_lat)||5.6037,lng:parseFloat(s.work_lng)||-0.1870,radius:parseFloat(s.work_radius)||500};
     if(dist<=wl.radius){
       completeClock(true,null);
     } else {
