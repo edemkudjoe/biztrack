@@ -25,7 +25,7 @@ function getSupabase() {
 const EMPLOYEE_FILTERED = ['attendance', 'leaves', 'advances', 'promos', 'complaints'];
 const ALLOWED_TABLES = [
   'attendance', 'costs', 'revenue', 'inventory', 'tasks',
-  'leaves', 'advances', 'promos', 'complaints', 'applicants'
+  'leaves', 'advances', 'promos', 'complaints', 'applicants', 'job_postings'
 ];
 
 function cors(res) {
