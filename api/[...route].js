@@ -209,6 +209,38 @@ async function handleChangePassword(req, res) {
   return res.status(200).json({ success: true });
 }
 
+// ═══════════════════════════════════════════════════
+// ─── SETTINGS  (GET|POST /api/settings) ───
+// ═══════════════════════════════════════════════════
+async function handleSettings(req, res) {
+  if (req.method === 'GET') {
+    const { data, error } = await getSupabase()
+      .from('settings').select('*');
+    if (error) return res.status(500).json({ error: error.message });
+    const obj = {};
+    data.forEach(row => { obj[row.key] = row.value; });
+    return res.status(200).json({ settings: obj });
+  }
+
+  if (req.method === 'POST') {
+    let decoded;
+    try { decoded = verifyToken(req); }
+    catch (e) { return res.status(401).json({ error: 'Unauthorized' }); }
+    if (decoded.role !== 'employer') {
+      return res.status(403).json({ error: 'Forbidden' });
+    }
+    const updates = req.body || {};
+    for (const [key, value] of Object.entries(updates)) {
+      await getSupabase()
+        .from('settings')
+        .upsert({ key, value: String(value), updated_at: new Date().toISOString() });
+    }
+    return res.status(200).json({ success: true });
+  }
+
+  return res.status(405).end();
+}
+
 // ═══════════════════════════════════════
 // ─── MAIN ROUTER ───
 // ═══════════════════════════════════════
@@ -233,6 +265,7 @@ module.exports = async function handler(req, res) {
       case 'auth':            return await handleAuth(req, res);
       case 'users':           return await handleUsers(req, res, parts);
       case 'data':            return await handleData(req, res, parts);
+      case 'settings':        return await handleSettings(req, res);
       case 'change-password': return await handleChangePassword(req, res);
       default:                return res.status(404).json({ error: 'Not found' });
     }
