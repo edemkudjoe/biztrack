@@ -39,9 +39,6 @@ a{text-decoration:none;color:inherit}
   background:linear-gradient(135deg,#1b2e4b 0%,#2d4f80 100%)}
 .login-box{background:var(--white);border-radius:16px;padding:44px 40px 36px;width:90%; max-width:420px;
   box-shadow:0 20px 60px rgba(0,0,0,.28);animation:slideUp .45s ease}
-<div class="login-careers-link" onclick="openCareersPortal()">
-  Looking for a job? <span>Visit our Careers Portal →</span>
-</div>
 @keyframes slideUp{from{opacity:0;transform:translateY(26px)}to{opacity:1;transform:translateY(0)}}
 .login-logo{font-size:28px;font-weight:900;color:var(--navy);letter-spacing:-1px;margin-bottom:4px}
 .login-logo span{color:var(--accent)}
@@ -424,6 +421,10 @@ footer {
     <div class="login-err" id="l-err"></div>
     <button class="btn-login" id="l-btn" onclick="doLogin()">Sign In</button>
     <div class="login-hint" id="l-hint"></div>
+    <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border);text-align:center">
+      <span style="font-size:12.5px;color:var(--text-muted)">Looking for a job? </span>
+      <a onclick="openCareersPortal()" style="font-size:12.5px;color:var(--accent);font-weight:700;cursor:pointer;text-decoration:underline">Visit our Careers Portal →</a>
+    </div>
   </div>
 </div>
 
