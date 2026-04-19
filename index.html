@@ -963,10 +963,18 @@ function showPage(pid, skipHistory = false){
   }
 }
 function updNotif(){
-  const cnt=(DB.g('advances')||[]).filter(a=>a.status==='pending').length
-    +(DB.g('leaves')||[]).filter(l=>l.status==='pending').length
-    +(DB.g('promos')||[]).filter(p=>p.status==='pending').length
-    +(DB.g('applicants')||[]).filter(a=>a.offerStatus==='negotiated').length;
+  let cnt=0;
+  if(ROLE==='employer'){
+    cnt=(DB.g('advances')||[]).filter(a=>a.status==='pending').length
+      +(DB.g('leaves')||[]).filter(l=>l.status==='pending').length
+      +(DB.g('promos')||[]).filter(p=>p.status==='pending').length
+      +(DB.g('applicants')||[]).filter(a=>a.offerStatus==='negotiated').length;
+  } else if(ROLE==='employee'&&CU){
+    cnt=(DB.g('tasks')||[]).filter(t=>t.empId===CU.id&&t.status==='pending').length
+      +(DB.g('leaves')||[]).filter(l=>l.empId===CU.id&&(l.status==='approved'||l.status==='rejected')&&!l.empAccepted&&l.status!=='declined').length
+      +(DB.g('advances')||[]).filter(a=>a.empId===CU.id&&(a.status==='approved'||a.status==='rejected')).length
+      +(DB.g('promos')||[]).filter(p=>p.empId===CU.id&&(p.status==='approved'||p.status==='rejected')).length;
+  }
   const d=document.getElementById('nb-dot'); if(d) d.style.display=cnt>0?'block':'none';
 }
 
@@ -1078,29 +1086,62 @@ function pEDash(el){
 
 // ─── NOTIFICATIONS ───
 function pNotifications(el){
-  const adv=(DB.g('advances')||[]).filter(a=>a.status==='pending');
-  const lv=(DB.g('leaves')||[]).filter(l=>l.status==='pending');
-  const pr=(DB.g('promos')||[]).filter(p=>p.status==='pending');
-  const neg=(DB.g('applicants')||[]).filter(a=>a.offerStatus==='negotiated');
-  const low=(DB.g('inventory')||[]).filter(i=>i.qty<=i.min);
-  const items=[
-    ...adv.map(a=>({ico:'credit-card',txt:`<strong>${a.empName}</strong> requested a salary advance of ${fmt(a.amount)}`,t:'Finance',go:'e_finance',cls:'b-am'})),
-    ...lv.map(l=>({ico:'calendar',txt:`<strong>${l.empName}</strong> submitted a leave request`,t:'HR',go:'e_leaves',cls:'b-bl'})),
-    ...pr.map(p=>({ico:'arrow-up',txt:`<strong>${p.empName}</strong> submitted a promotion request`,t:'HR',go:'e_employees',cls:'b-pr'})),
-    ...neg.map(a=>({ico:'file-text',txt:`<strong>${a.name}</strong> sent a counter-offer`,t:'Recruitment',go:'e_recruitment',cls:'b-nv'})),
-    ...low.map(i=>({ico:'alert-triangle',txt:`Low stock: <strong>${i.item}</strong> (${i.qty} ${i.unit})`,t:'Inventory',go:'e_inventory',cls:'b-rd'})),
-  ];
-  el.innerHTML=`
-  ${ph('Notifications','Alerts and pending actions.')}
-  ${items.length===0?`<div class="es"><div class="es-ico">${ic('bell',44)}</div><h3>All clear!</h3><p>No pending notifications.</p></div>`:`
-  <div style="display:flex;flex-direction:column;gap:10px">
-    ${items.map(n=>`
-      <div style="display:flex;align-items:center;gap:12px;padding:14px;background:var(--card);border-radius:10px;border:1px solid var(--border);cursor:pointer" onclick="showPage('${n.go}')">
-        <div style="width:38px;height:38px;border-radius:10px;background:var(--bg);display:flex;align-items:center;justify-content:center;color:var(--navy-lighter);flex-shrink:0">${ic(n.ico,18)}</div>
-        <div style="flex:1"><div style="font-size:13px;color:var(--text)">${n.txt}</div><div style="font-size:11px;color:var(--text-muted);margin-top:2px">${n.t}</div></div>
-        <span class="btn btn-sm ${n.cls}" style="flex-shrink:0">View</span>
-      </div>`).join('')}
-  </div>`}`;
+  if(ROLE==='employer'){
+    const adv=(DB.g('advances')||[]).filter(a=>a.status==='pending');
+    const lv=(DB.g('leaves')||[]).filter(l=>l.status==='pending');
+    const pr=(DB.g('promos')||[]).filter(p=>p.status==='pending');
+    const neg=(DB.g('applicants')||[]).filter(a=>a.offerStatus==='negotiated');
+    const low=(DB.g('inventory')||[]).filter(i=>i.qty<=i.min);
+    const items=[
+      ...adv.map(a=>({ico:'credit-card',txt:`<strong>${a.empName}</strong> requested a salary advance of ${fmt(a.amount)}`,t:'Finance',go:'e_finance',cls:'b-am'})),
+      ...lv.map(l=>({ico:'calendar',txt:`<strong>${l.empName}</strong> submitted a leave request`,t:'HR',go:'e_leaves',cls:'b-bl'})),
+      ...pr.map(p=>({ico:'arrow-up',txt:`<strong>${p.empName}</strong> submitted a promotion request`,t:'HR',go:'e_employees',cls:'b-pr'})),
+      ...neg.map(a=>({ico:'file-text',txt:`<strong>${a.name}</strong> sent a counter-offer`,t:'Recruitment',go:'e_recruitment',cls:'b-nv'})),
+      ...low.map(i=>({ico:'alert-triangle',txt:`Low stock: <strong>${i.item}</strong> (${i.qty} ${i.unit})`,t:'Inventory',go:'e_inventory',cls:'b-rd'})),
+    ];
+    el.innerHTML=`
+    ${ph('Notifications','Alerts and pending actions.')}
+    ${items.length===0?`<div class="es"><div class="es-ico">${ic('bell',44)}</div><h3>All clear!</h3><p>No pending notifications.</p></div>`:`
+    <div style="display:flex;flex-direction:column;gap:10px">
+      ${items.map(n=>`
+        <div style="display:flex;align-items:center;gap:12px;padding:14px;background:var(--card);border-radius:10px;border:1px solid var(--border);cursor:pointer" onclick="showPage('${n.go}')">
+          <div style="width:38px;height:38px;border-radius:10px;background:var(--bg);display:flex;align-items:center;justify-content:center;color:var(--navy-lighter);flex-shrink:0">${ic(n.ico,18)}</div>
+          <div style="flex:1"><div style="font-size:13px;color:var(--text)">${n.txt}</div><div style="font-size:11px;color:var(--text-muted);margin-top:2px">${n.t}</div></div>
+          <span class="btn btn-sm ${n.cls}" style="flex-shrink:0">View</span>
+        </div>`).join('')}
+    </div>`}`;
+
+  } else {
+    // ── EMPLOYEE NOTIFICATIONS ──
+    const myTasks=(DB.g('tasks')||[]).filter(t=>t.empId===CU.id&&t.status==='pending');
+    const myLeaves=(DB.g('leaves')||[]).filter(l=>l.empId===CU.id&&(l.status==='approved'||l.status==='rejected')&&!l.empAccepted&&l.status!=='declined');
+    const myAdvances=(DB.g('advances')||[]).filter(a=>a.empId===CU.id&&(a.status==='approved'||a.status==='rejected'));
+    const myPromos=(DB.g('promos')||[]).filter(p=>p.empId===CU.id&&(p.status==='approved'||p.status==='rejected'));
+    const myComplaints=(DB.g('complaints')||[]).filter(c=>c.empId===CU.id&&c.resolved);
+
+    const items=[
+      ...myTasks.map(t=>({ico:'check-square',txt:`New task assigned: <strong>${t.title}</strong>`,sub:`Due: ${t.dueDate||'No due date'}`,go:'emp_tasks',cls:'b-am'})),
+      ...myLeaves.map(l=>({ico:'calendar',txt:`Your leave request has been <strong>${l.status}</strong>`,sub:`${l.fromDate} → ${l.toDate} · ${l.payStatus||''}`,go:'emp_leave',cls:l.status==='approved'?'b-gr':'b-rd'})),
+      ...myAdvances.map(a=>({ico:'credit-card',txt:`Your advance request of ${fmt(a.amount)} was <strong>${a.status}</strong>`,sub:`Requested on ${a.date}`,go:'emp_finance',cls:a.status==='approved'?'b-gr':'b-rd'})),
+      ...myPromos.map(p=>({ico:'arrow-up',txt:`Your promotion request was <strong>${p.status}</strong>`,sub:`Applied for: ${p.desiredRole}`,go:'emp_promo',cls:p.status==='approved'?'b-gr':'b-rd'})),
+      ...myComplaints.map(c=>({ico:'check-circle',txt:`Your complaint has been <strong>resolved</strong>`,sub:`Subject: ${c.subject}`,go:'emp_complaints',cls:'b-gr'})),
+    ];
+
+    el.innerHTML=`
+    ${ph('My Notifications','Updates on your requests and assigned tasks.')}
+    ${items.length===0?`<div class="es"><div class="es-ico">${ic('bell',44)}</div><h3>All clear!</h3><p>No new notifications.</p></div>`:`
+    <div style="display:flex;flex-direction:column;gap:10px">
+      ${items.map(n=>`
+        <div style="display:flex;align-items:center;gap:12px;padding:14px;background:var(--card);border-radius:10px;border:1px solid var(--border);cursor:pointer" onclick="showPage('${n.go}')">
+          <div style="width:38px;height:38px;border-radius:10px;background:var(--bg);display:flex;align-items:center;justify-content:center;color:var(--navy-lighter);flex-shrink:0">${ic(n.ico,18)}</div>
+          <div style="flex:1">
+            <div style="font-size:13px;color:var(--text)">${n.txt}</div>
+            <div style="font-size:11px;color:var(--text-muted);margin-top:2px">${n.sub||''}</div>
+          </div>
+          <span class="btn btn-sm ${n.cls}" style="flex-shrink:0">View</span>
+        </div>`).join('')}
+    </div>`}`;
+  }
 }
 
 // ─── FINANCE ───
