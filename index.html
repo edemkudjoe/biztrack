@@ -2283,7 +2283,7 @@ function submitLeave(){
   const rec={empId:CU.id,empName:CU.name,type:document.getElementById('lv-type').value,from,to,days,reason:rsn,date:today(),status:'pending'};
   DB.push('leaves',rec);
   apiFetch('POST','/data/leaves',rec)
-    .then(r=>{if(r.record){const leaves=DB.g('leaves')||[];const i=leaves.findIndex(l=>l.empId===rec.empId&&l.fromDate===rec.fromDate);if(i>=0){leaves[i].id=r.record.id;DB.s('leaves',leaves);}}})`
+    .then(r=>{if(r.record){const leaves=DB.g('leaves')||[];const i=leaves.findIndex(l=>l.empId===rec.empId&&l.fromDate===rec.fromDate);if(i>=0){leaves[i].id=r.record.id;DB.s('leaves',leaves);}}})
     .catch(()=>{});
   msg.innerHTML='<div class="al al-g">Leave request submitted successfully. Awaiting employer response.</div>';
   updNotif();
