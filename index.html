@@ -1192,7 +1192,7 @@ function openAddRev(){
     const rec={date:document.getElementById('rv-d').value,amount:a,note:document.getElementById('rv-n').value};
     DB.push('revenue',rec);
     closeModal();showPage('e_finance');toast('Revenue added','s');
-    try{await apiFetch('POST','/data/revenue',rec);}catch(e){toast('Saved locally — will sync on next login','w');}
+    try{await apiFetch('POST','/data/revenue',rec);}catch(e){toast('Revenue error: '+e.message,'e');}
   }}]);
 }
 function openAddCost(){
@@ -1207,7 +1207,7 @@ function openAddCost(){
     const rec={id:Date.now(),cat:document.getElementById('cs-cat').value,desc:document.getElementById('cs-desc').value,amount:parseFloat(document.getElementById('cs-amt').value)||0,date:document.getElementById('cs-date').value};
     const costs=DB.g('costs')||[];costs.push(rec);
     DB.s('costs',costs);closeModal();showPage('e_finance');toast('Cost added','s');
-    try{await apiFetch('POST','/data/costs',rec);}catch(e){toast('Saved locally — will sync on next login','w');}
+   try{await apiFetch('POST','/data/costs',rec);}catch(e){toast('Cost error: '+e.message,'e');}
   }}]);
 }
 function resolveAdv(i,dec){
