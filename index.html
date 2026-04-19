@@ -2067,7 +2067,7 @@ async function saveAttSettings(){
       work_address:addr
     });
     const current=DB.g('att_settings')||{};
-    DB.s('att_settings',{...current,work_lat:lat,work_lng:lng,work_radius:rad
+    DB.s('att_settings',{...current,work_lat:lat,work_lng:lng,work_radius:rad}); // Added });
     msg.innerHTML='<div class="al al-g">Attendance settings saved successfully.</div>';
   }catch(e){
     msg.innerHTML=`<div class="al al-r">Failed to save: ${e.message}</div>`;
