@@ -2875,9 +2875,27 @@ function completeClock(pos){
   const timeStr=now.toISOString();
   const dateStr=now.toISOString().split('T')[0];
   const [sh,sm]=shiftStart.split(':').map(Number);
+  const [eh,em]=(as.shift_end||'17:00').split(':').map(Number);
   const shiftMinutes=sh*60+sm;
+  const shiftEndMinutes=eh*60+em;
+  const earlyWindowMinutes=shiftMinutes-60; // allow clock-in up to 1 hour early
   const nowMinutes=now.getHours()*60+now.getMinutes();
-  const status=nowMinutes<=shiftMinutes?'present':'late';
+
+// Block clock-in more than 1 hour before shift
+if(nowMinutes<earlyWindowMinutes){
+  const msg=document.getElementById('att-msg');
+  msg.innerHTML=`<div class="al al-r">Too early to clock in. Your shift starts at ${as.shift_start||'08:00'}. You can clock in from ${String(Math.floor(earlyWindowMinutes/60)).padStart(2,'0')}:${String(earlyWindowMinutes%60).padStart(2,'0')}.</div>`;
+  return;
+}
+
+// Block clock-in after shift end
+if(nowMinutes>shiftEndMinutes){
+  const msg=document.getElementById('att-msg');
+  msg.innerHTML=`<div class="al al-r">Shift has ended. Clock-in is not allowed after ${as.shift_end||'17:00'}.</div>`;
+  return;
+}
+
+const status=nowMinutes<=shiftMinutes?'present':'late';
 
   const att=DB.g('attendance')||[];
   const newRec={empId:CU.id,empName:CU.name,date:dateStr,status,clockIn:timeStr,clockOut:null};
