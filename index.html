@@ -905,7 +905,6 @@ function seed(){
   DB.s('employees', []);
   DB.s('costs', []);
   DB.s('revenue', []);
-  DB.s('inventory', []);
   DB.s('tasks', []);
   DB.s('attendance', []);
   DB.s('leaves', []);
@@ -1012,10 +1011,10 @@ async function launchApp(){
   };
 
   try {
-    const [uRes, tRes, iRes, aRes, cRes, rRes, lRes, adRes, prRes, cmRes, apRes] = await Promise.all([
+    const [uRes, tRes, aRes, cRes, rRes, lRes, adRes, prRes, cmRes, apRes] = await Promise.all([
       fetch(`${API}/users`,              { headers: authHeaders }),
       fetch(`${API}/data/tasks`,         { headers: authHeaders }),
-      fetch(`${API}/data/inventory`,     { headers: authHeaders }),
+      fetch(`${API}/data/attendance`,    { headers: authHeaders }),
       fetch(`${API}/data/attendance`,    { headers: authHeaders }),
       fetch(`${API}/data/costs`,         { headers: authHeaders }),
       fetch(`${API}/data/revenue`,       { headers: authHeaders }),
@@ -1028,7 +1027,6 @@ async function launchApp(){
 
     if (uRes.ok)  DB.s('employees',  (await uRes.json()).users    || []);
     if (tRes.ok)  DB.s('tasks',      (await tRes.json()).records  || []);
-    if (iRes.ok)  DB.s('inventory',  (await iRes.json()).records  || []);
     if (aRes.ok)  DB.s('attendance', (await aRes.json()).records  || []);
     if (cRes.ok)  DB.s('costs',      (await cRes.json()).records  || []);
     if (rRes.ok)  DB.s('revenue',    (await rRes.json()).records  || []);
@@ -1056,24 +1054,24 @@ async function launchApp(){
   // ═══════════════════════════ NAV ═══════════════════════════
 const EMP_NAV=[
   {s:'MAIN',items:[{id:'e_dash',ic:'grid',l:'Dashboard'},{id:'notifications',ic:'bell',l:'Notifications'}]},
-  {s:'BUSINESS',items:[{id:'e_finance',ic:'dollar-sign',l:'Finance & Revenue'},{id:'e_performance',ic:'trending-up',l:'Performance'},{id:'e_attendance_mgr',ic:'clock',l:'Attendance'},{id:'e_inventory',ic:'package',l:'Inventory'}]},
+  {s:'BUSINESS',items:[{id:'e_finance',ic:'dollar-sign',l:'Finance & Revenue'},{id:'e_performance',ic:'trending-up',l:'Performance'},{id:'e_attendance_mgr',ic:'clock',l:'Attendance'}]},
   {s:'PEOPLE',items:[{id:'e_employees',ic:'users',l:'Employees'},{id:'e_recruitment',ic:'search',l:'Recruitment'},{id:'e_leaves',ic:'calendar',l:'Leave Management'},{id:'e_benefits',ic:'gift',l:'Benefits'},{id:'e_complaints',ic:'message-square',l:'Complaints'}]},
   {s:'SYSTEM',items:[{id:'e_settings',ic:'settings',l:'Settings'}]},
 ];
 const EE_NAV=[
   {s:'MAIN',items:[{id:'emp_dash',ic:'home',l:'My Dashboard'},{id:'notifications',ic:'bell',l:'Notifications'}]},
   {s:'FINANCE',items:[{id:'emp_finance',ic:'dollar-sign',l:'My Finance'},{id:'emp_advance',ic:'credit-card',l:'Request Advance'},{id:'emp_promo',ic:'arrow-up',l:'Request Promotion'}]},
-  {s:'WORK',items:[{id:'emp_attendance',ic:'clock',l:'Attendance'},{id:'emp_tasks',ic:'check-square',l:'My Tasks'},{id:'emp_inventory',ic:'package',l:'Submit Inventory'},{id:'emp_leave',ic:'calendar',l:'Request Leave'},{id:'emp_complaints',ic:'message-square',l:'Complaints'}]},
+  {s:'WORK',items:[{id:'emp_attendance',ic:'clock',l:'Attendance'},{id:'emp_tasks',ic:'check-square',l:'My Tasks'},{id:'emp_leave',ic:'calendar',l:'Request Leave'},{id:'emp_complaints',ic:'message-square',l:'Complaints'}]},
   {s:'PROFILE',items:[{id:'emp_profile',ic:'user',l:'My Profile'}]},
 ];
 const PT={
   e_dash:'Dashboard',notifications:'Notifications',e_finance:'Finance & Revenue',
   e_performance:'Performance',e_attendance_mgr:'Attendance Management',
-  e_inventory:'Inventory',e_employees:'Employees',e_recruitment:'Recruitment',
+  e_employees:'Employees',e_recruitment:'Recruitment',
   e_leaves:'Leave Management',e_benefits:'Benefits',e_complaints:'Complaints & Suggestions',
   e_settings:'Settings',emp_dash:'My Dashboard',emp_finance:'My Finance',
   emp_advance:'Salary Advance',emp_promo:'Promotion Request',emp_attendance:'Attendance',
-  emp_tasks:'My Tasks',emp_inventory:'Submit Inventory',emp_leave:'Leave Request',emp_complaints:'Complaints',emp_profile:'My Profile',
+  emp_tasks:'My Tasks',emp_leave:'Leave Request',emp_complaints:'Complaints',emp_profile:'My Profile',
 };
 function buildNav(){
   const nav=document.getElementById('sidebar-nav');
@@ -1091,11 +1089,11 @@ function showPage(pid, skipHistory = false){
   const pg=document.getElementById('pg');
   const R={
     e_dash:pEDash,notifications:pNotifications,e_finance:pFinance,
-    e_performance:pPerformance,e_attendance_mgr:pAttMgr,e_inventory:pInventory,
+    e_performance:pPerformance,e_attendance_mgr:pAttMgr,
     e_employees:pEmployees,e_recruitment:pRecruitment,e_leaves:pLeaves,
     e_benefits:pBenefits,e_complaints:pComplaints,e_settings:pSettings,
     emp_dash:pEmpDash,emp_finance:pEmpFinance,emp_advance:pAdvance,
-    emp_promo:pPromo,emp_attendance:pMyAtt,emp_tasks:pMyTasks,emp_inventory:pMyInventory,
+    emp_promo:pPromo,emp_attendance:pMyAtt,emp_tasks:pMyTasks,
     emp_leave:pMyLeave,emp_complaints:pMyComplaints,emp_profile:pProfile,
   };
   if(R[pid]) R[pid](pg); else pg.innerHTML='<p style="color:var(--text-muted)">Page not found.</p>';
@@ -1132,10 +1130,18 @@ function ph(title,sub=''){return`<div class="ph"><h2>${title}</h2>${sub?`<p>${su
 function sc(ico,lbl,val,ch='',cls=''){return`<div class="sc"><div class="sc-ico">${ic(ico,20)}</div><div class="sc-lbl">${lbl}</div><div class="sc-val">${val}</div>${ch?`<div class="sc-ch ${cls}">${ch}</div>`:''}</div>`}
 function bDot(status){return status==='present'?'bg':status==='late'?'ba':status==='absent'?'br':'bn'}
 function perfColor(s){return s>=80?'var(--accent)':s>=60?'var(--amber)':'var(--red)'}
+const TASK_SCORES={easy:10,medium:25,hard:50};
 function calcPerf(eid){
-  const tasks=(DB.g('tasks')||[]).filter(t=>t.empId===eid&&t.status==='done').length;
-  const att=(DB.g('attendance')||[]).filter(a=>a.empId===eid&&a.status==='present').length;
-  return Math.min(100,Math.max(10,tasks*10+att*4+30));
+  const tasks=DB.g('tasks')||[];
+  const empTasks=tasks.filter(t=>t.empId===eid&&t.status!=='cancelled');
+  if(empTasks.length===0) return 100;
+  let score=100;
+  empTasks.forEach(t=>{
+    const pts=TASK_SCORES[t.difficulty||'easy'];
+    if(t.status==='verified') score+=pts;
+    else if(t.status==='overdue'||t.status==='rejected') score-=pts;
+  });
+  return Math.min(150,Math.max(0,score));
 }
 function monthlyEarnings(eid){
   const emp=(DB.g('employees')||[]).find(e=>e.id===eid); if(!emp) return 0;
@@ -1166,13 +1172,11 @@ function pEDash(el){
   const emps=DB.g('employees')||[];
   const costs=DB.g('costs')||[];
   const rev=DB.g('revenue')||[];
-  const inv=DB.g('inventory')||[];
   const totalRev=rev.reduce((s,r)=>s+r.amount,0);
   const totalCosts=costs.reduce((s,c)=>s+c.amount,0);
   const estPayroll=emps.reduce((s,e)=>s+monthlyEarnings(e.id),0);
   const profit=totalRev-(totalCosts+estPayroll);
   const margin=totalRev>0?((profit/totalRev)*100).toFixed(1):0;
-  const lowStock=inv.filter(i=>i.qty<=i.min).length;
   const pending=(DB.g('advances')||[]).filter(a=>a.status==='pending').length+(DB.g('leaves')||[]).filter(l=>l.status==='pending').length;
   const todayAtt=(DB.g('attendance')||[]).filter(a=>a.date===today()&&a.clockIn).length;
 
@@ -1182,7 +1186,6 @@ function pEDash(el){
     ${sc('users','Total Employees',emps.length)}
     ${sc('bar-chart-2','Total Revenue',fmt(totalRev),'Period total','up')}
     ${sc('percent','Profit Margin',margin+'%',profit>=0?'Profitable':'Loss',profit>=0?'up':'dn')}
-    ${sc('package','Low Stock Items',lowStock,lowStock>0?'Needs restocking':'All good',lowStock>0?'dn':'up')}
     ${sc('bell','Pending Requests',pending,pending>0?'Awaiting action':'')}
     ${sc('clock','Clocked In Today',todayAtt,'Active employees')}
   </div>
@@ -1200,7 +1203,6 @@ function pEDash(el){
       <div class="cb" style="display:flex;flex-direction:column;gap:9px">
         <button class="btn b-nv btn-full" onclick="showPage('e_finance')">${ic('dollar-sign',15)} Finance & Revenue</button>
         <button class="btn b-gr btn-full" onclick="showPage('e_recruitment')">${ic('search',15)} Recruitment</button>
-        <button class="btn b-am btn-full" onclick="showPage('e_inventory')">${ic('package',15)} Inventory</button>
         <button class="btn b-bl btn-full" onclick="showPage('e_leaves')">${ic('calendar',15)} Leave Requests</button>
         <button class="btn b-pr btn-full" onclick="showPage('e_benefits')">${ic('gift',15)} Manage Benefits</button>
         <button class="btn b-ol btn-full" onclick="showPage('e_complaints')">${ic('message-square',15)} Complaints</button>
@@ -1208,14 +1210,6 @@ function pEDash(el){
     </div>
   </div>
   <div class="g2">
-    <div class="card mb">
-      <div class="ch"><span class="ct">${ic('package',15)} Inventory Alerts</span></div>
-      <div class="cb">
-        ${lowStock===0?'<div class="al al-g">All inventory levels are healthy.</div>':''}
-        ${inv.filter(i=>i.qty<=i.min).map(i=>`<div class="al al-a">${ic('alert-triangle',13)} <strong>${i.item}</strong> — ${i.qty} ${i.unit} remaining (min: ${i.min}, recommended order: ${i.rec||i.min*2})</div>`).join('')}
-        ${inv.filter(i=>i.qty>i.min).slice(0,2).map(i=>`<div class="al al-g">${ic('check',13)} <strong>${i.item}</strong> — ${i.qty} ${i.unit} in stock</div>`).join('')}
-      </div>
-    </div>
     <div class="card mb">
       <div class="ch"><span class="ct">${ic('layers',15)} Profit Summary</span></div>
       <div class="cb">
@@ -1240,13 +1234,13 @@ function pNotifications(el){
     const lv=(DB.g('leaves')||[]).filter(l=>l.status==='pending');
     const pr=(DB.g('promos')||[]).filter(p=>p.status==='pending');
     const neg=(DB.g('applicants')||[]).filter(a=>a.offerStatus==='negotiated');
-    const low=(DB.g('inventory')||[]).filter(i=>i.qty<=i.min);
+    const awaitingTasks=(DB.g('tasks')||[]).filter(t=>t.status==='awaiting_verification');
     const items=[
       ...adv.map(a=>({ico:'credit-card',txt:`<strong>${a.empName}</strong> requested a salary advance of ${fmt(a.amount)}`,t:'Finance',go:'e_finance',cls:'b-am'})),
       ...lv.map(l=>({ico:'calendar',txt:`<strong>${l.empName}</strong> submitted a leave request`,t:'HR',go:'e_leaves',cls:'b-bl'})),
       ...pr.map(p=>({ico:'arrow-up',txt:`<strong>${p.empName}</strong> submitted a promotion request`,t:'HR',go:'e_employees',cls:'b-pr'})),
       ...neg.map(a=>({ico:'file-text',txt:`<strong>${a.name}</strong> sent a counter-offer`,t:'Recruitment',go:'e_recruitment',cls:'b-nv'})),
-      ...low.map(i=>({ico:'alert-triangle',txt:`Low stock: <strong>${i.item}</strong> (${i.qty} ${i.unit})`,t:'Inventory',go:'e_inventory',cls:'b-rd'})),
+      ...awaitingTasks.map(t=>({ico:'check-square',txt:`Task ready to verify: <strong>${t.title}</strong>`,sub:`Employee: ${t.empName} · Submitted: ${t.completedDate||'—'}`,t:'Tasks',go:'e_performance',cls:'b-gr'})),
     ];
     el.innerHTML=`
     ${ph('Notifications','Alerts and pending actions.')}
@@ -1435,14 +1429,23 @@ function pPerformance(el){
   <div class="card mb">
     <div class="ch"><span class="ct">${ic('list',15)} Task Log</span></div>
     <div class="cb">
-      <div class="tw"><table><thead><tr><th>Employee</th><th>Task</th><th>Status</th><th>Date</th><th>Action</th></tr></thead><tbody>
-        ${(DB.g('tasks')||[]).slice().reverse().map((t,i)=>`<tr>
-          <td>${(DB.g('employees')||[]).find(e=>e.id===t.empId)?.name||t.empId}</td>
-          <td>${t.title}</td>
-          <td><span class="b ${t.status==='done'?'bg':'ba'}">${t.status}</span></td>
-          <td>${t.date}</td>
-          <td><button class="btn b-ol btn-sm" onclick="toggleTask(${i})">${t.status==='done'?'Undo':'Mark Done'}</button></td>
-        </tr>`).join('')}
+      <div class="tw"><table><thead><tr><th>Employee</th><th>Task</th><th>Difficulty</th><th>Status</th><th>Due</th><th>Actions</th></tr></thead><tbody>
+        ${(DB.g('tasks')||[]).slice().reverse().map((t,i)=>{
+          const diffCol=t.difficulty==='hard'?'br':t.difficulty==='medium'?'ba':'bg';
+          const stCol=t.status==='verified'?'bg':t.status==='awaiting_verification'?'ba':t.status==='rejected'?'br':t.status==='cancelled'?'bn':'b-ol';
+          const stLabel=t.status==='awaiting_verification'?'Awaiting Verification':t.status==='verified'?'Verified':t.status==='rejected'?'Rejected':t.status==='cancelled'?'Cancelled':'Pending';
+          return`<tr>
+            <td>${(DB.g('employees')||[]).find(e=>e.id===t.empId)?.name||t.empId}</td>
+            <td><strong>${t.title}</strong>${t.desc?`<div style="font-size:11px;color:var(--text-muted)">${t.desc}</div>`:''}</td>
+            <td><span class="b ${diffCol}">${(t.difficulty||'easy').charAt(0).toUpperCase()+(t.difficulty||'easy').slice(1)}</span></td>
+            <td><span class="b ${stCol}">${stLabel}</span></td>
+            <td>${t.dueDate||'—'}</td>
+            <td style="display:flex;gap:4px">
+              ${t.status==='awaiting_verification'?`<button class="btn b-gr btn-sm" onclick="verifyTask(${i})">Verify</button><button class="btn b-rd btn-sm" onclick="rejectTask(${i})">Reject</button>`:''}
+              ${t.status==='pending'?`<button class="btn b-ol btn-sm" onclick="cancelTask(${i})">Cancel</button>`:''}
+            </td>
+          </tr>`;
+        }).join('')}
       </tbody></table></div>
     </div>
   </div>`;
@@ -1453,13 +1456,14 @@ function openAddTask(){
     <div class="f"><label>Employee</label><select id="tk-emp">${emps.map(e=>`<option value="${e.id}">${e.name}</option>`).join('')}</select></div>
     <div class="f"><label>Task Title</label><input type="text" id="tk-title" placeholder="e.g. Prepare Q2 report"></div>
     <div class="f"><label>Description (optional)</label><textarea id="tk-desc" placeholder="Additional details about the task…"></textarea></div>
+    <div class="f"><label>Difficulty</label><select id="tk-diff"><option value="easy">Easy (+10pts)</option><option value="medium">Medium (+25pts)</option><option value="hard">Hard (+50pts)</option></select></div>
     <div class="f"><label>Due Date</label><input type="date" id="tk-due" value="${today()}"></div>
   `,[{l:'Assign Task',c:'b-nv',fn:async()=>{
     const empId=document.getElementById('tk-emp').value;
     const empName=(emps.find(e=>e.id===empId)||{}).name||'';
     const title=document.getElementById('tk-title').value;
     if(!title){toast('Please enter a task title','e');return;}
-    const rec={empId,empName,title,desc:document.getElementById('tk-desc').value,dueDate:document.getElementById('tk-due').value,status:'pending',assignedDate:today()};
+    const rec={empId,empName,title,desc:document.getElementById('tk-desc').value,difficulty:document.getElementById('tk-diff').value,dueDate:document.getElementById('tk-due').value,status:'pending',assignedDate:today()};
     DB.push('tasks',rec);
     closeModal();showPage('e_performance');toast('Task assigned','s');
     try{
@@ -1472,14 +1476,30 @@ function openAddTask(){
     }catch(e){toast('Task saved locally','w');}
   }}]);
 }
-function toggleTask(i){
-  // Employer can cancel a pending task
+function verifyTask(i){
   const t=DB.g('tasks')||[];
-  if(t[i].status==='done'){toast('Task already completed by employee','i');return;}
+  if(!t[i]||t[i].status!=='awaiting_verification'){toast('Task is not awaiting verification','i');return;}
+  if(!confirm('Mark this task as verified and completed?')) return;
+  t[i].status='verified';t[i].verifiedDate=today();
+  DB.s('tasks',t);showPage('e_performance');
+  if(t[i].id) apiFetch('PUT',`/data/tasks/${t[i].id}`,{status:'verified',verifiedDate:today()}).catch(()=>{});
+  toast('Task verified','s');
+}
+function rejectTask(i){
+  const t=DB.g('tasks')||[];
+  if(!t[i]||t[i].status!=='awaiting_verification'){toast('Task is not awaiting verification','i');return;}
+  if(!confirm('Reject this task submission? This will reduce performance score.')) return;
+  t[i].status='rejected';
+  DB.s('tasks',t);showPage('e_performance');
+  if(t[i].id) apiFetch('PUT',`/data/tasks/${t[i].id}`,{status:'rejected'}).catch(()=>{});
+  toast('Task rejected','i');
+}
+function cancelTask(i){
+  const t=DB.g('tasks')||[];
+  if(t[i].status==='verified'){toast('Cannot cancel a verified task','i');return;}
   if(!confirm('Cancel this task?')) return;
   t[i].status='cancelled';
-  DB.s('tasks',t);
-  showPage('e_performance');
+  DB.s('tasks',t);showPage('e_performance');
   if(t[i].id) apiFetch('PUT',`/data/tasks/${t[i].id}`,{status:'cancelled'}).catch(()=>{});
   toast('Task cancelled','i');
 }
@@ -1550,90 +1570,6 @@ function openEditWL(){
   `,[{l:'Save Location',c:'b-nv',fn:()=>{
     DB.s('work_location',{name:document.getElementById('wl-nm').value,lat:parseFloat(document.getElementById('wl-lt').value)||0,lng:parseFloat(document.getElementById('wl-lg').value)||0,radius:parseInt(document.getElementById('wl-r').value)||500});
     closeModal();showPage('e_attendance_mgr');toast('Location updated','s');
-  }}]);
-}
-
-// ─── INVENTORY ───
-function pInventory(el){
-  const inv=DB.g('inventory')||[];
-  const low=inv.filter(i=>i.qty<=i.min);
-  el.innerHTML=`
-  ${ph('Inventory Management','Track all stock levels submitted by employees.')}
-  <div class="sg">
-    ${sc('package','Total Items',inv.length)}
-    ${sc('alert-triangle','Low Stock',low.length,'',low.length>0?'dn':'up')}
-    ${sc('check-circle','In Stock',inv.filter(i=>i.qty>i.min).length,'','up')}
-  </div>
-  <div class="card mb">
-    <div class="ch">
-      <span class="ct">${ic('list',15)} Full Inventory</span>
-      <div style="display:flex;gap:8px">
-        <button class="btn b-nv btn-sm" onclick="openAddInv()">${ic('plus',13)} Add Item</button>
-        ${low.length>0?`<button class="btn b-am btn-sm" onclick="printLow()">${ic('printer',13)} Print Low Stock</button>`:''}
-      </div>
-    </div>
-    <div class="cb">
-      <div class="tw"><table><thead><tr><th>#</th><th>Item</th><th>Qty</th><th>Unit</th><th>Min</th><th>Rec. Order</th><th>Location</th><th>Updated By</th><th>Status</th><th></th></tr></thead><tbody>
-        ${inv.map((it,i)=>`<tr>
-          <td style="color:var(--text-muted)">${i+1}</td>
-          <td><strong>${it.item}</strong></td>
-          <td><strong style="color:${it.qty<=it.min?'var(--red)':'inherit'}">${it.qty}</strong></td>
-          <td>${it.unit}</td><td>${it.min}</td><td>${it.rec||'—'}</td><td>${it.loc}</td>
-          <td><span class="b bn">${it.updatedBy}</span></td>
-          <td><span class="b ${it.qty<=it.min?'br':'bg'}">${it.qty<=it.min?'Low':'In Stock'}</span></td>
-          <td><button class="btn b-ol btn-sm" onclick="openEditInv(${i})">${ic('edit-2',12)}</button></td>
-        </tr>`).join('')}
-      </tbody></table></div>
-    </div>
-  </div>`;
-}
-function printLow(){
-  const inv=(DB.g('inventory')||[]).filter(i=>i.qty<=i.min);
-  const w=window.open('','_blank','width=750,height=600');
-  const co=DB.g('company')||{};
-  w.document.write(`<!DOCTYPE html><html><head><title>Low Stock Report</title>
-  <style>body{font-family:'Segoe UI',Arial,sans-serif;margin:30px;font-size:13px;color:#222}
-  h1{font-size:20px;color:#1b2e4b;margin-bottom:4px}
-  .sub{color:#666;margin-bottom:20px;font-size:12px}
-  table{width:100%;border-collapse:collapse}
-  th{background:#1b2e4b;color:#fff;padding:9px 12px;text-align:left;font-size:11px}
-  td{padding:9px 12px;border-bottom:1px solid #dde4ee}
-  .footer{margin-top:24px;font-size:11px;color:#999;border-top:1px solid #eee;padding-top:10px}
-  </style></head><body>
-  <h1>${co.name||'BizTrack'} — Low Stock Report</h1>
-  <div class="sub">Generated: ${new Date().toLocaleString('en-GH')} | Items below minimum stock level</div>
-  <table><thead><tr><th>Item</th><th>Current Qty</th><th>Unit</th><th>Min Level</th><th>Recommended Order</th><th>Location</th></tr></thead><tbody>
-  ${inv.map(it=>`<tr><td><strong>${it.item}</strong></td><td style="color:red"><strong>${it.qty}</strong></td><td>${it.unit}</td><td>${it.min}</td><td><strong>${it.rec||it.min*2}</strong> ${it.unit}</td><td>${it.loc}</td></tr>`).join('')}
-  </tbody></table>
-  <div class="footer">Total items to restock: ${inv.length} | BizTrack Business Management System</div>
-  </body></html>`);
-  w.document.close(); setTimeout(()=>w.print(),500);
-}
-function openAddInv(){
-  openModal('Add Inventory Item',`
-    <div class="fr"><div class="f"><label>Item Name</label><input type="text" id="ni-nm" placeholder="Item name"></div><div class="f"><label>Unit</label><input type="text" id="ni-un" placeholder="e.g. Pcs, Ream"></div></div>
-    <div class="fr3">
-      <div class="f"><label>Quantity</label><input type="number" id="ni-qty" placeholder="0"></div>
-      <div class="f"><label>Min Level</label><input type="number" id="ni-mn" placeholder="0"></div>
-      <div class="f"><label>Rec. Order Qty</label><input type="number" id="ni-rc" placeholder="0"></div>
-    </div>
-    <div class="f"><label>Location</label><input type="text" id="ni-lc" placeholder="e.g. Store A"></div>
-  `,[{l:'Add Item',c:'b-nv',fn:async()=>{
-    const rec={id:Date.now(),item:document.getElementById('ni-nm').value,qty:parseInt(document.getElementById('ni-qty').value)||0,unit:document.getElementById('ni-un').value,min:parseInt(document.getElementById('ni-mn').value)||0,rec:parseInt(document.getElementById('ni-rc').value)||0,loc:document.getElementById('ni-lc').value,updatedBy:'Admin',date:today()};
-    const inv=DB.g('inventory')||[];inv.push(rec);
-    DB.s('inventory',inv);closeModal();showPage('e_inventory');toast('Item added','s');
-    try{const r=await apiFetch('POST','/data/inventory',rec);if(r.record){const inv2=DB.g('inventory')||[];const idx=inv2.findIndex(x=>x.id===rec.id);if(idx>=0){inv2[idx].id=r.record.id;DB.s('inventory',inv2);}}}catch(e){}
-  }}]);
-}
-function openEditInv(i){
-  const inv=DB.g('inventory')||[];const it=inv[i];
-  openModal(`Edit: ${it.item}`,`
-    <div class="fr"><div class="f"><label>Quantity</label><input type="number" id="ei-qty" value="${it.qty}"></div><div class="f"><label>Min Level</label><input type="number" id="ei-mn" value="${it.min}"></div></div>
-    <div class="fr"><div class="f"><label>Rec. Order Qty</label><input type="number" id="ei-rc" value="${it.rec||0}"></div><div class="f"><label>Location</label><input type="text" id="ei-lc" value="${it.loc}"></div></div>
-  `,[{l:'Save',c:'b-gr',fn:()=>{
-    inv[i]={...inv[i],qty:parseInt(document.getElementById('ei-qty').value)||0,min:parseInt(document.getElementById('ei-mn').value)||0,rec:parseInt(document.getElementById('ei-rc').value)||0,loc:document.getElementById('ei-lc').value,date:today()};
-    DB.s('inventory',inv);closeModal();showPage('e_inventory');toast('Updated','s');
-    if(inv[i].id) apiFetch('PUT',`/data/inventory/${inv[i].id}`,{qty:inv[i].qty,min:inv[i].min,rec:inv[i].rec,loc:inv[i].loc,date:inv[i].date}).catch(()=>{});
   }}]);
 }
 
@@ -2559,7 +2495,6 @@ function pEmpDash(el){
         <button class="btn b-gr btn-full" onclick="showPage('emp_advance')">${ic('credit-card',15)} Request Advance</button>
         <button class="btn b-am btn-full" onclick="showPage('emp_promo')">${ic('arrow-up',15)} Request Promotion</button>
         <button class="btn b-bl btn-full" onclick="showPage('emp_leave')">${ic('calendar',15)} Request Leave</button>
-        <button class="btn b-ol btn-full" onclick="showPage('emp_inventory')">${ic('package',15)} Submit Inventory</button>
         <button class="btn b-ol btn-full" onclick="showPage('emp_complaints')">${ic('message-square',15)} Submit Complaint</button>
       </div>
     </div>
@@ -2715,7 +2650,7 @@ function pMyTasks(el){
   const allTasks=DB.g('tasks')||[];
   const tasks=allTasks.filter(t=>t.empId===CU.id);
   const pending=tasks.filter(t=>t.status==='pending');
-  const done=tasks.filter(t=>t.status==='done');
+  const done=tasks.filter(t=>['done','awaiting_verification','verified','rejected'].includes(t.status));
   el.innerHTML=`
   ${ph('My Tasks','Tasks assigned to you by your employer.')}
   <div class="card mb">
@@ -2739,12 +2674,34 @@ function pMyTasks(el){
   <div class="card mb">
     <div class="ch"><span class="ct">${ic('check-circle',15)} Completed Tasks (${done.length})</span></div>
     <div class="cb">
-      ${done.length===0?'<p style="color:var(--text-muted);font-size:13px">No completed tasks yet.</p>':done.map(t=>`
-        <div class="card mb" style="border-left:3px solid var(--accent);padding:14px;opacity:0.85">
-          <div style="font-weight:700;font-size:14px">${t.title}</div>
-          ${t.desc?`<div style="font-size:12px;color:var(--text-muted);margin-top:2px">${t.desc}</div>`:''}
-          <div style="font-size:11.5px;color:var(--text-muted);margin-top:4px">Completed: ${t.completedDate||'—'}</div>
-        </div>`).join('')}
+      ${(()=>{
+        const awaiting=tasks.filter(t=>t.status==='awaiting_verification');
+        const verified=tasks.filter(t=>t.status==='verified');
+        const rejected=tasks.filter(t=>t.status==='rejected');
+        return `
+          ${awaiting.length>0?`<p style="font-weight:600;font-size:13px;margin-bottom:6px">${ic('clock',13)} Awaiting Verification</p>`:''}
+          ${awaiting.map(t=>`
+            <div class="card mb" style="border-left:3px solid var(--amber);padding:14px;opacity:0.9">
+              <div style="font-weight:700;font-size:14px">${t.title}</div>
+              ${t.desc?`<div style="font-size:12px;color:var(--text-muted);margin-top:2px">${t.desc}</div>`:''}
+              <div style="font-size:11.5px;color:var(--text-muted);margin-top:4px">Submitted: ${t.completedDate||'—'} &nbsp;|&nbsp; Awaiting employer confirmation</div>
+            </div>`).join('')}
+          ${verified.length>0?`<p style="font-weight:600;font-size:13px;margin:10px 0 6px">${ic('check-circle',13)} Verified & Completed</p>`:''}
+          ${verified.map(t=>`
+            <div class="card mb" style="border-left:3px solid var(--accent);padding:14px;opacity:0.85">
+              <div style="font-weight:700;font-size:14px">${t.title}</div>
+              ${t.desc?`<div style="font-size:12px;color:var(--text-muted);margin-top:2px">${t.desc}</div>`:''}
+              <div style="font-size:11.5px;color:var(--text-muted);margin-top:4px">Verified: ${t.verifiedDate||t.completedDate||'—'} &nbsp;|&nbsp; <span style="color:var(--accent)">+${TASK_SCORES[t.difficulty||'easy']}pts</span></div>
+            </div>`).join('')}
+          ${rejected.length>0?`<p style="font-weight:600;font-size:13px;margin:10px 0 6px">${ic('x-circle',13)} Rejected</p>`:''}
+          ${rejected.map(t=>`
+            <div class="card mb" style="border-left:3px solid var(--red);padding:14px;opacity:0.85">
+              <div style="font-weight:700;font-size:14px">${t.title}</div>
+              ${t.desc?`<div style="font-size:12px;color:var(--text-muted);margin-top:2px">${t.desc}</div>`:''}
+              <div style="font-size:11.5px;color:var(--red);margin-top:4px">Rejected by employer &nbsp;|&nbsp; -${TASK_SCORES[t.difficulty||'easy']}pts</div>
+            </div>`).join('')}
+          ${(awaiting.length+verified.length+rejected.length)===0?'<p style="color:var(--text-muted);font-size:13px">No completed tasks yet.</p>':''}`;
+      })()}
     </div>
   </div>`;
 }
@@ -2752,20 +2709,18 @@ function pMyTasks(el){
 async function completeTask(i){
   const t=DB.g('tasks')||[];
   if(!t[i]){toast('Task not found','e');return;}
-  t[i].status='done';
+  t[i].status='awaiting_verification';
   t[i].completedDate=today();
   DB.s('tasks',t);
   showPage('emp_tasks');
-  toast('Task marked as complete','s');
+  toast('Task submitted — awaiting employer verification','s');
   updNotif();
   if(t[i].id){
     try{
-      await apiFetch('PUT',`/data/tasks/${t[i].id}`,{status:'done',completedDate:today()});
+      await apiFetch('PUT',`/data/tasks/${t[i].id}`,{status:'awaiting_verification',completedDate:today()});
     }catch(e){
       toast('Sync failed — will update on next login','w');
     }
-  }
-}
 
 function pMyAtt(el){
   const att=(DB.g('attendance')||[]).filter(a=>a.empId===CU.id);
@@ -2932,72 +2887,6 @@ function getDistance(la1,lo1,la2,lo2){
   const R=6371000,dL=(la2-la1)*Math.PI/180,dl=(lo2-lo1)*Math.PI/180;
   const a=Math.sin(dL/2)**2+Math.cos(la1*Math.PI/180)*Math.cos(la2*Math.PI/180)*Math.sin(dl/2)**2;
   return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
-}
-
-// ─── EMPLOYEE INVENTORY ───
-function pMyInventory(el){
-  const inv=DB.g('inventory')||[];
-  el.innerHTML=`
-  ${ph('Submit Inventory','Update current stock levels or add new items.')}
-  <div class="g2">
-    <div class="card mb">
-      <div class="ch"><span class="ct">${ic('edit-2',15)} Update Inventory</span></div>
-      <div class="cb">
-        <div class="f"><label>Select Item</label>
-          <select id="si-sel" onchange="toggleNewInv(this.value)">
-            <option value="">— Select existing item —</option>
-            ${inv.map((it,i)=>`<option value="${i}">${it.item} (Current: ${it.qty} ${it.unit})</option>`).join('')}
-            <option value="new">+ Add new item</option>
-          </select>
-        </div>
-        <div id="si-new-fields" style="display:none">
-          <div class="fr"><div class="f"><label>Item Name</label><input type="text" id="si-nm" placeholder="Item name"></div><div class="f"><label>Unit</label><input type="text" id="si-un" placeholder="e.g. Pcs"></div></div>
-          <div class="fr"><div class="f"><label>Min Level</label><input type="number" id="si-mn" placeholder="0"></div><div class="f"><label>Rec. Order Qty</label><input type="number" id="si-rc" placeholder="0"></div></div>
-          <div class="f"><label>Location</label><input type="text" id="si-lc" placeholder="e.g. Store A"></div>
-        </div>
-        <div class="f"><label>Actual Quantity (Physical Count)</label><input type="number" id="si-qty" placeholder="Enter actual count"></div>
-        <div class="f"><label>Notes (optional)</label><input type="text" id="si-nt" placeholder="Any notes…"></div>
-        <button class="btn b-nv btn-full" onclick="submitInvUpdate()">Submit Update</button>
-        <div id="si-msg" style="margin-top:10px"></div>
-      </div>
-    </div>
-    <div class="card mb">
-      <div class="ch"><span class="ct">${ic('list',15)} Current Inventory</span></div>
-      <div class="cb">
-        <div class="tw"><table><thead><tr><th>Item</th><th>Qty</th><th>Unit</th><th>Status</th></tr></thead><tbody>
-          ${inv.map(it=>`<tr><td><strong>${it.item}</strong></td><td style="color:${it.qty<=it.min?'var(--red)':'inherit'}">${it.qty}</td><td>${it.unit}</td><td><span class="b ${it.qty<=it.min?'br':'bg'}">${it.qty<=it.min?'Low':'Good'}</span></td></tr>`).join('')}
-        </tbody></table></div>
-      </div>
-    </div>
-  </div>`;
-}
-function toggleNewInv(v){document.getElementById('si-new-fields').style.display=v==='new'?'block':'none';}
-function submitInvUpdate(){
-  const sel=document.getElementById('si-sel').value;
-  const qty=parseInt(document.getElementById('si-qty').value);
-  const msg=document.getElementById('si-msg');
-  if(!sel||isNaN(qty)){msg.innerHTML='<div class="al al-r">Please select an item and enter a quantity.</div>';return;}
-  const inv=DB.g('inventory')||[];
-  if(sel==='new'){
-    const nm=document.getElementById('si-nm').value;
-    if(!nm){msg.innerHTML='<div class="al al-r">Please enter item name.</div>';return;}
-    const rec={item:nm,qty,unit:document.getElementById('si-un').value||'Pcs',min:parseInt(document.getElementById('si-mn').value)||0,rec:parseInt(document.getElementById('si-rc').value)||0,loc:document.getElementById('si-lc').value,updatedBy:CU.id,date:today()};
-    inv.push(rec);
-    DB.s('inventory',inv);
-    apiFetch('POST','/data/inventory',rec)
-      .then(r=>{if(r.record){const inv2=DB.g('inventory')||[];const i=inv2.length-1;inv2[i].id=r.record.id;DB.s('inventory',inv2);}})
-      .catch(()=>{});
-  } else {
-    const i=parseInt(sel);
-    inv[i]={...inv[i],qty,updatedBy:CU.id,date:today()};
-    DB.s('inventory',inv);
-    if(inv[i].id){
-      apiFetch('PUT',`/data/inventory/${inv[i].id}`,{qty,updatedBy:CU.id,date:today()}).catch(()=>{});
-    } else {
-      apiFetch('POST','/data/inventory',inv[i]).catch(()=>{});
-    }
-  }
-  msg.innerHTML='<div class="al al-g">Inventory updated successfully.</div>';
 }
 
 // ─── EMPLOYEE LEAVE ───
