@@ -1066,25 +1066,24 @@ window._pollInterval = setInterval(async()=>{
     document.getElementById('sb-av').textContent = CU.initials || CU.name.slice(0,2).toUpperCase();
   }
 } else if(uRes.status === 403) {
-  // Employee can't fetch all users — fetch only their own profile
   try {
     const meRes = await fetch(`${API}/users/me`, {headers: h});
-    if(meRes.ok) {
-      const meData = await meRes.json();
-      const updatedMe = meData.user;
-      if(updatedMe) {
+    if(meRes.ok){
+      const updatedMe = (await meRes.json()).user;
+      if(updatedMe){
         CU = {...CU, ...updatedMe};
         localStorage.setItem('bt_cu', JSON.stringify(CU));
-        // Also update their record in the local employees array
         const emps = DB.g('employees') || [];
         const idx = emps.findIndex(e => e.id === CU.id);
         if(idx >= 0) emps[idx] = {...emps[idx], ...updatedMe};
         else emps.push(updatedMe);
         DB.s('employees', emps);
+        document.getElementById('sb-nm').textContent = CU.name;
+        document.getElementById('sb-av').textContent = CU.initials || CU.name.slice(0,2).toUpperCase();
       }
     }
-  } catch(e) { console.warn('Could not fetch own profile', e); }
-}
+  } catch(e){ console.warn('Could not fetch own profile', e); }
+}   
     if(tRes.ok)  DB.s('tasks',      (await tRes.json()).records  ||[]);
     if(aRes.ok)  DB.s('attendance', (await aRes.json()).records  ||[]);
     if(lRes.ok)  DB.s('leaves',     (await lRes.json()).records  ||[]);
