@@ -2406,7 +2406,7 @@ function pSettings(el){
       <button class="btn b-ol" onclick="clearTable('applicants')">Clear Applicants</button>
       <button class="btn b-ol" onclick="clearTable('complaints')">Clear Complaints</button>
       <button class="btn b-ol" onclick="clearTable('attendance')">Clear Attendance</button>
-      <button class="btn b-rd" onclick="if(confirm('RESET ALL DATA? This cannot be undone.')){['costs','revenue','inventory','tasks','attendance','leaves','advances','promos','complaints','applicants'].forEach(t=>apiFetch('POST','/data/'+t+'/bulk',{records:[]}).catch(()=>{}));localStorage.clear();location.reload();}"">Reset All Data</button>
+      <button class="btn b-rd" onclick="if(confirm('RESET ALL DATA? This cannot be undone.')){['costs','revenue','inventory','tasks','attendance','leaves','advances','promos','complaints','applicants'].forEach(t=>apiFetch('POST','/data/'+t+'/bulk',{records:[]}).catch(()=>{}));localStorage.clear();location.reload();}">Reset All Data</button>
     </div>
   </div>`;
 }
@@ -2750,6 +2750,10 @@ async function completeTask(i){
     }catch(e){
       toast('Sync failed — will update on next login','w');
     }
+  }
+}
+
+function pMyAtt(el){
 
 function pMyAtt(el){
   const att=(DB.g('attendance')||[]).filter(a=>a.empId===CU.id);
