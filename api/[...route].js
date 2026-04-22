@@ -91,6 +91,13 @@ async function handleUsers(req, res, parts) {
   try { decoded = verifyToken(req); }
   catch (e) { return res.status(401).json({ error: 'Unauthorized' }); }
   const userId = parts[1];
+  if (userId === 'me') {
+    const { data: user, error } = await getSupabase()
+      .from('users').select('*').eq('id', decoded.id).single();
+    if (error || !user) return res.status(404).json({ error: 'User not found' });
+    return res.status(200).json({ user: safe(user) });
+  }
+
   if (decoded.role !== 'employer') {
     return res.status(403).json({ error: 'Forbidden' });
   }
@@ -123,7 +130,21 @@ async function handleUsers(req, res, parts) {
   }
   return res.status(405).end();
 }
+async function handleMe(req, res) {
+  if (req.method !== 'GET') return res.status(405).end();
+  let decoded;
+  try { decoded = verifyToken(req); }
+  catch (e) { return res.status(401).json({ error: 'Unauthorized' }); }
 
+  const { data: user, error } = await getSupabase()
+    .from('users')
+    .select('*')
+    .eq('id', decoded.id)
+    .single();
+
+  if (error || !user) return res.status(404).json({ error: 'User not found' });
+  return res.status(200).json({ user: safe(user) });
+}
 async function handleData(req, res, parts) {
   let decoded;
   try { decoded = verifyToken(req); }
