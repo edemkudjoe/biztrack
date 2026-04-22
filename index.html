@@ -1113,8 +1113,20 @@ window._pollInterval = setInterval(async()=>{
     if(apRes.ok) DB.s('applicants', (await apRes.json()).records ||[]);
     if(cRes.ok) DB.s('costs',   (await cRes.json()).records ||[]);
     if(rRes.ok) DB.s('revenue', (await rRes.json()).records ||[]);
+    
+    // 👇 Replace the old showPage call with this:
     const cur=document.querySelector('.nav-item.active');
-    if(cur && cur.dataset.page) showPage(cur.dataset.page);
+    if(cur && cur.dataset.page) {
+      // Check if the user is actively typing in a form
+      const activeTag = document.activeElement ? document.activeElement.tagName : '';
+      const isTyping = activeTag === 'INPUT' || activeTag === 'TEXTAREA' || activeTag === 'SELECT';
+      
+      // Only refresh the page silently if they aren't typing
+      if (!isTyping) {
+        showPage(cur.dataset.page, true, true);
+      }
+    }
+    
     updNotif();
   }catch(e){console.warn('Poll failed',e);}
 },5000);
@@ -1161,13 +1173,20 @@ function buildNav(){
     ${s.items.map(it=>`<div class="nav-item" data-page="${it.id}" id="n-${it.id}" onclick="showPage('${it.id}')">${ic(it.ic,16)}<span>${it.l}</span></div>`).join('')}
   `).join('');
 }
-function showPage(pid, skipHistory = false){
+function showPage(pid, skipHistory = false, isPoll = false){
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   const nav=document.getElementById('n-'+pid); if(nav) nav.classList.add('active');
   document.getElementById('tb-title').textContent=PT[pid]||'BizTrack';
+  
   const mc=document.getElementById('mc');
-  mc.innerHTML='<div class="page active" id="pg"></div>';
-  const pg=document.getElementById('pg');
+  let pg=document.getElementById('pg');
+  
+  // Only rebuild the container (which triggers the fade-in animation) if it's NOT a poll
+  if (!isPoll || !pg) {
+    mc.innerHTML='<div class="page active" id="pg"></div>';
+    pg=document.getElementById('pg');
+  }
+  
   const R={
     e_dash:pEDash,notifications:pNotifications,e_finance:pFinance,
     e_performance:pPerformance,e_attendance_mgr:pAttMgr,
@@ -1179,13 +1198,12 @@ function showPage(pid, skipHistory = false){
   };
   if(R[pid]) R[pid](pg); else pg.innerHTML='<p style="color:var(--text-muted)">Page not found.</p>';
   
-  // This is the new part: It creates a history trail!
-  if (!skipHistory) {
+  if (!skipHistory && !isPoll) {
     history.pushState({ page: pid }, '', '#' + pid);
   }
 
-// Auto-close mobile menu after selecting a page
-  if (window.innerWidth <= 768) {
+  // Auto-close mobile menu after selecting a page
+  if (window.innerWidth <= 768 && !isPoll) {
     document.querySelector('.sidebar').classList.remove('mobile-open');
     document.getElementById('mobile-overlay').classList.remove('active');
   }
