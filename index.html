@@ -1510,8 +1510,13 @@ function pPerformance(el){
   <div class="card mb">
     <div class="ch"><span class="ct">${ic('list',15)} Task Log</span></div>
     <div class="cb">
+      // Look for this section inside pPerformance and replace it:
+
       <div class="tw"><table><thead><tr><th>Employee</th><th>Task</th><th>Difficulty</th><th>Status</th><th>Due</th><th>Actions</th></tr></thead><tbody>
-        ${(DB.g('tasks')||[]).slice().reverse().map((t,i)=>{
+        ${(DB.g('tasks')||[]).slice().reverse().map((t,i,arr)=>{
+          // 👇 1. Calculate the correct original index based on the array length
+          const origIdx = arr.length - 1 - i; 
+          
           const diffCol=t.difficulty==='hard'?'br':t.difficulty==='medium'?'ba':'bg';
           const stCol=t.status==='verified'?'bg':t.status==='awaiting_verification'?'ba':t.status==='rejected'?'br':t.status==='cancelled'?'bn':'b-ol';
           const stLabel=t.status==='awaiting_verification'?'Awaiting Verification':t.status==='verified'?'Verified':t.status==='rejected'?'Rejected':t.status==='cancelled'?'Cancelled':'Pending';
@@ -1522,13 +1527,12 @@ function pPerformance(el){
             <td><span class="b ${stCol}">${stLabel}</span></td>
             <td>${t.dueDate||'—'}</td>
             <td style="display:flex;gap:4px">
-              ${t.status==='awaiting_verification'?`<button class="btn b-gr btn-sm" onclick="verifyTask(${i})">Verify</button><button class="btn b-rd btn-sm" onclick="rejectTask(${i})">Reject</button>`:''}
-              ${t.status==='pending'?`<button class="btn b-ol btn-sm" onclick="cancelTask(${i})">Cancel</button>`:''}
+              ${t.status==='awaiting_verification'?`<button class="btn b-gr btn-sm" onclick="verifyTask(${origIdx})">Verify</button><button class="btn b-rd btn-sm" onclick="rejectTask(${origIdx})">Reject</button>`:''}
+              ${t.status==='pending'?`<button class="btn b-ol btn-sm" onclick="cancelTask(${origIdx})">Cancel</button>`:''}
             </td>
           </tr>`;
         }).join('')}
       </tbody></table></div>
-    </div>
   </div>`;
 }
 function openAddTask(){
