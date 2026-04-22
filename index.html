@@ -1062,10 +1062,10 @@ window._pollInterval = setInterval(async()=>{
     if(cmRes.ok) DB.s('complaints', (await cmRes.json()).records ||[]);
     if(apRes.ok) DB.s('applicants', (await apRes.json()).records ||[]);
     const cur=document.querySelector('.nav-item.active');
-    if(cur) showPage(cur.dataset.page);
+    if(cur && cur.dataset.page) showPage(cur.dataset.page);
     updNotif();
   }catch(e){console.warn('Poll failed',e);}
-},1000);
+},5000);
   }
   catch(e) {
     console.error('Failed to sync with Supabase', e);
