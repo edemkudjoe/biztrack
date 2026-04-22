@@ -995,6 +995,7 @@ async function doLogin(){
 function logout(){
   JWT=null; CU=null; ROLE=null;
   localStorage.removeItem('bt_jwt'); localStorage.removeItem('bt_cu');
+  if(window._pollInterval){clearInterval(window._pollInterval);window._pollInterval=null;}
   document.getElementById('app').style.display='none';
   document.getElementById('login-screen').style.display='flex';
 }
@@ -1037,6 +1038,34 @@ async function launchApp(){
     if (apRes.ok) DB.s('applicants', (await apRes.json()).records || []);
     const stRes = await fetch(`${API}/settings`, { headers: authHeaders });
     if (stRes.ok) DB.s('att_settings', (await stRes.json()).settings || {});
+    if(window._pollInterval) clearInterval(window._pollInterval);
+window._pollInterval = setInterval(async()=>{
+  if(!JWT) return;
+  const h={'Authorization':`Bearer ${JWT}`};
+  try{
+    const [uRes,tRes,aRes,lRes,adRes,prRes,cmRes,apRes] = await Promise.all([
+      fetch(`${API}/users`,             {headers:h}),
+      fetch(`${API}/data/tasks`,        {headers:h}),
+      fetch(`${API}/data/attendance`,   {headers:h}),
+      fetch(`${API}/data/leaves`,       {headers:h}),
+      fetch(`${API}/data/advances`,     {headers:h}),
+      fetch(`${API}/data/promos`,       {headers:h}),
+      fetch(`${API}/data/complaints`,   {headers:h}),
+      fetch(`${API}/data/applicants`,   {headers:h}),
+    ]);
+    if(uRes.ok)  DB.s('employees',  (await uRes.json()).users    ||[]);
+    if(tRes.ok)  DB.s('tasks',      (await tRes.json()).records  ||[]);
+    if(aRes.ok)  DB.s('attendance', (await aRes.json()).records  ||[]);
+    if(lRes.ok)  DB.s('leaves',     (await lRes.json()).records  ||[]);
+    if(adRes.ok) DB.s('advances',   (await adRes.json()).records ||[]);
+    if(prRes.ok) DB.s('promos',     (await prRes.json()).records ||[]);
+    if(cmRes.ok) DB.s('complaints', (await cmRes.json()).records ||[]);
+    if(apRes.ok) DB.s('applicants', (await apRes.json()).records ||[]);
+    const cur=document.querySelector('.nav-item.active');
+    if(cur) showPage(cur.dataset.page);
+    updNotif();
+  }catch(e){console.warn('Poll failed',e);}
+},30000);
   }
   catch(e) {
     console.error('Failed to sync with Supabase', e);
