@@ -1115,7 +1115,7 @@ function buildNav(){
   const nav=document.getElementById('sidebar-nav');
   nav.innerHTML=(ROLE==='employer'?EMP_NAV:EE_NAV).map(s=>`
     <div class="nav-sec">${s.s}</div>
-    ${s.items.map(it=>`<div class="nav-item" id="n-${it.id}" onclick="showPage('${it.id}')">${ic(it.ic,16)}<span>${it.l}</span></div>`).join('')}
+    ${s.items.map(it=>`<div class="nav-item" data-page="${it.id}" id="n-${it.id}" onclick="showPage('${it.id}')">${ic(it.ic,16)}<span>${it.l}</span></div>`).join('')}
   `).join('');
 }
 function showPage(pid, skipHistory = false){
