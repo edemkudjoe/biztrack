@@ -2754,8 +2754,6 @@ async function completeTask(i){
 }
 
 function pMyAtt(el){
-
-function pMyAtt(el){
   const att=(DB.g('attendance')||[]).filter(a=>a.empId===CU.id);
   const todayRec=att.find(a=>a.date===today());
   const empData=(DB.g('employees')||[]).find(e=>e.id===CU.id)||CU;
