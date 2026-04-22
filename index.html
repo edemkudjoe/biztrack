@@ -1070,7 +1070,7 @@ window._pollInterval = setInterval(async()=>{
     if(cur && cur.dataset.page) showPage(cur.dataset.page);
     updNotif();
   }catch(e){console.warn('Poll failed',e);}
-},5000);
+},15000);
   }
   catch(e) {
     console.error('Failed to sync with Supabase', e);
