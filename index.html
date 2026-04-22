@@ -1633,6 +1633,7 @@ function openEditInv(i){
   `,[{l:'Save',c:'b-gr',fn:()=>{
     inv[i]={...inv[i],qty:parseInt(document.getElementById('ei-qty').value)||0,min:parseInt(document.getElementById('ei-mn').value)||0,rec:parseInt(document.getElementById('ei-rc').value)||0,loc:document.getElementById('ei-lc').value,date:today()};
     DB.s('inventory',inv);closeModal();showPage('e_inventory');toast('Updated','s');
+    if(inv[i].id) apiFetch('PUT',`/data/inventory/${inv[i].id}`,{qty:inv[i].qty,min:inv[i].min,rec:inv[i].rec,loc:inv[i].loc,date:inv[i].date}).catch(()=>{});
   }}]);
 }
 
@@ -1705,9 +1706,10 @@ function openEditEmp(eid){
       const i=emps.findIndex(e=>e.id===eid);
       emps[i]={...emps[i],roleTitle:document.getElementById('ee-rl').value,dept:document.getElementById('ee-dt').value,hourlyRate:parseFloat(document.getElementById('ee-rt').value)||emp.hourlyRate,email:document.getElementById('ee-em').value};
       DB.s('employees',emps);closeModal();showPage('e_employees');toast('Updated','s');
+      if(emps[i].id) apiFetch('PUT',`/users/${emps[i].id}`,{roleTitle:emps[i].roleTitle,dept:emps[i].dept,hourlyRate:emps[i].hourlyRate,email:emps[i].email}).catch(()=>{});
     }},
     {l:'Remove',c:'b-rd',fn:()=>{
-      if(confirm(`Remove ${emp.name}?`)){const i=emps.findIndex(e=>e.id===eid);emps.splice(i,1);DB.s('employees',emps);closeModal();showPage('e_employees');toast('Removed','i');}
+      if(confirm(`Remove ${emp.name}?`)){const i=emps.findIndex(e=>e.id===eid);emps.splice(i,1);DB.s('employees',emps);closeModal();showPage('e_employees');toast('Removed','i');if(emp.id) apiFetch('DELETE',`/users/${emp.id}`).catch(()=>{});}
     }},
   ]);
 }
@@ -1898,12 +1900,13 @@ function toggleJobPosting(idx){
 function deleteJobPosting(idx){
   if(!confirm('Delete this job posting?'))return;
   const jobs=DB.g('job_postings')||[];
+  const job=jobs[idx];
   jobs.splice(idx,1);
   DB.s('job_postings',jobs);
   showPage('e_recruitment');
   toast('Deleted','i');
+  if(job&&job.id) apiFetch('DELETE',`/data/job_postings/${job.id}`).catch(()=>{});
 }
-
 function openPublicCareersPreview(){openCareersPortal();}
 
 // ─── CAREERS PORTAL (Public) ───
@@ -2438,7 +2441,7 @@ function pSettings(el){
       <button class="btn b-ol" onclick="clearTable('applicants')">Clear Applicants</button>
       <button class="btn b-ol" onclick="clearTable('complaints')">Clear Complaints</button>
       <button class="btn b-ol" onclick="clearTable('attendance')">Clear Attendance</button>
-      <button class="btn b-rd" onclick="if(confirm('RESET ALL DATA? This cannot be undone.')){localStorage.clear();location.reload();}">Reset All Data</button>
+      <button class="btn b-rd" onclick="if(confirm('RESET ALL DATA? This cannot be undone.')){['costs','revenue','inventory','tasks','attendance','leaves','advances','promos','complaints','applicants'].forEach(t=>apiFetch('POST','/data/'+t+'/bulk',{records:[]}).catch(()=>{}));localStorage.clear();location.reload();}"">Reset All Data</button>
     </div>
   </div>`;
 }
