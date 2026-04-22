@@ -1052,8 +1052,11 @@ window._pollInterval = setInterval(async()=>{
       fetch(`${API}/data/promos`,       {headers:h}),
       fetch(`${API}/data/complaints`,   {headers:h}),
       fetch(`${API}/data/applicants`,   {headers:h}),
+      fetch(`${API}/data/costs`,    {headers:h}),
+      fetch(`${API}/data/revenue`,  {headers:h}),
     ]);
     if(uRes.ok)  DB.s('employees',  (await uRes.json()).users    ||[]);
+    if(uRes.ok){const updatedMe=(DB.g('employees')||[]).find(e=>e.id===CU?.id);if(updatedMe){CU={...CU,...updatedMe};localStorage.setItem('bt_cu',JSON.stringify(CU));document.getElementById('sb-nm').textContent=CU.name;document.getElementById('sb-av').textContent=CU.initials||CU.name.slice(0,2).toUpperCase();}}
     if(tRes.ok)  DB.s('tasks',      (await tRes.json()).records  ||[]);
     if(aRes.ok)  DB.s('attendance', (await aRes.json()).records  ||[]);
     if(lRes.ok)  DB.s('leaves',     (await lRes.json()).records  ||[]);
@@ -1061,6 +1064,8 @@ window._pollInterval = setInterval(async()=>{
     if(prRes.ok) DB.s('promos',     (await prRes.json()).records ||[]);
     if(cmRes.ok) DB.s('complaints', (await cmRes.json()).records ||[]);
     if(apRes.ok) DB.s('applicants', (await apRes.json()).records ||[]);
+    if(cRes.ok) DB.s('costs',   (await cRes.json()).records ||[]);
+    if(rRes.ok) DB.s('revenue', (await rRes.json()).records ||[]);
     const cur=document.querySelector('.nav-item.active');
     if(cur && cur.dataset.page) showPage(cur.dataset.page);
     updNotif();
