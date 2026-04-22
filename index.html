@@ -1016,7 +1016,6 @@ async function launchApp(){
       fetch(`${API}/users`,              { headers: authHeaders }),
       fetch(`${API}/data/tasks`,         { headers: authHeaders }),
       fetch(`${API}/data/attendance`,    { headers: authHeaders }),
-      fetch(`${API}/data/attendance`,    { headers: authHeaders }),
       fetch(`${API}/data/costs`,         { headers: authHeaders }),
       fetch(`${API}/data/revenue`,       { headers: authHeaders }),
       fetch(`${API}/data/leaves`,        { headers: authHeaders }),
@@ -1064,7 +1063,7 @@ window._pollInterval = setInterval(async()=>{
   if(!JWT) return;
   const h={'Authorization':`Bearer ${JWT}`};
   try{
-    const [uRes,tRes,aRes,lRes,adRes,prRes,cmRes,apRes] = await Promise.all([
+    const [uRes, tRes, aRes, lRes, adRes, prRes, cmRes, apRes, cRes, rRes] = await Promise.all([
       fetch(`${API}/users`,             {headers:h}),
       fetch(`${API}/data/tasks`,        {headers:h}),
       fetch(`${API}/data/attendance`,   {headers:h}),
