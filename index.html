@@ -2450,11 +2450,14 @@ async function clearTable(table){
   if(!confirm(`Clear ${labels[table]||table}?`)) return;
   try{
     await apiFetch('POST',`/data/${table}/bulk`,{records:[]});
-  }catch(e){console.error('Remote clear failed:',e);}
-  if(table==='applicants') DB.s('rec_stage','collecting');
-  DB.s(table,[]);
-  toast('Cleared','i');
-  showPage('e_settings');
+    if(table==='applicants') DB.s('rec_stage','collecting');
+    DB.s(table,[]);
+    toast('Cleared','i');
+    showPage('e_settings');
+  }catch(e){
+    console.error('Remote clear failed:',e);
+    toast('Clear failed — database not updated','e');
+  }
 }
 function getCurrentLocation(){
   const msg=document.getElementById('att-msg');
