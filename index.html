@@ -1055,8 +1055,12 @@ window._pollInterval = setInterval(async()=>{
       fetch(`${API}/data/costs`,    {headers:h}),
       fetch(`${API}/data/revenue`,  {headers:h}),
     ]);
-    if(uRes.ok)  DB.s('employees',  (await uRes.json()).users    ||[]);
-    if(uRes.ok){const updatedMe=(DB.g('employees')||[]).find(e=>e.id===CU?.id);if(updatedMe){CU={...CU,...updatedMe};localStorage.setItem('bt_cu',JSON.stringify(CU));document.getElementById('sb-nm').textContent=CU.name;document.getElementById('sb-av').textContent=CU.initials||CU.name.slice(0,2).toUpperCase();}}
+    if(uRes.ok){
+      const freshUsers=(await uRes.json()).users||[];
+      DB.s('employees',freshUsers);
+      const updatedMe=freshUsers.find(e=>e.id===CU?.id);
+      if(updatedMe){CU={...CU,...updatedMe};localStorage.setItem('bt_cu',JSON.stringify(CU));document.getElementById('sb-nm').textContent=CU.name;document.getElementById('sb-av').textContent=CU.initials||CU.name.slice(0,2).toUpperCase();}
+    }
     if(tRes.ok)  DB.s('tasks',      (await tRes.json()).records  ||[]);
     if(aRes.ok)  DB.s('attendance', (await aRes.json()).records  ||[]);
     if(lRes.ok)  DB.s('leaves',     (await lRes.json()).records  ||[]);
