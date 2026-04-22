@@ -1026,7 +1026,28 @@ async function launchApp(){
       fetch(`${API}/data/applicants`,    { headers: authHeaders }),
     ]);
 
-    if (uRes.ok)  DB.s('employees',  (await uRes.json()).users    || []);
+    if (uRes.ok) {
+  const freshUsers = (await uRes.json()).users || [];
+  DB.s('employees', freshUsers);
+} else if (uRes.status === 403) {
+  // Employee — fetch only their own record
+  try {
+    const meRes = await fetch(`${API}/users/me`, { headers: authHeaders });
+    if (meRes.ok) {
+      const me = (await meRes.json()).user;
+      if (me) {
+        const emps = DB.g('employees') || [];
+        const idx = emps.findIndex(e => e.id === me.id);
+        if (idx >= 0) emps[idx] = me;
+        else emps.push(me);
+        DB.s('employees', emps);
+        // Also update CU with fresh data
+        CU = {...CU, ...me};
+        localStorage.setItem('bt_cu', JSON.stringify(CU));
+      }
+    }
+  } catch(e) { console.warn('Could not fetch own profile on launch', e); }
+}
     if (tRes.ok)  DB.s('tasks',      (await tRes.json()).records  || []);
     if (aRes.ok)  DB.s('attendance', (await aRes.json()).records  || []);
     if (cRes.ok)  DB.s('costs',      (await cRes.json()).records  || []);
