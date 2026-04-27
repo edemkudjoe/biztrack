@@ -1890,19 +1890,45 @@ function openAddJobPosting(){
     <div class="fr"><div class="f"><label>Salary Range (optional)</label><input type="text" id="jp-sal" placeholder="e.g. ₵2,000 – ₵3,500/mo"></div><div class="f"><label>Deadline (optional)</label><input type="date" id="jp-dead"></div></div>
     <div class="f"><label>Job Description *</label><textarea id="jp-desc" placeholder="Describe the role and responsibilities…" rows="4"></textarea></div>
     <div class="f"><label>Requirements</label><textarea id="jp-req" placeholder="List qualifications, skills, experience required…" rows="3"></textarea></div>
-  `,[{l:'Post Job',c:'b-gr',fn:()=>{
+  `,[{l:'Post Job',c:'b-gr',fn:async ()=>{
     const title=document.getElementById('jp-title').value.trim();
     const desc=document.getElementById('jp-desc').value.trim();
     if(!title||!desc){toast('Title and Description required','e');return;}
-    const jobs=DB.g('job_postings')||[];
-    const newJob={id:Date.now(),title,dept:document.getElementById('jp-dept').value,type:document.getElementById('jp-type').value,location:document.getElementById('jp-loc').value,salary:document.getElementById('jp-sal').value,deadline:document.getElementById('jp-dead').value,description:desc,requirements:document.getElementById('jp-req').value,active:true,postedDate:today()};
-    jobs.push(newJob);
-    DB.s('job_postings',jobs);
-    apiFetch('POST','/data/job_postings',newJob).catch(()=>{});
-    closeModal();showPage('e_recruitment');toast('Job posted to Careers Portal','s');
+    
+    // We package the data exactly how Supabase expects it
+    const newJob={
+      title: title,
+      dept: document.getElementById('jp-dept').value,
+      type: document.getElementById('jp-type').value,
+      location: document.getElementById('jp-loc').value,
+      salary: document.getElementById('jp-sal').value,
+      deadline: document.getElementById('jp-dead').value,
+      description: desc,
+      requirements: document.getElementById('jp-req').value,
+      active: true,
+      postedDate: today()
+    };
+    
+    try {
+      // 1. Try to save to Supabase FIRST
+      const r = await apiFetch('POST','/data/job_postings',newJob);
+      
+      if(r.record){
+        // 2. If successful, save to local browser with the real Supabase ID
+        const jobs=DB.g('job_postings')||[];
+        jobs.push(r.record);
+        DB.s('job_postings',jobs);
+        
+        closeModal();
+        showPage('e_recruitment');
+        toast('Job posted to Careers Portal successfully!','s');
+      }
+    } catch(err) {
+      // 3. IF IT FAILS, SHOW THE EXACT SUPABASE ERROR!
+      alert("Database Error: " + err.message + "\n\nPlease check your Supabase table columns.");
+    }
   }}]);
 }
-
 function openEditJobPosting(idx){
   const jobs=DB.g('job_postings')||[];const j=jobs[idx];
   openModal('Edit Job Posting',`
