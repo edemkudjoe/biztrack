@@ -1759,11 +1759,10 @@ function resolvePromo(i,dec){
 }
 
 // ─── RECRUITMENT ───
+// ─── RECRUITMENT ───
 function pRecruitment(el){
   const apps=DB.g('applicants')||[];
   const stage=DB.g('rec_stage')||'collecting';
-  const link=DB.g('rec_link')||'';
-  const offerLink=DB.g('offer_link')||'';
   const qs=DB.g('apt_qs')||[];
   const ranked=apps.filter(a=>a.score!==undefined).sort((a,b)=>b.score-a.score);
   const tested=apps.filter(a=>a.testScore!==undefined).sort((a,b)=>b.testScore-a.testScore);
@@ -1780,29 +1779,8 @@ function pRecruitment(el){
     <div class="sline ${stage==='interviewing'?'done':''}"></div>
     <div class="si ${stage==='interviewing'?'active':''}"><div class="sn">4</div><span class="sl">Interviews</span></div>
   </div>
+  
   <div class="g2">
-    <div class="card mb">
-      <div class="ch"><span class="ct">${ic('link',15)} Application Portal</span></div>
-      <div class="cb">
-        <p style="font-size:12.5px;color:var(--text-muted);margin-bottom:11px">Share with candidates to receive applications.</p>
-        <div class="link-box">${link}</div>
-        <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
-          <button class="btn b-nv btn-sm" onclick="copyText('${link}')">${ic('copy',13)} Copy</button>
-          <button class="btn b-gr btn-sm" onclick="openApplicantPortal()">${ic('external-link',13)} Preview</button>
-          <button class="btn b-ol btn-sm" onclick="genNewLink()">${ic('refresh-cw',13)} New Link</button>
-        </div>
-      </div>
-    </div>
-    <div class="card mb">
-      <div class="ch"><span class="ct">${ic('briefcase',15)} Careers Portal</span><button class="btn b-gr btn-sm" onclick="openPublicCareersPreview()">${ic('external-link',13)} Preview</button></div>
-      <div class="cb">
-        <p style="font-size:12.5px;color:var(--text-muted);margin-bottom:11px">Publicly visible on the login page. Candidates can browse jobs and apply without a link.</p>
-      <div style="display:flex;align-items:center;justify-content:space-between;background:var(--bg);padding:10px 13px;border-radius:8px;border:1px solid var(--border)">
-        <span style="font-size:12px;font-weight:600;color:var(--text-muted)">Active Job Postings</span>
-        <strong style="font-size:18px;color:var(--navy)">${(DB.g('job_postings')||[]).filter(j=>j.active).length}</strong>
-      </div>
-    </div>
-  </div>
     <div class="card mb">
       <div class="ch"><span class="ct">${ic('bar-chart-2',15)} Pipeline Stats</span></div>
       <div class="cb">
@@ -1814,49 +1792,51 @@ function pRecruitment(el){
         </div>
       </div>
     </div>
+    
+    <div class="card mb">
+      <div class="ch">
+        <span class="ct">${ic('briefcase',15)} Job Postings (${(DB.g('job_postings')||[]).length})</span>
+        <button class="btn b-nv btn-sm" onclick="openAddJobPosting()">${ic('plus',13)} Add Posting</button>
+      </div>
+      <div class="cb">
+        ${(DB.g('job_postings')||[]).length===0
+          ? `<div class="es"><div class="es-ico">${ic('briefcase',44)}</div><h3>No job postings yet</h3><p>Add postings to advertise open roles on your Careers Portal.</p></div>`
+          : `<div class="tw"><table><thead><tr><th>Role</th><th>Department</th><th>Type</th><th>Location</th><th>Status</th><th>Actions</th></tr></thead><tbody>
+              ${(DB.g('job_postings')||[]).map((j,i)=>`<tr>
+                <td><strong>${j.title}</strong></td>
+                <td>${j.dept||'—'}</td>
+                <td>${j.type||'Full-time'}</td>
+                <td>${j.location||'—'}</td>
+                <td><span class="b ${j.active?'bg':'ba'}">${j.active?'Active':'Inactive'}</span></td>
+                <td style="display:flex;gap:6px;flex-wrap:wrap">
+                  <button class="btn b-nv btn-sm" onclick="openEditJobPosting(${i})">${ic('edit-2',12)}</button>
+                  <button class="btn ${j.active?'b-am':'b-gr'} btn-sm" onclick="toggleJobPosting(${i})">${j.active?'Pause':'Activate'}</button>
+                  <button class="btn b-rd btn-sm" onclick="deleteJobPosting(${i})">${ic('trash-2',12)}</button>
+                </td>
+              </tr>`).join('')}
+            </tbody></table></div>`
+        }
+      </div>
+    </div>
   </div>
+
   <div class="g2">
     <div class="card mb">
       <div class="ch"><span class="ct">${ic('settings',15)} Aptitude Test</span><button class="btn b-nv btn-sm" onclick="openAptSetup()">Manage (${qs.length} Qs)</button></div>
       <div class="cb"><p style="font-size:12.5px;color:var(--text-muted)">Set questions with pre-keyed answers for the top-50 shortlisted candidates.</p></div>
     </div>
-    <div class="card mb">
-  <div class="ch">
-    <span class="ct">${ic('briefcase',15)} Job Postings (${(DB.g('job_postings')||[]).length})</span>
-    <button class="btn b-nv btn-sm" onclick="openAddJobPosting()">${ic('plus',13)} Add Posting</button>
-  </div>
-  <div class="cb">
-    ${(DB.g('job_postings')||[]).length===0
-      ? `<div class="es"><div class="es-ico">${ic('briefcase',44)}</div><h3>No job postings yet</h3><p>Add postings to advertise open roles on your Careers Portal.</p></div>`
-      : `<div class="tw"><table><thead><tr><th>Role</th><th>Department</th><th>Type</th><th>Location</th><th>Status</th><th>Actions</th></tr></thead><tbody>
-          ${(DB.g('job_postings')||[]).map((j,i)=>`<tr>
-            <td><strong>${j.title}</strong></td>
-            <td>${j.dept||'—'}</td>
-            <td>${j.type||'Full-time'}</td>
-            <td>${j.location||'—'}</td>
-            <td><span class="b ${j.active?'bg':'ba'}">${j.active?'Active':'Inactive'}</span></td>
-            <td style="display:flex;gap:6px;flex-wrap:wrap">
-              <button class="btn b-nv btn-sm" onclick="openEditJobPosting(${i})">${ic('edit-2',12)}</button>
-              <button class="btn ${j.active?'b-am':'b-gr'} btn-sm" onclick="toggleJobPosting(${i})">${j.active?'Pause':'Activate'}</button>
-              <button class="btn b-rd btn-sm" onclick="deleteJobPosting(${i})">${ic('trash-2',12)}</button>
-            </td>
-          </tr>`).join('')}
-        </tbody></table></div>`
-    }
-  </div>
-</div>
+    
     <div class="card mb">
       <div class="ch"><span class="ct">${ic('file-text',15)} Employment Letter</span><button class="btn b-nv btn-sm" onclick="openLetterSetup()">${ic('edit-2',13)} Configure</button></div>
       <div class="cb">
         <p style="font-size:12.5px;color:var(--text-muted);margin-bottom:8px">Configure company details for the automated employment letter sent to top-10 candidates.</p>
-        <div class="link-box">${offerLink}</div>
         <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
-          <button class="btn b-nv btn-sm" onclick="copyText('${offerLink}')">${ic('copy',13)} Copy Offer Link</button>
-          <button class="btn b-gr btn-sm" onclick="previewOfferPortal()">${ic('external-link',13)} Preview Offer</button>
+          <button class="btn b-gr btn-sm" onclick="previewOfferTemplate()">${ic('external-link',13)} Preview Offer</button>
         </div>
       </div>
     </div>
   </div>
+
   <div class="card mb">
     <div class="ch">
       <span class="ct">${ic('list',15)} All Applicants (${apps.length})</span>
@@ -1884,9 +1864,7 @@ function pRecruitment(el){
     </div>
   </div>`;
 }
-
-function copyText(t){navigator.clipboard.writeText(t).then(()=>toast('Copied!','s')).catch(()=>toast('Link: '+t,'i'));}
-// ─── JOB POSTINGS (Employer) ───
+  // ─── JOB POSTINGS (Employer) ───
 function openAddJobPosting(){
   openModal('Add Job Posting',`
     <div class="fr"><div class="f"><label>Job Title *</label><input type="text" id="jp-title" placeholder="e.g. Marketing Officer"></div><div class="f"><label>Department</label><input type="text" id="jp-dept" placeholder="e.g. Sales"></div></div>
@@ -1947,7 +1925,42 @@ function deleteJobPosting(idx){
   if(job&&job.id) apiFetch('DELETE',`/data/job_postings/${job.id}`).catch(()=>{});
 }
 function openPublicCareersPreview(){openCareersPortal();}
+// ─── OFFER CONFIGURATION ───
+function openLetterSetup() {
+  const co = DB.g('company') || {};
+  openModal('Configure Employment Letter', `
+    <div class="fr">
+      <div class="f"><label>Default Hourly Rate (₵)</label><input type="number" id="ol-rate" value="${co.defaultRate||20}"></div>
+      <div class="f"><label>Probation Period</label><input type="text" id="ol-prob" value="${co.probation||'3 months'}"></div>
+    </div>
+    <div class="f"><label>Work Schedule</label><input type="text" id="ol-sched" value="${co.workSchedule||'Monday – Friday, 8:00 AM – 5:00 PM'}"></div>
+    <div class="fr">
+      <div class="f"><label>Signatory Name</label><input type="text" id="ol-sign" value="${co.signatory||'The Director'}"></div>
+      <div class="f"><label>Signatory Title</label><input type="text" id="ol-sigt" value="${co.sigTitle||'Managing Director'}"></div>
+    </div>
+  `, [{
+    l: 'Save Configuration', c: 'b-nv', fn: () => {
+      const newCo = {
+        ...DB.g('company') || {},
+        defaultRate: parseFloat(document.getElementById('ol-rate').value) || 20,
+        workSchedule: document.getElementById('ol-sched').value,
+        probation: document.getElementById('ol-prob').value,
+        signatory: document.getElementById('ol-sign').value,
+        sigTitle: document.getElementById('ol-sigt').value
+      };
+      DB.s('company', newCo);
+      closeModal(); 
+      showPage('e_recruitment'); 
+      toast('Offer configuration saved', 's');
+    }
+  }]);
+}
 
+function previewOfferTemplate() {
+  const co = DB.g('company') || {};
+  const dummyApp = { name: 'Jane Doe', position: 'Software Engineer' };
+  openModal('Preview Employment Letter', generateOfferLetterHTML(dummyApp, co), []);
+}
 // ─── CAREERS PORTAL (Public) ───
 let _cpSelectedJob = null;
 let _cpUser = null; // logged-in portal user
