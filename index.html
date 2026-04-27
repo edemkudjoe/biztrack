@@ -3296,28 +3296,46 @@ async function changeEmpPw(){
 // ═══════════════════════════════════════════════
 // ══════════ APPLICANT PORTAL LOGIC ════════════
 // ═══════════════════════════════════════════════
-function submitApplication(){
-  const nm=document.getElementById('ap-name').value;
-  const em=document.getElementById('ap-email').value;
-  const pos=document.getElementById('ap-pos').value;
-  const edu=document.getElementById('ap-edu');
-  const exp=document.getElementById('ap-exp');
-  const msg=document.getElementById('ap-msg');
-  if(!nm||!em||!pos||!edu.value||!exp.value){msg.innerHTML='<div class="al al-r">Please fill all required fields.</div>';return;}
-  const apps=DB.g('applicants')||[];
-  if(apps.find(a=>a.email===em)){msg.innerHTML='<div class="al al-a">This email has already been used to apply.</div>';return;}
-  const newApp={name:nm,email:em,phone:document.getElementById('ap-phone').value,position:pos,education:edu.options[edu.selectedIndex].text,eduScore:parseInt(edu.value)||40,experience:parseInt(exp.value)||0,expScore:Math.min(22,parseInt(exp.value)||0),employers:document.getElementById('ap-emp').value,skills:document.getElementById('ap-skills').value,cover:document.getElementById('ap-cover').value,appliedDate:today(),testInvited:DB.g('rec_stage')==='testing'||false};
-  apps.push(newApp); DB.s('applicants',apps);
-  apiFetch('POST','/data/applicants',newApp)
-    .then(r=>{if(r.record){const apps2=DB.g('applicants')||[];const i=apps2.findIndex(a=>a.email===newApp.email);if(i>=0){apps2[i].id=r.record.id;DB.s('applicants',apps2);}}})
-    .catch(()=>{});
-  const stage=DB.g('rec_stage')||'collecting';
-  if(stage==='testing'&&newApp.testInvited){
-    msg.innerHTML=''; loadAptTest(em);
-  } else {
-    document.getElementById('ap-form-wrap').style.display='none';
-    document.getElementById('ap-done-wrap').style.display='block';
-    if(window._portalReturn) setTimeout(backFromPortal,3000);
+async function submitApplication(){
+  const pos = document.getElementById('ap-pos').value;
+  const edu = document.getElementById('ap-edu').value;
+  const exp = document.getElementById('ap-exp').value;
+  const ph  = document.getElementById('ap-phone').value;
+  const msg = document.getElementById('ap-msg');
+
+  if(!edu || !exp || !ph){ msg.innerHTML='<div class="al al-r">Please fill all fields.</div>'; return; }
+
+  msg.innerHTML = '<div class="al al-b">Submitting application...</div>';
+
+  const updateData = {
+    phone: ph,
+    position: pos,
+    education: edu,
+    experience: parseFloat(exp) || 0,
+    appliedDate: new Date().toISOString().split('T')[0],
+    // Initializing tracking fields
+    offerStatus: null,
+    invited: false,
+    offerSent: false,
+    testInvited: false
+  };
+
+  try {
+    // _cpUser.id is the applicant's ID from signup/login
+    const r = await apiFetch('PUT', `/data/applicants/${_cpUser.id}`, updateData);
+    
+    if(r.record){
+      // Update local state
+      _cpUser = r.record;
+      localStorage.setItem('cp_user', JSON.stringify(_cpUser));
+      
+      msg.innerHTML = '<div class="al al-g">Application submitted successfully! Redirecting...</div>';
+      setTimeout(() => {
+        showJobsList(); // Go back to jobs
+      }, 2000);
+    }
+  } catch(e) {
+    msg.innerHTML = `<div class="al al-r">Submission Error: ${e.message}</div>`;
   }
 }
 function loadAptTest(email){
