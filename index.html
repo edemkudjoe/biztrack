@@ -1012,7 +1012,7 @@ async function launchApp(){
   };
 
   try {
-    const [uRes, tRes, aRes, cRes, rRes, lRes, adRes, prRes, cmRes, apRes] = await Promise.all([
+    const [uRes, tRes, aRes, cRes, rRes, lRes, adRes, prRes, cmRes, apRes, jpRes] = await Promise.all([
       fetch(`${API}/users`,              { headers: authHeaders }),
       fetch(`${API}/data/tasks`,         { headers: authHeaders }),
       fetch(`${API}/data/attendance`,    { headers: authHeaders }),
@@ -1023,7 +1023,12 @@ async function launchApp(){
       fetch(`${API}/data/promos`,        { headers: authHeaders }),
       fetch(`${API}/data/complaints`,    { headers: authHeaders }),
       fetch(`${API}/data/applicants`,    { headers: authHeaders }),
+      fetch(`${API}/data/job_postings`,  { headers: authHeaders }), // ADD THIS LINE
     ]);
+
+    // ... (keep the existing 'if' statements below it, and add this at the end) ...
+    if (apRes.ok) DB.s('applicants', (await apRes.json()).records || []);
+    if (jpRes.ok) DB.s('job_postings', (await jpRes.json()).records || []); // ADD THIS LINE
 
     if (uRes.ok) {
   const freshUsers = (await uRes.json()).users || [];
@@ -1063,7 +1068,7 @@ window._pollInterval = setInterval(async()=>{
   if(!JWT) return;
   const h={'Authorization':`Bearer ${JWT}`};
   try{
-    const [uRes, tRes, aRes, lRes, adRes, prRes, cmRes, apRes, cRes, rRes] = await Promise.all([
+    const [uRes, tRes, aRes, lRes, adRes, prRes, cmRes, apRes, cRes, rRes, jpRes] = await Promise.all([
       fetch(`${API}/users`,             {headers:h}),
       fetch(`${API}/data/tasks`,        {headers:h}),
       fetch(`${API}/data/attendance`,   {headers:h}),
@@ -1072,9 +1077,15 @@ window._pollInterval = setInterval(async()=>{
       fetch(`${API}/data/promos`,       {headers:h}),
       fetch(`${API}/data/complaints`,   {headers:h}),
       fetch(`${API}/data/applicants`,   {headers:h}),
-      fetch(`${API}/data/costs`,    {headers:h}),
-      fetch(`${API}/data/revenue`,  {headers:h}),
+      fetch(`${API}/data/costs`,        {headers:h}),
+      fetch(`${API}/data/revenue`,      {headers:h}),
+      fetch(`${API}/data/job_postings`, {headers:h}), // ADD THIS LINE
     ]);
+
+    // ... (keep the existing 'if' statements below it, and add this at the end) ...
+    if(cRes.ok) DB.s('costs',   (await cRes.json()).records ||[]);
+    if(rRes.ok) DB.s('revenue', (await rRes.json()).records ||[]);
+    if(jpRes.ok) DB.s('job_postings', (await jpRes.json()).records ||[]); // ADD THIS LINE
     if(uRes.ok){
   const freshUsers = (await uRes.json()).users || [];
   DB.s('employees', freshUsers);
@@ -1800,32 +1811,19 @@ function pRecruitment(el){
       </div>
       <div class="cb">
         ${(DB.g('job_postings')||[]).length===0
-          ? `<div class="es"><div class="es-ico">${ic('briefcase',44)}</div><h3>No job postings yet</h3><p>Add postings to advertise open roles on your Careers Portal.</p></div>`
-          : `<div class="tw"><table>
-  <thead>
-    <tr><th>#</th><th>Applicant</th><th>Education</th><th>Exp</th><th>Merit</th><th>Test</th><th>Offer</th><th>Status</th><th>Action</th></tr>
-  </thead>
-  <tbody>
-    ${apps.slice().sort((a,b)=>((b.testScore??b.score??0)-(a.testScore??a.score??0))).map((a,i)=>`<tr style="${i<10&&top10.some(t=>t.email===a.email)?'background:rgba(46,204,113,.05)':''}">
-      <td><div class="mn ${i===0?'g':i===1?'s':i===2?'bz':''}">${i+1}</div></td>
-      <td><strong>${a.name}</strong><br><small style="color:var(--text-muted)">${a.email}</small></td>
-      <td style="font-size:11px">${a.education||'—'}</td>
-      <td>${a.experience||0}y</td>
-      <td>${a.score!==undefined?`<strong>${a.score}</strong>/100`:'<span style="color:var(--text-muted)">—</span>'}</td>
-      <td>${a.testScore!==undefined?`<strong>${a.testScore}/${qs.length}</strong>`:'<span style="color:var(--text-muted)">—</span>'}</td>
-      <td>${a.offerStatus?`<span class="b ${a.offerStatus==='accepted'?'bg':a.offerStatus==='rejected'?'br':a.offerStatus==='negotiated'?'ba':'bb'}">${a.offerStatus}</span>`:'—'}</td>
-      <td>${a.invited?`<span class="b bg">Interview</span>`:a.offerSent?`<span class="b bb">Offer Sent</span>`:a.testInvited?`<span class="b bl">Test Sent</span>`:a.score!==undefined?`<span class="b bn">Ranked</span>`:`<span class="b ba">Applied</span>`}</td>
-      <td>
-        ${ (DB.g('employees')||[]).some(e => e.email === a.email) 
-           ? `<span style="color:var(--accent);font-weight:700;font-size:11px">Hired</span>`
-           : (a.testScore !== undefined 
-              ? `<button class="btn b-nv btn-sm" onclick="manualCreateEmployee('${a.email}')">Generate User</button>` 
-              : `<span style="color:var(--text-muted);font-size:11px">Pending Test</span>`)
-        }
-      </td>
-    </tr>`).join('')}
-  </tbody>
-</table></div>`
+          ? `<div class="es"><div class="es-ico">${ic('briefcase',44)}</div><h3>No job postings</h3><p>Add postings to show them on your Careers Portal.</p></div>`
+          : `<div class="tw"><table><thead><tr><th>Role</th><th>Type</th><th>Status</th><th>Actions</th></tr></thead><tbody>
+              ${(DB.g('job_postings')||[]).map((j,i)=>`<tr>
+                <td><strong>${j.title}</strong><br><small style="color:var(--text-muted)">${j.dept||'—'}</small></td>
+                <td>${j.type||'Full-time'}</td>
+                <td><span class="b ${j.active?'bg':'ba'}">${j.active?'Active':'Paused'}</span></td>
+                <td style="display:flex;gap:6px;flex-wrap:wrap">
+                  <button class="btn b-nv btn-sm" onclick="openEditJobPosting(${i})">${ic('edit-2',12)}</button>
+                  <button class="btn ${j.active?'b-am':'b-gr'} btn-sm" onclick="toggleJobPosting(${i})">${j.active?'Pause':'Act.'}</button>
+                  <button class="btn b-rd btn-sm" onclick="deleteJobPosting(${i})">${ic('trash-2',12)}</button>
+                </td>
+              </tr>`).join('')}
+            </tbody></table></div>`
         }
       </div>
     </div>
@@ -1859,8 +1857,8 @@ function pRecruitment(el){
       </div>
     </div>
     <div class="cb">
-      ${apps.length===0?`<div class="es"><div class="es-ico">${ic('search',44)}</div><h3>No applications yet</h3><p>Share the portal link to begin receiving applications.</p></div>`:`
-      <div class="tw"><table><thead><tr><th>#</th><th>Applicant</th><th>Education</th><th>Exp</th><th>Merit</th><th>Test</th><th>Offer</th><th>Status</th></tr></thead><tbody>
+      ${apps.length===0?`<div class="es"><div class="es-ico">${ic('search',44)}</div><h3>No applications yet</h3><p>Applicants from the careers portal will appear here.</p></div>`:`
+      <div class="tw"><table><thead><tr><th>#</th><th>Applicant</th><th>Education</th><th>Exp</th><th>Merit</th><th>Test</th><th>Offer</th><th>Status</th><th>Action</th></tr></thead><tbody>
         ${apps.slice().sort((a,b)=>((b.testScore??b.score??0)-(a.testScore??a.score??0))).map((a,i)=>`<tr style="${i<10&&top10.some(t=>t.email===a.email)?'background:rgba(46,204,113,.05)':''}">
           <td><div class="mn ${i===0?'g':i===1?'s':i===2?'bz':''}">${i+1}</div></td>
           <td><strong>${a.name}</strong><br><small style="color:var(--text-muted)">${a.email}</small></td>
@@ -1870,12 +1868,19 @@ function pRecruitment(el){
           <td>${a.testScore!==undefined?`<strong>${a.testScore}/${qs.length}</strong>`:'<span style="color:var(--text-muted)">—</span>'}</td>
           <td>${a.offerStatus?`<span class="b ${a.offerStatus==='accepted'?'bg':a.offerStatus==='rejected'?'br':a.offerStatus==='negotiated'?'ba':'bb'}">${a.offerStatus}</span>`:'—'}</td>
           <td>${a.invited?`<span class="b bg">Interview</span>`:a.offerSent?`<span class="b bb">Offer Sent</span>`:a.testInvited?`<span class="b bl">Test Sent</span>`:a.score!==undefined?`<span class="b bn">Ranked</span>`:`<span class="b ba">Applied</span>`}</td>
+          <td>
+            ${ (DB.g('employees')||[]).some(e => e.email === a.email) 
+               ? `<span style="color:var(--accent);font-weight:700;font-size:11px">Hired</span>`
+               : (a.testScore !== undefined 
+                  ? `<button class="btn b-nv btn-sm" onclick="manualCreateEmployee('${a.email}')">Generate User</button>` 
+                  : `<span style="color:var(--text-muted);font-size:11px">Pending Test</span>`)
+            }
+          </td>
         </tr>`).join('')}
       </tbody></table></div>`}
     </div>
   </div>`;
-}
-  // ─── JOB POSTINGS (Employer) ───
+}  // ─── JOB POSTINGS (Employer) ───
 function openAddJobPosting(){
   openModal('Add Job Posting',`
     <div class="fr"><div class="f"><label>Job Title *</label><input type="text" id="jp-title" placeholder="e.g. Marketing Officer"></div><div class="f"><label>Department</label><input type="text" id="jp-dept" placeholder="e.g. Sales"></div></div>
@@ -2155,12 +2160,16 @@ function showJobsList(){
   document.getElementById('cp-apply-view').style.display='none';
   document.getElementById('cp-track-view').style.display='none';
   document.getElementById('cp-offer-view').style.display='none';
-  apiFetch('GET','/data/job_postings').then(r=>{
-    if(r.records)DB.s('job_postings',r.records);
-    renderJobsList();
-  }).catch(()=>renderJobsList());
+  
+  // Use standard fetch so it doesn't fail if the user is unauthenticated
+  fetch(`${API}/data/job_postings`)
+    .then(r => r.json())
+    .then(data => {
+      if(data.records) DB.s('job_postings', data.records);
+      renderJobsList();
+    })
+    .catch(() => renderJobsList());
 }
-
 function renderJobsList(){
   const jobs=(DB.g('job_postings')||[]).filter(j=>j.active);
   const list=document.getElementById('cp-jobs-list');
