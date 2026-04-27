@@ -2125,14 +2125,23 @@ async function doCPSignup(){
   const sq=document.getElementById('cps-sq').value;
   const sa=document.getElementById('cps-sa').value.trim();
   const msg=document.getElementById('cps-msg');
+  
   if(!name||!email||!pw||!sq||!sa){msg.innerHTML='<div class="al al-r">Please fill all fields.</div>';return;}
   if(pw!==cpw){msg.innerHTML='<div class="al al-r">Passwords do not match.</div>';return;}
   if(pw.length<6){msg.innerHTML='<div class="al al-r">Password must be at least 6 characters.</div>';return;}
+  
   msg.innerHTML='<div class="al al-b">Creating account…</div>';
-  try{
+  
+  try {
     const r=await fetch(`${API}/portal-signup`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,email,password:pw,securityQuestion:sq,securityAnswer:sa})});
-    const d=await r.json();
+    
+    // Improved error parsing to catch Vercel HTML errors
+    const text = await r.text(); 
+    let d;
+    try { d = JSON.parse(text); } catch(err) { throw new Error('Server returned an invalid response: ' + text.substring(0, 50)); }
+    
     if(!r.ok){msg.innerHTML=`<div class="al al-r">${d.error||'Signup failed.'}</div>`;return;}
+    
     _cpUser=d.applicant;
     localStorage.setItem('cp_jwt',d.token);
     localStorage.setItem('cp_user',JSON.stringify(d.applicant));
@@ -2140,9 +2149,11 @@ async function doCPSignup(){
     msg.innerHTML='';
     showJobsList();
     toast('Account created! Welcome.','s');
-  }catch(e){msg.innerHTML=`<div class="al al-r">Network error. Try again.</div>`;}
+  } catch(e) {
+    console.error(e);
+    msg.innerHTML=`<div class="al al-r">System Error: ${e.message}</div>`;
+  }
 }
-
 async function doCPForgotStep1(){
   const email=document.getElementById('cpf-email').value.trim();
   const msg=document.getElementById('cpf-msg1');
