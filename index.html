@@ -2187,7 +2187,7 @@ function showJobsList(){
   document.getElementById('cp-track-view').style.display='none';
   document.getElementById('cp-offer-view').style.display='none';
   
-  // Use standard fetch so it doesn't fail if the user is unauthenticated
+  // Use a standard fetch so it doesn't attach an employer/employee token!
   fetch(`${API}/data/job_postings`)
     .then(r => r.json())
     .then(data => {
@@ -2195,8 +2195,7 @@ function showJobsList(){
       renderJobsList();
     })
     .catch(() => renderJobsList());
-}
-function renderJobsList(){
+}function renderJobsList(){
   const jobs=(DB.g('job_postings')||[]).filter(j=>j.active);
   const list=document.getElementById('cp-jobs-list');
   // If logged in, show dashboard links
