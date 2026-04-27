@@ -146,16 +146,27 @@ async function handleMe(req, res) {
   return res.status(200).json({ user: safe(user) });
 }
 async function handleData(req, res, parts) {
-  let decoded;
-  try { decoded = verifyToken(req); }
-  catch (e) { return res.status(401).json({ error: 'Unauthorized' }); }
   const table    = parts[1];
   const recordId = parts[2];
+  
   if (!ALLOWED_TABLES.includes(table)) {
     return res.status(404).json({ error: `Table "${table}" not found` });
   }
-  const isEmployee = decoded.role === 'employee';
+
+  // --- PUBLIC ACCESS EXCEPTION ---
+  // Allow unauthenticated users to view job postings
+  let decoded = null;
+  if (req.method === 'GET' && table === 'job_postings') {
+    // Proceed without a token
+  } else {
+    try { decoded = verifyToken(req); }
+    catch (e) { return res.status(401).json({ error: 'Unauthorized' }); }
+  }
+
+  // Add a safety check using "decoded &&" since public users won't have a role
+  const isEmployee = decoded && decoded.role === 'employee';
   const isFiltered = EMPLOYEE_FILTERED.includes(table);
+
   if (req.method === 'GET') {
     let query = getSupabase().from(table).select('*').order('created_at', { ascending: false });
     if (isEmployee && isFiltered) query = query.eq('empId', decoded.id);
@@ -163,46 +174,10 @@ async function handleData(req, res, parts) {
     if (error) return res.status(500).json({ error: error.message });
     return res.status(200).json({ records: data });
   }
+  
+  // ... (Keep the rest of the handleData function exactly the same from here down)
   if (req.method === 'POST') {
-    if (recordId === 'bulk') {
-      if (isEmployee) return res.status(403).json({ error: 'Forbidden' });
-      const records = req.body.records || [];
-      await getSupabase().from(table).delete().not('id', 'is', null);
-      if (records.length > 0) {
-        const { error } = await getSupabase().from(table).insert(records);
-        if (error) return res.status(400).json({ error: error.message });
-      }
-      return res.status(200).json({ success: true });
-    }
-    const body = { ...req.body };
-    if (isEmployee && isFiltered) {
-      body.empId   = decoded.id;
-      body.empName = decoded.name;
-    }
-    body.created_at = new Date().toISOString();
-    const { data, error } = await getSupabase().from(table).insert([body]).select().single();
-    if (error) return res.status(400).json({ error: error.message });
-    return res.status(201).json({ record: data });
-  }
-  if (req.method === 'PUT' && recordId && recordId !== 'bulk') {
-    if (isEmployee && ['leaves', 'advances', 'promos'].includes(table)) {
-      const s = req.body.status;
-      if (s && s !== 'pending') return res.status(403).json({ error: 'Forbidden' });
-    }
-    const { data, error } = await getSupabase()
-      .from(table).update(req.body).eq('id', recordId).select().single();
-    if (error) return res.status(400).json({ error: error.message });
-    return res.status(200).json({ record: data });
-  }
-  if (req.method === 'DELETE' && recordId) {
-    if (isEmployee) return res.status(403).json({ error: 'Forbidden' });
-    const { error } = await getSupabase().from(table).delete().eq('id', recordId);
-    if (error) return res.status(400).json({ error: error.message });
-    return res.status(200).json({ success: true });
-  }
-  return res.status(405).end();
-}
-
+  // ...
 async function handleChangePassword(req, res) {
   if (req.method !== 'POST') return res.status(405).end();
   let decoded;
