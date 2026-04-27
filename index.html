@@ -1929,11 +1929,39 @@ function openPublicCareersPreview(){openCareersPortal();}
 function openLetterSetup() {
   const co = DB.g('company') || {};
   openModal('Configure Employment Letter', `
+    <div style="margin-bottom:15px; padding-bottom:15px; border-bottom:1px solid var(--border);">
+      <div style="font-size:12px; font-weight:700; color:var(--text-muted); text-transform:uppercase; margin-bottom:10px;">Business Header Styling</div>
+      <div class="f">
+        <label>Full Letterhead Banner URL (Optional)</label>
+        <input type="text" id="ol-head" value="${co.letterhead||''}" placeholder="e.g., https://yourdomain.com/banner.png">
+        <div style="font-size:11px; color:var(--text-muted); margin-top:4px;">If provided, this image replaces the default text name/address at the top of the letter.</div>
+      </div>
+      <div class="fr">
+        <div class="f"><label>Company Tagline / Motto</label><input type="text" id="ol-tag" value="${co.tagline||''}" placeholder="e.g., Innovating the Future"></div>
+        <div class="f"><label>Registration / TIN No.</label><input type="text" id="ol-reg" value="${co.regNumber||''}" placeholder="e.g., CS1234567"></div>
+      </div>
+    </div>
+
     <div class="fr">
       <div class="f"><label>Default Hourly Rate (₵)</label><input type="number" id="ol-rate" value="${co.defaultRate||20}"></div>
       <div class="f"><label>Probation Period</label><input type="text" id="ol-prob" value="${co.probation||'3 months'}"></div>
     </div>
-    <div class="f"><label>Work Schedule</label><input type="text" id="ol-sched" value="${co.workSchedule||'Monday – Friday, 8:00 AM – 5:00 PM'}"></div>
+    <div class="fr">
+      <div class="f"><label>Work Schedule</label><input type="text" id="ol-sched" value="${co.workSchedule||'Monday – Friday, 8:00 AM – 5:00 PM'}"></div>
+      <div class="f"><label>Offer Expiry (Days from now)</label><input type="number" id="ol-exp" value="${co.offerExpiry||7}"></div>
+    </div>
+    <div class="fr">
+      <div class="f"><label>Reporting Manager (Optional)</label><input type="text" id="ol-mgr" value="${co.managerName||''}" placeholder="e.g. Jane Doe"></div>
+      <div class="f"><label>Benefits Summary (Optional)</label><input type="text" id="ol-ben" value="${co.benefitsSummary||''}" placeholder="e.g. Health Insurance, PTO"></div>
+    </div>
+    <div class="f">
+      <label>Custom Opening Paragraph (Optional)</label>
+      <textarea id="ol-intro" rows="2" placeholder="Leave blank to use the default welcome message...">${co.offerIntro||''}</textarea>
+    </div>
+    <div class="f">
+      <label>Additional Terms & Conditions (Optional)</label>
+      <textarea id="ol-terms" rows="2" placeholder="e.g., Must provide valid ID, subject to background check...">${co.offerTerms||''}</textarea>
+    </div>
     <div class="fr">
       <div class="f"><label>Signatory Name</label><input type="text" id="ol-sign" value="${co.signatory||'The Director'}"></div>
       <div class="f"><label>Signatory Title</label><input type="text" id="ol-sigt" value="${co.sigTitle||'Managing Director'}"></div>
@@ -1942,9 +1970,17 @@ function openLetterSetup() {
     l: 'Save Configuration', c: 'b-nv', fn: () => {
       const newCo = {
         ...DB.g('company') || {},
+        letterhead: document.getElementById('ol-head').value,
+        tagline: document.getElementById('ol-tag').value,
+        regNumber: document.getElementById('ol-reg').value,
         defaultRate: parseFloat(document.getElementById('ol-rate').value) || 20,
         workSchedule: document.getElementById('ol-sched').value,
         probation: document.getElementById('ol-prob').value,
+        offerExpiry: parseInt(document.getElementById('ol-exp').value) || 7,
+        managerName: document.getElementById('ol-mgr').value,
+        benefitsSummary: document.getElementById('ol-ben').value,
+        offerIntro: document.getElementById('ol-intro').value,
+        offerTerms: document.getElementById('ol-terms').value,
         signatory: document.getElementById('ol-sign').value,
         sigTitle: document.getElementById('ol-sigt').value
       };
@@ -1955,7 +1991,6 @@ function openLetterSetup() {
     }
   }]);
 }
-
 function previewOfferTemplate() {
   const co = DB.g('company') || {};
   const dummyApp = { name: 'Jane Doe', position: 'Software Engineer' };
@@ -3279,26 +3314,56 @@ function generateOfferLetterHTML(app,co){
   const rate=co.defaultRate||20;
   const schedule=co.workSchedule||'Monday – Friday, 8:00 AM – 5:00 PM';
   const probation=co.probation||'3 months';
+  const expiryDays=co.offerExpiry||7;
+  
+  const expDate = new Date();
+  expDate.setDate(expDate.getDate() + expiryDays);
+  const formattedExp = expDate.toLocaleDateString('en-GH', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
+  const introText = co.offerIntro 
+    ? co.offerIntro.replace(/\n/g, '<br>') 
+    : `We are pleased to offer you the position of <strong>${app.position}</strong> at <strong>${co.name||'our company'}</strong>. After a thorough review of your application and performance in our aptitude test, we believe you are an excellent fit for our team.`;
+
+  // Build the Header
+  let headerBlock = '';
+  if (co.letterhead) {
+    headerBlock = `<img src="${co.letterhead}" style="width:100%; max-height:130px; object-fit:cover; border-radius:8px 8px 0 0; margin-bottom:14px; display:block">`;
+  } else {
+    headerBlock = `
+      ${co.logo?`<img src="${co.logo}" style="height:50px;margin-bottom:14px;display:block">`:''}
+      <div style="font-size:20px;font-weight:900;color:var(--navy);margin-bottom:2px">${co.name||'Company Name'}</div>
+      ${co.tagline ? `<div style="font-size:12px; font-style:italic; color:var(--text-muted); margin-bottom:8px">${co.tagline}</div>` : ''}
+      <div style="font-size:11.5px;color:var(--text-muted);margin-bottom:4px">${co.address||''} | ${co.phone||''} | ${co.email||''}</div>
+      ${co.regNumber ? `<div style="font-size:11px;color:var(--text-muted);margin-bottom:18px; font-weight:600;">Reg/TIN: ${co.regNumber}</div>` : '<div style="margin-bottom:18px"></div>'}
+    `;
+  }
+
   return`
   <div style="border:2px solid var(--border);border-radius:10px;padding:24px;background:var(--bg)">
-    ${co.logo?`<img src="${co.logo}" style="height:50px;margin-bottom:14px;display:block">`:''}
-    <div style="font-size:18px;font-weight:900;color:var(--navy);margin-bottom:2px">${co.name||'Company Name'}</div>
-    <div style="font-size:11.5px;color:var(--text-muted);margin-bottom:18px">${co.address||''} | ${co.phone||''} | ${co.email||''}</div>
+    ${headerBlock}
     <hr style="border:none;border-top:1px solid var(--border);margin-bottom:14px">
     <div style="font-size:13.5px;font-weight:800;margin-bottom:12px">OFFER OF EMPLOYMENT</div>
     <p style="font-size:13px;margin-bottom:10px">Dear <strong>${app.name}</strong>,</p>
-    <p style="font-size:13px;margin-bottom:10px">We are pleased to offer you the position of <strong>${app.position}</strong> at <strong>${co.name||'our company'}</strong>. After a thorough review of your application and performance in our aptitude test, we believe you are an excellent fit for our team.</p>
+    <p style="font-size:13px;margin-bottom:10px;line-height:1.5">${introText}</p>
+    
     <div style="background:var(--card);border-radius:8px;padding:14px;margin:14px 0">
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
         <div><div style="font-size:10.5px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.6px">Position</div><div style="font-size:13px;font-weight:700">${app.position}</div></div>
         <div><div style="font-size:10.5px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.6px">Hourly Rate</div><div style="font-size:13px;font-weight:700">${GHS}${rate}/hour</div></div>
         <div><div style="font-size:10.5px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.6px">Work Schedule</div><div style="font-size:13px;font-weight:700">${schedule}</div></div>
         <div><div style="font-size:10.5px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.6px">Probation Period</div><div style="font-size:13px;font-weight:700">${probation}</div></div>
-        <div><div style="font-size:10.5px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.6px">Start Date</div><div style="font-size:13px;font-weight:700">To be confirmed</div></div>
-        <div><div style="font-size:10.5px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.6px">Earnings Model</div><div style="font-size:13px;font-weight:700">Per-hour (post-completion)</div></div>
+        ${co.managerName ? `<div><div style="font-size:10.5px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.6px">Reporting To</div><div style="font-size:13px;font-weight:700">${co.managerName}</div></div>` : ''}
+        ${co.benefitsSummary ? `<div><div style="font-size:10.5px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.6px">Benefits</div><div style="font-size:13px;font-weight:700">${co.benefitsSummary}</div></div>` : ''}
       </div>
     </div>
-    <p style="font-size:12.5px;color:var(--text-muted);margin-bottom:14px">This offer is conditional upon satisfactory completion of reference checks and any pre-employment screening. The hourly rate is applied after each completed hour of work and tracked through our attendance system.</p>
+    
+    <p style="font-size:12.5px;color:var(--text-muted);margin-bottom:10px">This offer is conditional upon satisfactory completion of reference checks and any pre-employment screening.</p>
+    ${co.offerTerms ? `<p style="font-size:12.5px;color:var(--text-muted);margin-bottom:14px;white-space:pre-wrap;"><strong>Additional Terms:</strong><br>${co.offerTerms}</p>` : ''}
+    
+    <div class="al al-a" style="margin-top:14px; margin-bottom: 14px;">
+      <strong>Offer Expiration:</strong> Please respond to this offer by <strong>${formattedExp}</strong>.
+    </div>
+    
     <div style="margin-top:16px;padding-top:12px;border-top:1px solid var(--border)">
       <div style="font-size:13px;font-weight:700">${co.signatory||'The Director'}</div>
       <div style="font-size:12px;color:var(--text-muted)">${co.sigTitle||'Managing Director'}</div>
@@ -3309,45 +3374,73 @@ function generateOfferLetterHTML(app,co){
     ${ic('download',14)} Download Letter (PDF)
   </button>`;
 }
-
 function downloadOfferLetter(name,position){
   const co=DB.g('company')||{};
+  const expiryDays=co.offerExpiry||7;
+  
+  const expDate = new Date();
+  expDate.setDate(expDate.getDate() + expiryDays);
+  const formattedExp = expDate.toLocaleDateString('en-GH', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+  
+  const introText = co.offerIntro 
+    ? co.offerIntro.replace(/\n/g, '<br>') 
+    : `We are pleased to offer you the position of <strong>${position}</strong> at <strong>${co.name||'our company'}</strong>. After a thorough review of your application and performance in our assessment process, we believe you are an excellent fit for our team.`;
+
+  let headerBlock = '';
+  if (co.letterhead) {
+    headerBlock = `<img src="${co.letterhead}" style="width:100%; max-height:150px; object-fit:cover; margin-bottom:14px; display:block;">`;
+  } else {
+    headerBlock = `
+      ${co.logo?`<img src="${co.logo}" style="height:60px;margin-bottom:14px">`:''}
+      <h1>${co.name||'Company'}</h1>
+      ${co.tagline ? `<p style="color:#666; font-size:13px; font-style:italic; margin-top:0; margin-bottom:8px;">${co.tagline}</p>` : ''}
+      <p style="color:#666;font-size:12px;margin-top:0;margin-bottom:4px;">${co.address||''} | ${co.phone||''} | ${co.email||''}</p>
+      ${co.regNumber ? `<p style="color:#666;font-size:11px;font-weight:bold;margin-top:0;">Reg/TIN: ${co.regNumber}</p>` : ''}
+    `;
+  }
+
   const w=window.open('','_blank');
   w.document.write(`<!DOCTYPE html><html><head><title>Offer Letter – ${name}</title>
   <style>body{font-family:'Segoe UI',Arial,sans-serif;max-width:700px;margin:40px auto;font-size:13px;color:#222;line-height:1.6}
-  h1{font-size:20px;color:#1b2e4b}
+  h1{font-size:22px;color:#1b2e4b;margin-bottom:2px;}
   .box{border:1px solid #dde4ee;border-radius:8px;padding:16px;margin:14px 0;background:#f9fbfc}
-  .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
   .lbl{font-size:10px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.6px;margin-bottom:2px}
   .val{font-size:13px;font-weight:700;color:#1b2e4b}
   .footer{margin-top:30px;padding-top:14px;border-top:1px solid #dde4ee}
-  @media print{body{margin:20px}}</style>
+  .alert{background-color:#fcf8e3;border:1px solid #faebcc;color:#8a6d3b;padding:10px;border-radius:4px;margin-top:15px;}
+  @media print{body{margin:20px;max-width:100%}}</style>
   </head><body>
-  ${co.logo?`<img src="${co.logo}" style="height:50px;margin-bottom:14px">`:''}
-  <h1>${co.name||'Company'}</h1>
-  <p style="color:#666;font-size:12px">${co.address||''} | ${co.phone||''} | ${co.email||''}</p>
-  <hr>
+  
+  ${headerBlock}
+  <hr style="border:none; border-top:1px solid #dde4ee; margin-bottom:20px;">
+  
   <h2>OFFER OF EMPLOYMENT</h2>
   <p>Dear <strong>${name}</strong>,</p>
-  <p>We are pleased to offer you the position of <strong>${position}</strong> at <strong>${co.name||'our company'}</strong>. After a thorough review of your application and performance in our assessment process, we believe you are an excellent fit for our team.</p>
+  <p>${introText}</p>
   <div class="box"><div class="grid">
     <div><div class="lbl">Position</div><div class="val">${position}</div></div>
     <div><div class="lbl">Hourly Rate</div><div class="val">₵${co.defaultRate||20}/hour</div></div>
     <div><div class="lbl">Work Schedule</div><div class="val">${co.workSchedule||'Mon–Fri, 8:00 AM – 5:00 PM'}</div></div>
     <div><div class="lbl">Probation Period</div><div class="val">${co.probation||'3 months'}</div></div>
-    <div><div class="lbl">Earnings Model</div><div class="val">Per-hour (post-completion)</div></div>
-    <div><div class="lbl">Currency</div><div class="val">Ghanaian Cedis (₵)</div></div>
+    ${co.managerName ? `<div><div class="lbl">Reporting To</div><div class="val">${co.managerName}</div></div>` : ''}
+    ${co.benefitsSummary ? `<div><div class="lbl">Benefits</div><div class="val">${co.benefitsSummary}</div></div>` : ''}
   </div></div>
   <p style="font-size:12px;color:#666">This offer is conditional upon satisfactory completion of reference checks and pre-employment screening. The hourly rate is applied after each completed hour of work.</p>
+  ${co.offerTerms ? `<p style="font-size:12px;color:#666;white-space:pre-wrap;"><strong>Additional Terms:</strong><br>${co.offerTerms}</p>` : ''}
+  
+  <div class="alert">
+    <strong>Offer Expiration:</strong> Please respond to this offer by <strong>${formattedExp}</strong>.
+  </div>
+
   <div class="footer">
-    <p style="font-weight:700">${co.signatory||'The Director'}</p>
-    <p style="color:#666;font-size:12px">${co.sigTitle||'Managing Director'} | ${co.name||''}</p>
+    <p style="font-weight:700;margin-bottom:2px;">${co.signatory||'The Director'}</p>
+    <p style="color:#666;font-size:12px;margin-top:0;">${co.sigTitle||'Managing Director'} | ${co.name||''}</p>
     <p style="color:#666;font-size:12px">Date: ${new Date().toLocaleDateString('en-GH')}</p>
   </div>
   </body></html>`);
   w.document.close(); setTimeout(()=>w.print(),500);
 }
-
 async function respondOffer(decision){
   const email=document.getElementById('offer-details-wrap').dataset.email;
   const apps=DB.g('applicants')||[];
