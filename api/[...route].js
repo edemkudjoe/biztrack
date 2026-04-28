@@ -34,8 +34,7 @@ async function handleData(req, res, parts) {
   if (!ALLOWED_TABLES.includes(table)) return res.status(404).end();
 
   let decoded = null;
-  // Unlock job_postings for public viewing on mobile
-  if (req.method === 'GET' && table === 'job_postings') { } 
+  if (req.method === 'GET' && table === 'job_postings') { /* Public */ } 
   else {
     try { decoded = verifyToken(req); }
     catch (e) { return res.status(401).json({ error: 'Unauthorized' }); }
@@ -68,6 +67,7 @@ module.exports = async function (req, res) {
   const route = parts[0];
   try {
     if (route === 'data') return await handleData(req, res, parts);
+    
     if (route === 'portal-signup') {
       const { name, email, password, securityQuestion, securityAnswer } = req.body;
       const hashed = await bcrypt.hash(password, 10);
@@ -76,6 +76,17 @@ module.exports = async function (req, res) {
       const token = jwt.sign({ id: data.id, email: data.email }, JWT_SECRET);
       return res.status(201).json({ token, applicant: data });
     }
+
+    if (route === 'portal-login') {
+      const { email, password } = req.body;
+      const { data: user, error } = await getSupabase().from('applicants').select('*').eq('email', email).eq('portalAccount', true).single();
+      if (error || !user) return res.status(401).json({ error: 'Invalid email or password' });
+      const match = await bcrypt.compare(password, user.password);
+      if (!match) return res.status(401).json({ error: 'Invalid email or password' });
+      const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET);
+      return res.status(200).json({ token, applicant: user });
+    }
+
     return res.status(404).end();
   } catch (err) { return res.status(500).json({ error: err.message }); }
 };
