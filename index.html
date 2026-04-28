@@ -2138,7 +2138,7 @@ async function doCPSignup(){
     // Improved error parsing to catch Vercel HTML errors
     const text = await r.text(); 
     let d;
-    try { d = JSON.parse(text); } catch(err) { throw new Error('Server returned an invalid response: ' + text.substring(0, 50)); }
+    try { d = JSON.parse(text); } catch(err) { throw new Error('Server returned an invalid response: ' + text.substring(0, 500)); }
     
     if(!r.ok){msg.innerHTML=`<div class="al al-r">${d.error||'Signup failed.'}</div>`;return;}
     
