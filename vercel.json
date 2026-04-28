@@ -16,9 +16,7 @@
     }
   },
   "rewrites": [
-    { "source": "/api/:p1/:p2/:p3", "destination": "/api/[...route]?route=:p1&route=:p2&route=:p3" },
-    { "source": "/api/:p1/:p2", "destination": "/api/[...route]?route=:p1&route=:p2" },
-    { "source": "/api/:p1", "destination": "/api/[...route]?route=:p1" },
+    { "source": "/api/(.*)", "destination": "/api/[...route]" },
     { "source": "/((?!api/).*)", "destination": "/index.html" }
   ]
 }
