@@ -34,7 +34,7 @@ async function handleData(req, res, parts) {
   if (!ALLOWED_TABLES.includes(table)) return res.status(404).end();
 
   let decoded = null;
-  // Public access for job postings
+  // Unlock job_postings for public viewing on mobile
   if (req.method === 'GET' && table === 'job_postings') { } 
   else {
     try { decoded = verifyToken(req); }
@@ -71,7 +71,7 @@ module.exports = async function (req, res) {
     if (route === 'portal-signup') {
       const { name, email, password, securityQuestion, securityAnswer } = req.body;
       const hashed = await bcrypt.hash(password, 10);
-      const { data, error } = await getSupabase().from('applicants').insert([{ name, email, password: hashed, securityQuestion, securityAnswer, portalAccount: true }]).select().single();
+      const { data, error } = await getSupabase().from('applicants').insert([{ name, email, password: hashed, securityQuestion, securityAnswer, portalAccount: true, appliedDate: new Date().toISOString().split('T')[0] }]).select().single();
       if (error) return res.status(400).json({ error: error.message });
       const token = jwt.sign({ id: data.id, email: data.email }, JWT_SECRET);
       return res.status(201).json({ token, applicant: data });
