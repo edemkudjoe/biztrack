@@ -6,7 +6,8 @@ module.exports = async function (req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
 
   const parts = (req.query['...route'] || []).filter(Boolean);
-  const sub = parts[1];
+const urlParts = (req.url || '').split('?')[0].split('/').filter(Boolean);
+const sub = parts[1] || urlParts[2];
 
   try {
     // GET /api/users/me — employee fetches own record
