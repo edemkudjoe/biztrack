@@ -164,10 +164,6 @@ async function launchApp(){
       fetch(`${API}/data/job_postings`,  { headers: authHeaders }), // ADD THIS LINE
     ]);
 
-    // ... (keep the existing 'if' statements below it, and add this at the end) ...
-    if (apRes.ok) DB.s('applicants', (await apRes.json()).records || []);
-    if (jpRes.ok) DB.s('job_postings', (await jpRes.json()).records || []); // ADD THIS LINE
-
     if (uRes.ok) {
   const freshUsers = (await uRes.json()).users || [];
   DB.s('employees', freshUsers);
