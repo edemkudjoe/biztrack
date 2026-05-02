@@ -4,7 +4,18 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>BizTrack — Business Management System</title>
+<script>
+  window.si = window.si || function () { (window.siq = window.siq || []).push(arguments); };
+</script>
+<script defer src="/_vercel/speed-insights/script.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<<<<<<< HEAD
+
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <link rel="stylesheet" href="/css/portals.css">
+
+=======
 <style>
 /* ══════════════════ RESET & ROOT ══════════════════ */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -33,7 +44,7 @@ a{text-decoration:none;color:inherit}
 /* ══════════════════ LOGIN ══════════════════ */
 #login-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;
   background:linear-gradient(135deg,#1b2e4b 0%,#2d4f80 100%)}
-.login-box{background:var(--white);border-radius:16px;padding:44px 40px 36px;width:420px;
+.login-box{background:var(--white);border-radius:16px;padding:44px 40px 36px;width:90%; max-width:420px;
   box-shadow:0 20px 60px rgba(0,0,0,.28);animation:slideUp .45s ease}
 @keyframes slideUp{from{opacity:0;transform:translateY(26px)}to{opacity:1;transform:translateY(0)}}
 .login-logo{font-size:28px;font-weight:900;color:var(--navy);letter-spacing:-1px;margin-bottom:4px}
@@ -68,6 +79,65 @@ a{text-decoration:none;color:inherit}
 .portal-logo{font-size:22px;font-weight:900;color:var(--navy);margin-bottom:4px;letter-spacing:-.5px}
 .portal-logo span{color:var(--accent)}
 [data-theme=dark] .portal-logo{color:var(--text)}
+
+/* ══════════════════ CAREERS PORTAL ══════════════════ */
+#careers-portal{display:none;min-height:100vh;background:linear-gradient(135deg,#1b2e4b 0%,#2d4f80 100%);
+  flex-direction:column;align-items:center;padding:0}
+#careers-portal.open{display:flex}
+.cp-header{width:100%;background:rgba(0,0,0,.25);backdrop-filter:blur(10px);
+  padding:16px 32px;display:flex;align-items:center;justify-content:space-between;
+  border-bottom:1px solid rgba(255,255,255,.1);position:sticky;top:0;z-index:10}
+.cp-header-logo{font-size:22px;font-weight:900;color:#fff;letter-spacing:-1px}
+.cp-header-logo span{color:var(--accent)}
+.cp-header-sub{font-size:11px;color:rgba(255,255,255,.5);font-weight:600;text-transform:uppercase;letter-spacing:1px}
+.cp-body{width:100%;max-width:900px;padding:40px 20px 60px}
+.cp-hero{text-align:center;margin-bottom:44px;animation:slideUp .5s ease}
+.cp-hero h1{font-size:36px;font-weight:900;color:#fff;margin-bottom:8px;letter-spacing:-1.5px}
+.cp-hero p{font-size:15px;color:rgba(255,255,255,.6);max-width:480px;margin:0 auto}
+.cp-section-title{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;
+  color:rgba(255,255,255,.4);margin-bottom:16px}
+.job-card{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);
+  border-radius:14px;padding:22px 26px;margin-bottom:14px;cursor:pointer;
+  transition:all .22s;animation:slideUp .4s ease}
+.job-card:hover{background:rgba(255,255,255,.13);border-color:rgba(46,204,113,.4);transform:translateY(-2px)}
+.job-card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.job-card-title{font-size:17px;font-weight:800;color:#fff;margin-bottom:4px}
+.job-card-dept{font-size:12px;color:var(--accent);font-weight:700;text-transform:uppercase;letter-spacing:.8px}
+.job-card-meta{display:flex;gap:12px;margin-top:10px;flex-wrap:wrap}
+.job-meta-pill{font-size:11.5px;color:rgba(255,255,255,.55);background:rgba(255,255,255,.07);
+  padding:4px 10px;border-radius:20px;border:1px solid rgba(255,255,255,.1)}
+.job-card-desc{font-size:13px;color:rgba(255,255,255,.55);margin-top:10px;line-height:1.6}
+.job-apply-btn{background:var(--accent);color:#fff;border-radius:8px;padding:9px 18px;
+  font-weight:800;font-size:13px;white-space:nowrap;transition:all .2s;flex-shrink:0}
+.job-apply-btn:hover{background:#27ae60;transform:translateY(-1px)}
+.cp-empty{text-align:center;padding:60px 20px;color:rgba(255,255,255,.35)}
+.cp-empty-ico{font-size:48px;margin-bottom:14px;opacity:.4}
+.cp-form-card{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);
+  border-radius:16px;padding:32px;animation:slideUp .4s ease}
+.cp-form-card .fg label{color:rgba(255,255,255,.6)}
+.cp-form-card .fi{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.15);color:#fff}
+.cp-form-card select.fi option{background:#1b2e4b;color:#fff}
+.cp-form-card .fi:focus{border-color:var(--accent);background:rgba(255,255,255,.12)}
+.cp-form-card .fi::placeholder{color:rgba(255,255,255,.3)}
+.cp-back-link{color:rgba(255,255,255,.55);font-size:13px;font-weight:600;cursor:pointer;
+  display:inline-flex;align-items:center;gap:6px;transition:color .2s;margin-bottom:20px}
+.cp-back-link:hover{color:#fff}
+.cp-progress{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);
+  border-radius:12px;padding:18px 22px;margin-bottom:20px}
+.cp-progress-title{font-size:12px;font-weight:700;color:rgba(255,255,255,.5);text-transform:uppercase;
+  letter-spacing:.8px;margin-bottom:12px}
+.cp-stage{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.06)}
+.cp-stage:last-child{border-bottom:none}
+.cp-stage-dot{width:10px;height:10px;border-radius:50%;background:rgba(255,255,255,.2);flex-shrink:0}
+.cp-stage-dot.done{background:var(--accent)}
+.cp-stage-dot.current{background:#f39c12;box-shadow:0 0 0 3px rgba(243,156,18,.25)}
+.cp-stage-label{font-size:13px;font-weight:600;color:rgba(255,255,255,.5)}
+.cp-stage-label.current{color:#f39c12;font-weight:700}
+.cp-stage-label.done{color:var(--accent)}
+.login-careers-link{display:block;text-align:center;margin-top:18px;font-size:13px;
+  color:rgba(255,255,255,.7);font-weight:600;cursor:pointer;transition:color .2s}
+.login-careers-link:hover{color:#fff}
+.login-careers-link span{color:var(--accent);text-decoration:underline}
 
 /* ══════════════════ APP SHELL ══════════════════ */
 #app{display:none;min-height:100vh}
@@ -297,16 +367,80 @@ tbody tr:hover td{background:rgba(27,46,75,.025)}
 @media print{.sidebar,.topbar,footer,button,.btn{display:none!important}.main{margin-left:0!important}body{background:#fff!important;color:#000!important}}
 
 /* ── Footer ── */
-footer{background:#1b2e4b;color:rgba(255,255,255,.42);text-align:center;
-  padding:13px 20px;font-size:11.5px;font-weight:600;letter-spacing:.3px;
-  margin-left:var(--sidebar-w)}
-[data-theme=dark] footer{background:#0b1825}
+footer {
+  background: #1b2e4b;
+  color: rgba(255,255,255,.42);
+  text-align: center;
+  padding: 13px 20px;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: .3px;
+}
 
 /* scrollbar */
 ::-webkit-scrollbar{width:5px;height:5px}
 ::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
 ::-webkit-scrollbar-track{background:transparent}
+
+/* ── Mobile Responsiveness ── */
+.mobile-toggle { display: none; background: transparent; border: none; color: var(--navy); cursor: pointer; margin-right: 12px; }
+[data-theme=dark] .mobile-toggle { color: var(--text); }
+.sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 98; }
+.sidebar-overlay.active { display: block; }
+
+@media (max-width: 768px) {
+  .sidebar { transform: translateX(-100%); transition: transform 0.3s ease; box-shadow: 4px 0 20px rgba(0,0,0,0.3); }
+  .sidebar.mobile-open { transform: translateX(0); }
+  .main { margin-left: 0; }
+  .mobile-toggle { display: flex; align-items: center; }
+  .sg { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .content { padding: 14px; }
+  .g2, .g3 { grid-template-columns: 1fr; gap: 12px; }
+  .sc { padding: 13px; }
+  .sc-val { font-size: 20px; }
+  .card { border-radius: 10px; }
+  .ph h2 { font-size: 18px; }
+  .ph { margin-bottom: 14px; }
+  .topbar { padding: 0 14px; }
+  .tb-title { font-size: 15px; }
+  .cb { padding: 14px; }
+  .ch { padding: 12px 14px; }
+  table { font-size: 12px; }
+  th { padding: 7px 8px; font-size: 9px; }
+  td { padding: 8px; }
+  .btn { font-size: 11.5px; padding: 7px 12px; }
+  .btn-sm { padding: 4px 9px; font-size: 11px; }
+  footer { font-size: 10.5px; padding: 10px; }
+}
+
+@media (max-width: 480px) {
+  .sg { grid-template-columns: 1fr 1fr; gap: 8px; }
+  .sc { padding: 11px 12px; }
+  .sc-val { font-size: 18px; }
+  .sc-lbl { font-size: 9.5px; }
+  .sc-ico { width: 30px; height: 30px; margin-bottom: 7px; }
+  .fr, .fr3 { grid-template-columns: 1fr; }
+  .tb-clock { display: none; }
+  .content { padding: 10px; }
+  .ph h2 { font-size: 16px; }
+  .ph p { font-size: 12px; }
+  .cb { padding: 12px; }
+  .ch { padding: 10px 12px; flex-wrap: wrap; gap: 8px; }
+  .ct { font-size: 12.5px; }
+  .steps { gap: 2px 0; }
+  .sl { font-size: 10px; }
+  .sn { width: 22px; height: 22px; font-size: 10px; }
+  .modal { border-radius: 10px; }
+  .mh { padding: 13px 16px; }
+  .mb2 { padding: 14px; }
+  .mf { padding: 10px 14px; }
+}
 </style>
+>>>>>>> 4e072e51db007e5e34ece89dee645321da2dd76c
+<script>
+  window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+</script>
+<script defer src="/_vercel/insights/script.js"></script>
 </head>
 <body>
 
@@ -325,14 +459,224 @@ footer{background:#1b2e4b;color:rgba(255,255,255,.42);text-align:center;
     </div>
     <div class="fg">
       <label>Password</label>
-      <input class="fi" id="l-pw" type="password" value="admin123" onkeydown="if(event.key==='Enter')doLogin()">
+      <input class="fi" id="l-pw" type="password" placeholder="Password" onkeydown="if(event.key==='Enter')doLogin()">
     </div>
     <div class="login-err" id="l-err"></div>
     <button class="btn-login" id="l-btn" onclick="doLogin()">Sign In</button>
-    <div class="login-hint" id="l-hint">Demo · <strong>admin</strong> / <strong>admin123</strong></div>
+    <div class="login-hint" id="l-hint"></div>
+    <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border);text-align:center">
+      <span style="font-size:12.5px;color:var(--text-muted)">Looking for a job? </span>
+      <a onclick="openCareersPortal()" style="font-size:12.5px;color:var(--accent);font-weight:700;cursor:pointer;text-decoration:underline">Visit our Careers Portal →</a>
+    </div>
   </div>
 </div>
 
+<!-- ════ CAREERS PORTAL ════ -->
+<div id="careers-portal">
+  <div class="cp-header">
+    <div>
+      <div class="cp-header-logo">Biz<span>Track</span></div>
+      <div class="cp-header-sub">Careers Portal</div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <div id="cp-auth-status" style="display:none;font-size:12px;color:rgba(255,255,255,.6);font-weight:600"></div>
+      <button id="cp-login-btn" class="btn b-ol btn-sm" onclick="showCPAuth('login')">Log In</button>
+      <button id="cp-signup-btn" class="btn b-gr btn-sm" onclick="showCPAuth('signup')">Sign Up</button>
+      <button id="cp-logout-btn" class="btn b-ol btn-sm" style="display:none" onclick="cpLogout()">Log Out</button>
+      <button class="btn b-ol btn-sm" onclick="closeCareersPortal()">← Back to Login</button>
+    </div>
+  </div>
+  <div class="cp-body">
+    <div class="cp-hero">
+      <h1 id="cp-company-name">Join Our Team</h1>
+      <p>Explore open positions and apply directly. We'd love to hear from you.</p>
+    </div>
+
+    <!-- Auth view -->
+    <div id="cp-auth-view" style="display:none">
+      <div class="cp-form-card" style="max-width:460px;margin:0 auto">
+
+        <!-- Login form -->
+        <div id="cp-login-form">
+          <div style="font-size:20px;font-weight:900;color:#fff;margin-bottom:4px">Welcome Back</div>
+          <p style="color:rgba(255,255,255,.5);font-size:13px;margin-bottom:20px">Log in to track your application or view your offer.</p>
+          <div class="fg"><label>Email Address</label><input class="fi" type="email" id="cpl-email" placeholder="you@email.com"></div>
+          <div class="fg"><label>Password</label><input class="fi" type="password" id="cpl-pw" placeholder="Your password" onkeydown="if(event.key==='Enter')doCPLogin()"></div>
+          <div id="cpl-msg" style="margin-bottom:10px"></div>
+          <button class="btn-login" onclick="doCPLogin()">Log In</button>
+          <div style="text-align:center;margin-top:14px;display:flex;flex-direction:column;gap:8px">
+            <span style="font-size:12.5px;color:rgba(255,255,255,.5);cursor:pointer" onclick="showCPAuth('forgot')">Forgot password? <u>Reset it</u></span>
+            <span style="font-size:12.5px;color:rgba(255,255,255,.5)">No account? <span style="color:var(--accent);cursor:pointer;text-decoration:underline" onclick="showCPAuth('signup')">Sign up</span></span>
+          </div>
+        </div>
+
+        <!-- Signup form -->
+        <div id="cp-signup-form" style="display:none">
+          <div style="font-size:20px;font-weight:900;color:#fff;margin-bottom:4px">Create Account</div>
+          <p style="color:rgba(255,255,255,.5);font-size:13px;margin-bottom:20px">Create a free account to apply and track your applications.</p>
+          <div class="fr">
+            <div class="fg"><label>Full Name *</label><input class="fi" id="cps-name" placeholder="Your full name"></div>
+            <div class="fg"><label>Email *</label><input class="fi" type="email" id="cps-email" placeholder="you@email.com"></div>
+          </div>
+          <div class="fr">
+            <div class="fg"><label>Password *</label><input class="fi" type="password" id="cps-pw" placeholder="Min. 6 characters"></div>
+            <div class="fg"><label>Confirm Password *</label><input class="fi" type="password" id="cps-cpw" placeholder="Repeat password"></div>
+          </div>
+          <div class="fg"><label>Security Question *</label>
+            <select class="fi" id="cps-sq">
+              <option value="">Select a question…</option>
+              <option>What was your first pet's name?</option>
+              <option>What is your mother's maiden name?</option>
+              <option>What city were you born in?</option>
+              <option>What was the name of your primary school?</option>
+              <option>What is your oldest sibling's middle name?</option>
+            </select>
+          </div>
+          <div class="fg"><label>Security Answer *</label><input class="fi" id="cps-sa" placeholder="Your answer (case-insensitive)"></div>
+          <div id="cps-msg" style="margin-bottom:10px"></div>
+          <button class="btn-login" onclick="doCPSignup()">Create Account</button>
+          <div style="text-align:center;margin-top:14px">
+            <span style="font-size:12.5px;color:rgba(255,255,255,.5)">Already have an account? <span style="color:var(--accent);cursor:pointer;text-decoration:underline" onclick="showCPAuth('login')">Log in</span></span>
+          </div>
+        </div>
+
+        <!-- Forgot password form -->
+        <div id="cp-forgot-form" style="display:none">
+          <div style="font-size:20px;font-weight:900;color:#fff;margin-bottom:4px">Reset Password</div>
+          <p style="color:rgba(255,255,255,.5);font-size:13px;margin-bottom:20px">Answer your security question to reset your password.</p>
+          <div id="cpf-step1">
+            <div class="fg"><label>Your Email Address</label><input class="fi" type="email" id="cpf-email" placeholder="you@email.com"></div>
+            <div id="cpf-msg1" style="margin-bottom:10px"></div>
+            <button class="btn-login" onclick="doCPForgotStep1()">Continue</button>
+          </div>
+          <div id="cpf-step2" style="display:none">
+            <div class="al al-b" id="cpf-question-display" style="margin-bottom:14px;color:#fff;background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.2)"></div>
+            <div class="fg"><label>Your Answer</label><input class="fi" id="cpf-answer" placeholder="Your security answer"></div>
+            <div class="fg"><label>New Password</label><input class="fi" type="password" id="cpf-newpw" placeholder="New password (min. 6 chars)"></div>
+            <div class="fg"><label>Confirm New Password</label><input class="fi" type="password" id="cpf-cnewpw" placeholder="Repeat new password"></div>
+            <div id="cpf-msg2" style="margin-bottom:10px"></div>
+            <button class="btn-login" onclick="doCPForgotStep2()">Reset Password</button>
+          </div>
+          <div style="text-align:center;margin-top:14px">
+            <span style="font-size:12.5px;color:rgba(255,255,255,.5);cursor:pointer" onclick="showCPAuth('login')">← Back to login</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Jobs list view -->
+    <div id="cp-jobs-view">
+      <div class="cp-section-title">Open Positions</div>
+      <div id="cp-jobs-list"></div>
+    </div>
+
+    <!-- Apply view -->
+    <div id="cp-apply-view" style="display:none">
+      <div class="cp-back-link" onclick="showJobsList()">← Back to all positions</div>
+      <div class="cp-form-card">
+        <div class="portal-logo" style="color:#fff;margin-bottom:4px">Biz<span>Track</span></div>
+        <div id="cp-apply-role-title" style="font-size:20px;font-weight:800;color:#fff;margin-bottom:4px"></div>
+        <p style="color:rgba(255,255,255,.5);font-size:13px;margin-bottom:24px">Complete all fields and submit your application.</p>
+        <div id="cp-apply-form">
+          <div class="fr">
+            <div class="fg"><label>Full Name *</label><input class="fi" id="cp-name" placeholder="Your full name"></div>
+            <div class="fg"><label>Email *</label><input class="fi" type="email" id="cp-email" placeholder="you@email.com"></div>
+          </div>
+          <div class="fr">
+            <div class="fg"><label>Phone</label><input class="fi" id="cp-phone" placeholder="+233 XX XXX XXXX"></div>
+            <div class="fg"><label>Highest Education *</label>
+              <select class="fi" id="cp-edu">
+                <option value="">Select…</option>
+                <option value="40">High School / SSCE</option>
+                <option value="52">OND / HND</option>
+                <option value="66">Bachelor's Degree</option>
+                <option value="79">Master's Degree</option>
+                <option value="93">PhD / Doctorate</option>
+                <option value="73">Professional Certification</option>
+              </select>
+            </div>
+          </div>
+          <div class="fr">
+            <div class="fg"><label>Years of Experience *</label>
+              <select class="fi" id="cp-exp">
+                <option value="">Select…</option>
+                <option value="0">Fresh Graduate</option>
+                <option value="3">Under 1 year</option>
+                <option value="7">1–2 years</option>
+                <option value="13">3–5 years</option>
+                <option value="19">6–10 years</option>
+                <option value="23">10+ years</option>
+              </select>
+            </div>
+            <div class="fg"><label>Field of Study</label><input class="fi" id="cp-field" placeholder="e.g. Business Administration"></div>
+          </div>
+          <div class="fg"><label>Previous Employers</label><textarea class="fi" id="cp-emp" placeholder="e.g. 2020–2022: Sales Rep, XYZ Ltd…" rows="3"></textarea></div>
+          <div class="fg"><label>Key Skills / Certifications</label><textarea class="fi" id="cp-skills" placeholder="List relevant skills, certifications…" rows="3"></textarea></div>
+          <div class="fg"><label>Cover Letter</label><textarea class="fi" id="cp-cover" placeholder="Why are you the best fit for this role?" rows="4"></textarea></div>
+          <div id="cp-apply-msg" style="margin-bottom:12px"></div>
+          <button class="btn-login" onclick="submitCareersApplication()">Submit Application</button>
+        </div>
+        <div id="cp-apply-done" style="display:none;text-align:center;padding:28px 0"></div>
+      </div>
+    </div>
+
+    <!-- Track view -->
+    <div id="cp-track-view" style="display:none">
+      <div class="cp-back-link" onclick="showJobsList()">← Back to all positions</div>
+      <div class="cp-form-card" style="max-width:480px;margin:0 auto">
+        <div style="font-size:18px;font-weight:900;color:#fff;margin-bottom:4px">Track Your Application</div>
+        <p style="color:rgba(255,255,255,.5);font-size:13px;margin-bottom:20px">Log in to your portal account to see live updates.</p>
+        <div id="cp-track-msg" style="margin-bottom:12px"></div>
+        <div id="cp-track-result" style="margin-top:10px"></div>
+        <button class="btn-login" style="margin-top:14px" onclick="loadCPTrackForLoggedIn()">Check My Status</button>
+        <div style="text-align:center;margin-top:12px">
+          <span style="font-size:12.5px;color:rgba(255,255,255,.5);cursor:pointer" onclick="showCPAuth('login')">Not logged in? <u>Log in first</u></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Offer view (logged-in portal users) -->
+    <div id="cp-offer-view" style="display:none">
+      <div class="cp-back-link" onclick="showJobsList()">← Back to dashboard</div>
+      <div class="cp-form-card">
+        <div style="font-size:20px;font-weight:900;color:#fff;margin-bottom:4px">Your Employment Offer</div>
+        <p style="color:rgba(255,255,255,.5);font-size:13px;margin-bottom:20px">Please review and respond to your offer below.</p>
+        <div id="cp-offer-details"></div>
+        <div id="cp-offer-neg-wrap" style="display:none;margin-top:16px">
+          <div style="font-size:15px;font-weight:800;color:#fff;margin-bottom:12px">Counter-Offer</div>
+          <div class="fr">
+            <div class="fg"><label>Proposed Hourly Rate (₵)</label><input class="fi" type="number" id="cp-neg-rate" placeholder="e.g. 28"></div>
+            <div class="fg"><label>Preferred Work Hours</label>
+              <select class="fi" id="cp-neg-hours">
+                <option>8:00 AM – 5:00 PM</option><option>7:00 AM – 4:00 PM</option>
+                <option>9:00 AM – 6:00 PM</option><option>Flexible</option>
+              </select>
+            </div>
+          </div>
+          <div class="fg"><label>Additional Benefits Requested</label>
+            <select class="fi" id="cp-neg-benefits" multiple style="height:88px">
+              <option>Health Insurance</option><option>Life Insurance</option>
+              <option>Data Allowance</option><option>Transport Allowance</option>
+              <option>Housing Allowance</option><option>Pension Contribution</option>
+              <option>Annual Bonus</option><option>Training & Development Fund</option>
+            </select>
+            <small style="font-size:11px;color:rgba(255,255,255,.4)">Hold Ctrl / ⌘ to select multiple</small>
+          </div>
+          <div class="fg"><label>Message to Employer</label><textarea class="fi" id="cp-neg-note" placeholder="Explain your counter-offer…" rows="3"></textarea></div>
+          <button class="btn-login" onclick="submitCPNegotiation()">Send Counter-Offer</button>
+        </div>
+        <div id="cp-offer-action-btns" style="display:flex;gap:10px;flex-wrap:wrap;margin-top:16px">
+          <button class="btn b-gr" style="flex:1" onclick="respondCPOffer('accept')">Accept Offer</button>
+          <button class="btn b-am" style="flex:1" onclick="document.getElementById('cp-offer-neg-wrap').style.display=document.getElementById('cp-offer-neg-wrap').style.display==='none'?'block':'none'">Negotiate</button>
+          <button class="btn b-rd" style="flex:1" onclick="respondCPOffer('reject')">Decline</button>
+        </div>
+        <div id="cp-offer-msg" style="margin-top:12px"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
 <!-- ════ APPLICANT PORTAL ════ -->
 <div id="applicant-portal">
   <div class="portal-box">
@@ -439,9 +783,32 @@ footer{background:#1b2e4b;color:rgba(255,255,255,.42);text-align:center;
       </button>
     </div>
   </div>
+<div class="sidebar-overlay" id="mobile-overlay" onclick="toggleMobileMenu()"></div>
+
   <div class="main">
+    
     <div class="topbar">
-      <div class="tb-title" id="tb-title">Dashboard</div>
+      <div style="display:flex; align-items:center; gap:12px;">
+        
+        <button class="mobile-toggle" onclick="toggleMobileMenu()">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
+
+        <div style="display:flex; gap:4px;">
+          <button class="nb" onclick="history.back()" title="Go Back">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+          </button>
+          <button class="nb" onclick="history.forward()" title="Go Forward">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+          <button class="nb" onclick="location.reload()" title="Refresh">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+          </button>
+        </div>
+
+        <div class="tb-title" id="tb-title">Dashboard</div>
+      </div>
+
       <div class="tb-right">
         <div class="tb-clock" id="tb-clock"></div>
         <button class="nb" id="notif-btn" onclick="showPage('notifications')">
@@ -451,9 +818,10 @@ footer{background:#1b2e4b;color:rgba(255,255,255,.42);text-align:center;
       </div>
     </div>
     <div class="content" id="mc"></div>
+    
     <footer>&copy; <span id="yr"></span> BizTrack. Developed by the BizTrack Team. All rights reserved.</footer>
-  </div>
-</div>
+    
+  </div></div>
 
 <!-- ════ MODAL ════ -->
 <div class="ov" id="modal-ov" onclick="closeModal()">
@@ -470,6 +838,14 @@ footer{background:#1b2e4b;color:rgba(255,255,255,.42);text-align:center;
 </div>
 <div id="toast-wrap"></div>
 
+<<<<<<< HEAD
+<script src="/js/ui.js"></script>
+<script src="/js/app.js"></script>
+<script src="/js/pages/employer.js"></script>
+<script src="/js/pages/employee.js"></script>
+<script src="/js/pages/careers.js"></script>
+
+=======
 <script>
 // ═══════════════════════════ SVG ICONS ═══════════════════════════
 const IP={
@@ -538,77 +914,30 @@ const DB={
 };
 
 // ═══════════════════════════ SEED ═══════════════════════════
+// ═══════════════════════════ SEED ═══════════════════════════
 function seed(){
   if(DB.g('seeded')) return;
-  DB.s('employees',[
-    {id:'EMP001',name:'James Mensah',roleTitle:'Sales Manager',dept:'Sales',hourlyRate:25,joinDate:'2022-01-15',active:true,email:'james@biztrack.com'},
-    {id:'EMP002',name:'Abena Owusu',roleTitle:'Accountant',dept:'Finance',hourlyRate:22,joinDate:'2021-06-10',active:true,email:'abena@biztrack.com'},
-    {id:'EMP003',name:'Kofi Asante',roleTitle:'Warehouse Staff',dept:'Logistics',hourlyRate:18,joinDate:'2023-03-01',active:true,email:'kofi@biztrack.com'},
-    {id:'EMP004',name:'Esi Boateng',roleTitle:'HR Officer',dept:'Human Resources',hourlyRate:20,joinDate:'2020-11-20',active:true,email:'esi@biztrack.com'},
-    {id:'EMP005',name:'Kwame Osei',roleTitle:'Marketing Officer',dept:'Marketing',hourlyRate:21,joinDate:'2023-07-15',active:true,email:'kwame@biztrack.com'},
-    {id:'EMP006',name:'Akosua Darko',roleTitle:'Customer Service Rep',dept:'Operations',hourlyRate:17,joinDate:'2024-01-08',active:true,email:'akosua@biztrack.com'},
-    {id:'EMP007',name:'Yaw Amponsah',roleTitle:'IT Support',dept:'Technology',hourlyRate:23,joinDate:'2023-11-01',active:true,email:'yaw@biztrack.com'},
-    {id:'EMP008',name:'Adwoa Frimpong',roleTitle:'Operations Analyst',dept:'Operations',hourlyRate:19,joinDate:'2024-03-20',active:true,email:'adwoa@biztrack.com'},
-  ]);
-  DB.s('costs',[
-    {id:1,cat:'Rent',desc:'Office rent – March',amount:2500,date:'2025-03-01'},
-    {id:2,cat:'Utilities',desc:'Electricity & Water',amount:340,date:'2025-03-10'},
-    {id:3,cat:'Marketing',desc:'Social media ads',amount:600,date:'2025-03-15'},
-    {id:4,cat:'Equipment',desc:'Printer cartridges',amount:120,date:'2025-03-22'},
-  ]);
-  DB.s('revenue',[
-    {date:'2025-04-01',amount:8200,note:'Sales revenue'},
-    {date:'2025-04-02',amount:6400,note:'Service fees'},
-    {date:'2025-04-07',amount:9100,note:'Sales revenue'},
-    {date:'2025-04-10',amount:7300,note:'Consulting'},
-    {date:'2025-04-14',amount:11200,note:'Sales revenue'},
-  ]);
-  DB.s('inventory',[
-    {id:1,item:'Printer Paper (Ream)',qty:45,unit:'Ream',min:20,rec:50,loc:'Store A',updatedBy:'EMP003',date:'2025-03-10'},
-    {id:2,item:'Office Chairs',qty:12,unit:'Pcs',min:10,rec:15,loc:'Main Office',updatedBy:'EMP003',date:'2025-03-08'},
-    {id:3,item:'Laptops',qty:7,unit:'Pcs',min:5,rec:10,loc:'IT Store',updatedBy:'EMP002',date:'2025-03-12'},
-    {id:4,item:'Bottled Water (24-pack)',qty:5,unit:'Pack',min:10,rec:20,loc:'Kitchen',updatedBy:'EMP001',date:'2025-03-20'},
-    {id:5,item:'Toner Cartridges',qty:3,unit:'Pcs',min:5,rec:10,loc:'Store A',updatedBy:'EMP007',date:'2025-04-01'},
-  ]);
-  DB.s('tasks',[
-    {id:1,empId:'EMP001',title:'Close Q1 sales deals',status:'done',date:'2025-03-28'},
-    {id:2,empId:'EMP001',title:'Client presentation delivered',status:'done',date:'2025-04-02'},
-    {id:3,empId:'EMP002',title:'Monthly financial report',status:'done',date:'2025-03-31'},
-    {id:4,empId:'EMP003',title:'Warehouse inventory audit',status:'done',date:'2025-04-03'},
-    {id:5,empId:'EMP004',title:'New hire onboarding',status:'done',date:'2025-04-05'},
-    {id:6,empId:'EMP005',title:'Q2 marketing campaign',status:'done',date:'2025-04-08'},
-    {id:7,empId:'EMP006',title:'Customer satisfaction survey',status:'done',date:'2025-04-09'},
-    {id:8,empId:'EMP007',title:'Server maintenance completed',status:'done',date:'2025-04-10'},
-  ]);
-  DB.s('attendance',[]);
-  DB.s('leaves',[]);
-  DB.s('advances',[]);
-  DB.s('promos',[]);
-  DB.s('complaints',[]);
-  DB.s('applicants',[]);
-  DB.s('apt_qs',[
-    {q:'What is 20% of 350?',opts:['60','70','80','90'],ans:1},
-    {q:'A product costs ₵120 sold at 30% profit. Selling price?',opts:['₵144','₵150','₵156','₵160'],ans:2},
-    {q:'Complete the series: 3, 6, 12, 24, ___',opts:['36','48','42','54'],ans:1},
-    {q:'4 workers finish a job in 6 days. How long for 8 workers?',opts:['2 days','3 days','4 days','5 days'],ans:1},
-    {q:'Which is NOT a primary colour?',opts:['Red','Yellow','Green','Blue'],ans:2},
-  ]);
+  
+  DB.s('employees', []);
+  DB.s('costs', []);
+  DB.s('revenue', []);
+  DB.s('tasks', []);
+  DB.s('attendance', []);
+  DB.s('leaves', []);
+  DB.s('advances', []);
+  DB.s('promos', []);
+  DB.s('complaints', []);
+  DB.s('applicants', []);
+  
+  // Keep the configuration defaults so the app doesn't break
   DB.s('rec_stage','collecting');
   DB.s('rec_link','https://biztrack.app/apply/'+Math.random().toString(36).substr(2,9));
   DB.s('offer_link','https://biztrack.app/offer/'+Math.random().toString(36).substr(2,9));
   DB.s('company',{name:'My Business Ltd',address:'Accra, Ghana',phone:'+233 XX XXX XXXX',email:'info@mybusiness.com',web:'www.mybusiness.com',signatory:'The Director',sigTitle:'Managing Director',logo:''});
   DB.s('work_location',{lat:5.6037,lng:-0.1870,radius:500,name:'Head Office, Accra'});
-  DB.s('benefits',[
-    {id:1,name:'Health Insurance',value:'Full medical cover',empIds:[]},
-    {id:2,name:'Life Insurance',value:'2× annual salary cover',empIds:[]},
-    {id:3,name:'Data Allowance',value:'₵100/month',empIds:[]},
-    {id:4,name:'Transport Allowance',value:'₵200/month',empIds:[]},
-    {id:5,name:'Housing Allowance',value:'₵500/month',empIds:[]},
-    {id:6,name:'Pension Contribution',value:'5% employer match',empIds:[]},
-  ]);
+  
   DB.s('seeded',true);
 }
-
 // ═══════════════════════════ CLOCK ═══════════════════════════
 function tickClock(){
   const el=document.getElementById('tb-clock'); if(!el) return;
@@ -641,11 +970,23 @@ function setRole(r){
   loginRole=r;
   document.querySelectorAll('.login-tab').forEach((t,i)=>t.classList.toggle('active',(i===0&&r==='employer')||(i===1&&r==='employee')));
   document.getElementById('id-lbl').textContent=r==='employer'?'Username':'Employee ID';
-  document.getElementById('l-id').value=r==='employer'?'admin':'EMP001';
-  document.getElementById('l-pw').value=r==='employer'?'admin123':'emp123';
-  document.getElementById('l-hint').innerHTML=r==='employer'
-    ?'Demo · <strong>admin</strong> / <strong>admin123</strong>'
-    :'Demo · EMP001–EMP008 / <strong>emp123</strong> (EMP003–EMP008: emp456/emp789/emp321)';
+  document.getElementById('l-id').value=''; 
+  document.getElementById('l-pw').value='';
+  document.getElementById('l-hint').innerHTML=''; 
+}
+
+// ─── FIX #9: doLogin was defined inside itself, making login completely broken.
+//             Outer wrapper removed. The working inner body is now the only definition.
+// ─── ADDED: apiFetch helper — centralises auth headers and error handling ───
+async function apiFetch(method, path, body){
+  const opts={method,headers:{'Content-Type':'application/json','Authorization':`Bearer ${JWT}`}};
+  if(body!==undefined) opts.body=JSON.stringify(body);
+  const res=await fetch(`${API}${path}`,opts);
+  if(!res.ok){
+    const err=await res.json().catch(()=>({}));
+    throw new Error(err.error||`HTTP ${res.status}`);
+  }
+  return res.json();
 }
 
 async function doLogin(){
@@ -655,46 +996,172 @@ async function doLogin(){
   const btn=document.getElementById('l-btn');
   err.style.display='none'; btn.textContent='Signing in…'; btn.disabled=true;
 
-  // Try backend first
   let user=null;
   try{
     const res=await fetch(`${API}/auth`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id,password:pw,role:loginRole})});
     const data=await res.json();
     if(res.ok){JWT=data.token; user=data.user; localStorage.setItem('bt_jwt',JWT);}
-  }catch(e){/* network unavailable — fall through to local */}
+    else{err.textContent=data.error||'Invalid credentials.';err.style.display='block';}
+  }catch(e){err.textContent='Could not reach the server. Check your connection.';err.style.display='block';}
 
-  // Fallback: local credential check (works offline / before deploy)
-  if(!user){
-    if(loginRole==='employer'&&id==='admin'&&pw==='admin123'){
-      user={id:'admin',role:'employer',name:'Admin User',email:'admin@biztrack.com',initials:'AD'};
-    } else if(loginRole==='employee'){
-      const passwds={'EMP001':'emp123','EMP002':'emp123','EMP003':'emp456','EMP004':'emp456','EMP005':'emp789','EMP006':'emp789','EMP007':'emp321','EMP008':'emp321'};
-      if(passwds[id]===pw){
-        const emps=DB.g('employees')||[];
-        const emp=emps.find(e=>e.id===id);
-        if(emp) user={...emp,role:'employee',initials:emp.name.split(' ').map(n=>n[0]).join('').toUpperCase()};
-      }
-    }
-  }
-
-  if(!user){err.textContent='Invalid credentials. Please try again.';err.style.display='block';}
-  else{CU=user; ROLE=user.role; localStorage.setItem('bt_cu',JSON.stringify(CU)); launchApp();}
+  if(user){CU=user; ROLE=user.role; localStorage.setItem('bt_cu',JSON.stringify(CU)); launchApp();}
   btn.textContent='Sign In'; btn.disabled=false;
 }
 
 function logout(){
   JWT=null; CU=null; ROLE=null;
   localStorage.removeItem('bt_jwt'); localStorage.removeItem('bt_cu');
+  if(window._pollInterval){clearInterval(window._pollInterval);window._pollInterval=null;}
   document.getElementById('app').style.display='none';
   document.getElementById('login-screen').style.display='flex';
 }
 
-// ═══════════════════════════ LAUNCH ═══════════════════════════
-function launchApp(){
-  seed();
+// ═══════════════════════════ LAUNCH (SUPABASE SYNC) ═══════════════════════════
+async function launchApp(){
   document.getElementById('login-screen').style.display='none';
   ['applicant-portal','offer-portal'].forEach(id=>document.getElementById(id).classList.remove('open'));
   document.getElementById('app').style.display='block';
+
+  const authHeaders = {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${JWT}`
+  };
+
+  try {
+    const [uRes, tRes, aRes, cRes, rRes, lRes, adRes, prRes, cmRes, apRes, jpRes] = await Promise.all([
+      fetch(`${API}/users`,              { headers: authHeaders }),
+      fetch(`${API}/data/tasks`,         { headers: authHeaders }),
+      fetch(`${API}/data/attendance`,    { headers: authHeaders }),
+      fetch(`${API}/data/costs`,         { headers: authHeaders }),
+      fetch(`${API}/data/revenue`,       { headers: authHeaders }),
+      fetch(`${API}/data/leaves`,        { headers: authHeaders }),
+      fetch(`${API}/data/advances`,      { headers: authHeaders }),
+      fetch(`${API}/data/promos`,        { headers: authHeaders }),
+      fetch(`${API}/data/complaints`,    { headers: authHeaders }),
+      fetch(`${API}/data/applicants`,    { headers: authHeaders }),
+      fetch(`${API}/data/job_postings`,  { headers: authHeaders }), // ADD THIS LINE
+    ]);
+
+    // ... (keep the existing 'if' statements below it, and add this at the end) ...
+    if (apRes.ok) DB.s('applicants', (await apRes.json()).records || []);
+    if (jpRes.ok) DB.s('job_postings', (await jpRes.json()).records || []); // ADD THIS LINE
+
+    if (uRes.ok) {
+  const freshUsers = (await uRes.json()).users || [];
+  DB.s('employees', freshUsers);
+} else if (uRes.status === 403) {
+  // Employee — fetch only their own record
+  try {
+    const meRes = await fetch(`${API}/users/me`, { headers: authHeaders });
+    if (meRes.ok) {
+      const me = (await meRes.json()).user;
+      if (me) {
+        const emps = DB.g('employees') || [];
+        const idx = emps.findIndex(e => e.id === me.id);
+        if (idx >= 0) emps[idx] = me;
+        else emps.push(me);
+        DB.s('employees', emps);
+        // Also update CU with fresh data
+        CU = {...CU, ...me};
+        localStorage.setItem('bt_cu', JSON.stringify(CU));
+      }
+    }
+  } catch(e) { console.warn('Could not fetch own profile on launch', e); }
+}
+    if (tRes.ok)  DB.s('tasks',      (await tRes.json()).records  || []);
+    if (aRes.ok)  DB.s('attendance', (await aRes.json()).records  || []);
+    if (cRes.ok)  DB.s('costs',      (await cRes.json()).records  || []);
+    if (rRes.ok)  DB.s('revenue',    (await rRes.json()).records  || []);
+    if (lRes.ok)  DB.s('leaves',     (await lRes.json()).records  || []);
+    if (adRes.ok) DB.s('advances',   (await adRes.json()).records || []);
+    if (prRes.ok) DB.s('promos',     (await prRes.json()).records || []);
+    if (cmRes.ok) DB.s('complaints', (await cmRes.json()).records || []);
+    if (apRes.ok) DB.s('applicants', (await apRes.json()).records || []);
+    const stRes = await fetch(`${API}/settings`, { headers: authHeaders });
+    if (stRes.ok) DB.s('att_settings', (await stRes.json()).settings || {});
+    if(window._pollInterval) clearInterval(window._pollInterval);
+window._pollInterval = setInterval(async()=>{
+  if(!JWT) return;
+  const h={'Authorization':`Bearer ${JWT}`};
+  try{
+    const [uRes, tRes, aRes, lRes, adRes, prRes, cmRes, apRes, cRes, rRes, jpRes] = await Promise.all([
+      fetch(`${API}/users`,             {headers:h}),
+      fetch(`${API}/data/tasks`,        {headers:h}),
+      fetch(`${API}/data/attendance`,   {headers:h}),
+      fetch(`${API}/data/leaves`,       {headers:h}),
+      fetch(`${API}/data/advances`,     {headers:h}),
+      fetch(`${API}/data/promos`,       {headers:h}),
+      fetch(`${API}/data/complaints`,   {headers:h}),
+      fetch(`${API}/data/applicants`,   {headers:h}),
+      fetch(`${API}/data/costs`,        {headers:h}),
+      fetch(`${API}/data/revenue`,      {headers:h}),
+      fetch(`${API}/data/job_postings`, {headers:h}), // ADD THIS LINE
+    ]);
+
+    // ... (keep the existing 'if' statements below it, and add this at the end) ...
+    if(cRes.ok) DB.s('costs',   (await cRes.json()).records ||[]);
+    if(rRes.ok) DB.s('revenue', (await rRes.json()).records ||[]);
+    if(jpRes.ok) DB.s('job_postings', (await jpRes.json()).records ||[]); // ADD THIS LINE
+    if(uRes.ok){
+  const freshUsers = (await uRes.json()).users || [];
+  DB.s('employees', freshUsers);
+  const updatedMe = freshUsers.find(e => e.id === CU?.id);
+  if(updatedMe){
+    CU = {...CU, ...updatedMe};
+    localStorage.setItem('bt_cu', JSON.stringify(CU));
+    document.getElementById('sb-nm').textContent = CU.name;
+    document.getElementById('sb-av').textContent = CU.initials || CU.name.slice(0,2).toUpperCase();
+  }
+} else if(uRes.status === 403) {
+  try {
+    const meRes = await fetch(`${API}/users/me`, {headers: h});
+    if(meRes.ok){
+      const updatedMe = (await meRes.json()).user;
+      if(updatedMe){
+        CU = {...CU, ...updatedMe};
+        localStorage.setItem('bt_cu', JSON.stringify(CU));
+        const emps = DB.g('employees') || [];
+        const idx = emps.findIndex(e => e.id === CU.id);
+        if(idx >= 0) emps[idx] = {...emps[idx], ...updatedMe};
+        else emps.push(updatedMe);
+        DB.s('employees', emps);
+        document.getElementById('sb-nm').textContent = CU.name;
+        document.getElementById('sb-av').textContent = CU.initials || CU.name.slice(0,2).toUpperCase();
+      }
+    }
+  } catch(e){ console.warn('Could not fetch own profile', e); }
+}   
+    if(tRes.ok)  DB.s('tasks',      (await tRes.json()).records  ||[]);
+    if(aRes.ok)  DB.s('attendance', (await aRes.json()).records  ||[]);
+    if(lRes.ok)  DB.s('leaves',     (await lRes.json()).records  ||[]);
+    if(adRes.ok) DB.s('advances',   (await adRes.json()).records ||[]);
+    if(prRes.ok) DB.s('promos',     (await prRes.json()).records ||[]);
+    if(cmRes.ok) DB.s('complaints', (await cmRes.json()).records ||[]);
+    if(apRes.ok) DB.s('applicants', (await apRes.json()).records ||[]);
+    if(cRes.ok) DB.s('costs',   (await cRes.json()).records ||[]);
+    if(rRes.ok) DB.s('revenue', (await rRes.json()).records ||[]);
+    
+    // 👇 Replace the old showPage call with this:
+    const cur=document.querySelector('.nav-item.active');
+    if(cur && cur.dataset.page) {
+      // Check if the user is actively typing in a form
+      const activeTag = document.activeElement ? document.activeElement.tagName : '';
+      const isTyping = activeTag === 'INPUT' || activeTag === 'TEXTAREA' || activeTag === 'SELECT';
+      
+      // Only refresh the page silently if they aren't typing
+      if (!isTyping) {
+        showPage(cur.dataset.page, true, true);
+      }
+    }
+    
+    updNotif();
+  }catch(e){console.warn('Poll failed',e);}
+},5000);
+  }
+  catch(e) {
+    console.error('Failed to sync with Supabase', e);
+  }
+
   ROLE=CU.role;
   document.getElementById('sb-nm').textContent=CU.name;
   document.getElementById('sb-em').textContent=CU.email||CU.id||'';
@@ -703,60 +1170,84 @@ function launchApp(){
   document.getElementById('yr').textContent=new Date().getFullYear();
   const p=document.getElementById('dk-pill'); if(p) p.classList.toggle('on',DARK);
   buildNav(); showPage(ROLE==='employer'?'e_dash':'emp_dash'); updNotif();
-}
-
-// ═══════════════════════════ NAV ═══════════════════════════
+} 
+  // ═══════════════════════════ NAV ═══════════════════════════
 const EMP_NAV=[
   {s:'MAIN',items:[{id:'e_dash',ic:'grid',l:'Dashboard'},{id:'notifications',ic:'bell',l:'Notifications'}]},
-  {s:'BUSINESS',items:[{id:'e_finance',ic:'dollar-sign',l:'Finance & Revenue'},{id:'e_performance',ic:'trending-up',l:'Performance'},{id:'e_attendance_mgr',ic:'clock',l:'Attendance'},{id:'e_inventory',ic:'package',l:'Inventory'}]},
+  {s:'BUSINESS',items:[{id:'e_finance',ic:'dollar-sign',l:'Finance & Revenue'},{id:'e_performance',ic:'trending-up',l:'Performance'},{id:'e_attendance_mgr',ic:'clock',l:'Attendance'}]},
   {s:'PEOPLE',items:[{id:'e_employees',ic:'users',l:'Employees'},{id:'e_recruitment',ic:'search',l:'Recruitment'},{id:'e_leaves',ic:'calendar',l:'Leave Management'},{id:'e_benefits',ic:'gift',l:'Benefits'},{id:'e_complaints',ic:'message-square',l:'Complaints'}]},
   {s:'SYSTEM',items:[{id:'e_settings',ic:'settings',l:'Settings'}]},
 ];
 const EE_NAV=[
   {s:'MAIN',items:[{id:'emp_dash',ic:'home',l:'My Dashboard'},{id:'notifications',ic:'bell',l:'Notifications'}]},
   {s:'FINANCE',items:[{id:'emp_finance',ic:'dollar-sign',l:'My Finance'},{id:'emp_advance',ic:'credit-card',l:'Request Advance'},{id:'emp_promo',ic:'arrow-up',l:'Request Promotion'}]},
-  {s:'WORK',items:[{id:'emp_attendance',ic:'clock',l:'Attendance'},{id:'emp_inventory',ic:'package',l:'Submit Inventory'},{id:'emp_leave',ic:'calendar',l:'Request Leave'},{id:'emp_complaints',ic:'message-square',l:'Complaints'}]},
+  {s:'WORK',items:[{id:'emp_attendance',ic:'clock',l:'Attendance'},{id:'emp_tasks',ic:'check-square',l:'My Tasks'},{id:'emp_leave',ic:'calendar',l:'Request Leave'},{id:'emp_complaints',ic:'message-square',l:'Complaints'}]},
   {s:'PROFILE',items:[{id:'emp_profile',ic:'user',l:'My Profile'}]},
 ];
 const PT={
   e_dash:'Dashboard',notifications:'Notifications',e_finance:'Finance & Revenue',
   e_performance:'Performance',e_attendance_mgr:'Attendance Management',
-  e_inventory:'Inventory',e_employees:'Employees',e_recruitment:'Recruitment',
+  e_employees:'Employees',e_recruitment:'Recruitment',
   e_leaves:'Leave Management',e_benefits:'Benefits',e_complaints:'Complaints & Suggestions',
   e_settings:'Settings',emp_dash:'My Dashboard',emp_finance:'My Finance',
   emp_advance:'Salary Advance',emp_promo:'Promotion Request',emp_attendance:'Attendance',
-  emp_inventory:'Submit Inventory',emp_leave:'Leave Request',emp_complaints:'Complaints',emp_profile:'My Profile',
+  emp_tasks:'My Tasks',emp_leave:'Leave Request',emp_complaints:'Complaints',emp_profile:'My Profile',
 };
 function buildNav(){
   const nav=document.getElementById('sidebar-nav');
   nav.innerHTML=(ROLE==='employer'?EMP_NAV:EE_NAV).map(s=>`
     <div class="nav-sec">${s.s}</div>
-    ${s.items.map(it=>`<div class="nav-item" id="n-${it.id}" onclick="showPage('${it.id}')">${ic(it.ic,16)}<span>${it.l}</span></div>`).join('')}
+    ${s.items.map(it=>`<div class="nav-item" data-page="${it.id}" id="n-${it.id}" onclick="showPage('${it.id}')">${ic(it.ic,16)}<span>${it.l}</span></div>`).join('')}
   `).join('');
 }
-function showPage(pid){
+function showPage(pid, skipHistory = false, isPoll = false){
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   const nav=document.getElementById('n-'+pid); if(nav) nav.classList.add('active');
   document.getElementById('tb-title').textContent=PT[pid]||'BizTrack';
+  
   const mc=document.getElementById('mc');
-  mc.innerHTML='<div class="page active" id="pg"></div>';
-  const pg=document.getElementById('pg');
+  let pg=document.getElementById('pg');
+  
+  // Only rebuild the container (which triggers the fade-in animation) if it's NOT a poll
+  if (!isPoll || !pg) {
+    mc.innerHTML='<div class="page active" id="pg"></div>';
+    pg=document.getElementById('pg');
+  }
+  
   const R={
     e_dash:pEDash,notifications:pNotifications,e_finance:pFinance,
-    e_performance:pPerformance,e_attendance_mgr:pAttMgr,e_inventory:pInventory,
+    e_performance:pPerformance,e_attendance_mgr:pAttMgr,
     e_employees:pEmployees,e_recruitment:pRecruitment,e_leaves:pLeaves,
     e_benefits:pBenefits,e_complaints:pComplaints,e_settings:pSettings,
     emp_dash:pEmpDash,emp_finance:pEmpFinance,emp_advance:pAdvance,
-    emp_promo:pPromo,emp_attendance:pMyAtt,emp_inventory:pMyInventory,
+    emp_promo:pPromo,emp_attendance:pMyAtt,emp_tasks:pMyTasks,
     emp_leave:pMyLeave,emp_complaints:pMyComplaints,emp_profile:pProfile,
   };
   if(R[pid]) R[pid](pg); else pg.innerHTML='<p style="color:var(--text-muted)">Page not found.</p>';
+  
+  if (!skipHistory && !isPoll) {
+    history.pushState({ page: pid }, '', '#' + pid);
+  }
+
+  // Auto-close mobile menu after selecting a page
+  if (window.innerWidth <= 768 && !isPoll) {
+    document.querySelector('.sidebar').classList.remove('mobile-open');
+    document.getElementById('mobile-overlay').classList.remove('active');
+  }
 }
 function updNotif(){
-  const cnt=(DB.g('advances')||[]).filter(a=>a.status==='pending').length
-    +(DB.g('leaves')||[]).filter(l=>l.status==='pending').length
-    +(DB.g('promos')||[]).filter(p=>p.status==='pending').length
-    +(DB.g('applicants')||[]).filter(a=>a.offerStatus==='negotiated').length;
+  let cnt=0;
+  if(ROLE==='employer'){
+    cnt=(DB.g('advances')||[]).filter(a=>a.status==='pending').length
+      +(DB.g('leaves')||[]).filter(l=>l.status==='pending').length
+      +(DB.g('promos')||[]).filter(p=>p.status==='pending').length
+      +(DB.g('applicants')||[]).filter(a=>a.offerStatus==='negotiated').length;
+  } else if(ROLE==='employee'&&CU){
+    cnt=(DB.g('tasks')||[]).filter(t=>t.empId===CU.id&&t.status==='pending').length
+      +(DB.g('leaves')||[]).filter(l=>l.empId===CU.id&&(l.status==='approved'||l.status==='rejected')&&!l.empAccepted&&l.status!=='declined').length
+      +(DB.g('advances')||[]).filter(a=>a.empId===CU.id&&(a.status==='approved'||a.status==='rejected')).length
+      +(DB.g('promos')||[]).filter(p=>p.empId===CU.id&&(p.status==='approved'||p.status==='rejected')).length;
+  }
   const d=document.getElementById('nb-dot'); if(d) d.style.display=cnt>0?'block':'none';
 }
 
@@ -765,10 +1256,18 @@ function ph(title,sub=''){return`<div class="ph"><h2>${title}</h2>${sub?`<p>${su
 function sc(ico,lbl,val,ch='',cls=''){return`<div class="sc"><div class="sc-ico">${ic(ico,20)}</div><div class="sc-lbl">${lbl}</div><div class="sc-val">${val}</div>${ch?`<div class="sc-ch ${cls}">${ch}</div>`:''}</div>`}
 function bDot(status){return status==='present'?'bg':status==='late'?'ba':status==='absent'?'br':'bn'}
 function perfColor(s){return s>=80?'var(--accent)':s>=60?'var(--amber)':'var(--red)'}
+const TASK_SCORES={easy:10,medium:25,hard:50};
 function calcPerf(eid){
-  const tasks=(DB.g('tasks')||[]).filter(t=>t.empId===eid&&t.status==='done').length;
-  const att=(DB.g('attendance')||[]).filter(a=>a.empId===eid&&a.status==='present').length;
-  return Math.min(100,Math.max(10,tasks*10+att*4+30));
+  const tasks=DB.g('tasks')||[];
+  const empTasks=tasks.filter(t=>t.empId===eid&&t.status!=='cancelled');
+  if(empTasks.length===0) return 100;
+  let score=100;
+  empTasks.forEach(t=>{
+    const pts=TASK_SCORES[t.difficulty||'easy'];
+    if(t.status==='verified') score+=pts;
+    else if(t.status==='overdue'||t.status==='rejected') score-=pts;
+  });
+  return Math.min(150,Math.max(0,score));
 }
 function monthlyEarnings(eid){
   const emp=(DB.g('employees')||[]).find(e=>e.id===eid); if(!emp) return 0;
@@ -799,13 +1298,11 @@ function pEDash(el){
   const emps=DB.g('employees')||[];
   const costs=DB.g('costs')||[];
   const rev=DB.g('revenue')||[];
-  const inv=DB.g('inventory')||[];
   const totalRev=rev.reduce((s,r)=>s+r.amount,0);
   const totalCosts=costs.reduce((s,c)=>s+c.amount,0);
   const estPayroll=emps.reduce((s,e)=>s+monthlyEarnings(e.id),0);
   const profit=totalRev-(totalCosts+estPayroll);
   const margin=totalRev>0?((profit/totalRev)*100).toFixed(1):0;
-  const lowStock=inv.filter(i=>i.qty<=i.min).length;
   const pending=(DB.g('advances')||[]).filter(a=>a.status==='pending').length+(DB.g('leaves')||[]).filter(l=>l.status==='pending').length;
   const todayAtt=(DB.g('attendance')||[]).filter(a=>a.date===today()&&a.clockIn).length;
 
@@ -815,7 +1312,6 @@ function pEDash(el){
     ${sc('users','Total Employees',emps.length)}
     ${sc('bar-chart-2','Total Revenue',fmt(totalRev),'Period total','up')}
     ${sc('percent','Profit Margin',margin+'%',profit>=0?'Profitable':'Loss',profit>=0?'up':'dn')}
-    ${sc('package','Low Stock Items',lowStock,lowStock>0?'Needs restocking':'All good',lowStock>0?'dn':'up')}
     ${sc('bell','Pending Requests',pending,pending>0?'Awaiting action':'')}
     ${sc('clock','Clocked In Today',todayAtt,'Active employees')}
   </div>
@@ -833,7 +1329,6 @@ function pEDash(el){
       <div class="cb" style="display:flex;flex-direction:column;gap:9px">
         <button class="btn b-nv btn-full" onclick="showPage('e_finance')">${ic('dollar-sign',15)} Finance & Revenue</button>
         <button class="btn b-gr btn-full" onclick="showPage('e_recruitment')">${ic('search',15)} Recruitment</button>
-        <button class="btn b-am btn-full" onclick="showPage('e_inventory')">${ic('package',15)} Inventory</button>
         <button class="btn b-bl btn-full" onclick="showPage('e_leaves')">${ic('calendar',15)} Leave Requests</button>
         <button class="btn b-pr btn-full" onclick="showPage('e_benefits')">${ic('gift',15)} Manage Benefits</button>
         <button class="btn b-ol btn-full" onclick="showPage('e_complaints')">${ic('message-square',15)} Complaints</button>
@@ -841,14 +1336,6 @@ function pEDash(el){
     </div>
   </div>
   <div class="g2">
-    <div class="card mb">
-      <div class="ch"><span class="ct">${ic('package',15)} Inventory Alerts</span></div>
-      <div class="cb">
-        ${lowStock===0?'<div class="al al-g">All inventory levels are healthy.</div>':''}
-        ${inv.filter(i=>i.qty<=i.min).map(i=>`<div class="al al-a">${ic('alert-triangle',13)} <strong>${i.item}</strong> — ${i.qty} ${i.unit} remaining (min: ${i.min}, recommended order: ${i.rec||i.min*2})</div>`).join('')}
-        ${inv.filter(i=>i.qty>i.min).slice(0,2).map(i=>`<div class="al al-g">${ic('check',13)} <strong>${i.item}</strong> — ${i.qty} ${i.unit} in stock</div>`).join('')}
-      </div>
-    </div>
     <div class="card mb">
       <div class="ch"><span class="ct">${ic('layers',15)} Profit Summary</span></div>
       <div class="cb">
@@ -868,29 +1355,62 @@ function pEDash(el){
 
 // ─── NOTIFICATIONS ───
 function pNotifications(el){
-  const adv=(DB.g('advances')||[]).filter(a=>a.status==='pending');
-  const lv=(DB.g('leaves')||[]).filter(l=>l.status==='pending');
-  const pr=(DB.g('promos')||[]).filter(p=>p.status==='pending');
-  const neg=(DB.g('applicants')||[]).filter(a=>a.offerStatus==='negotiated');
-  const low=(DB.g('inventory')||[]).filter(i=>i.qty<=i.min);
-  const items=[
-    ...adv.map(a=>({ico:'credit-card',txt:`<strong>${a.empName}</strong> requested a salary advance of ${fmt(a.amount)}`,t:'Finance',go:'e_finance',cls:'b-am'})),
-    ...lv.map(l=>({ico:'calendar',txt:`<strong>${l.empName}</strong> submitted a leave request`,t:'HR',go:'e_leaves',cls:'b-bl'})),
-    ...pr.map(p=>({ico:'arrow-up',txt:`<strong>${p.empName}</strong> submitted a promotion request`,t:'HR',go:'e_employees',cls:'b-pr'})),
-    ...neg.map(a=>({ico:'file-text',txt:`<strong>${a.name}</strong> sent a counter-offer`,t:'Recruitment',go:'e_recruitment',cls:'b-nv'})),
-    ...low.map(i=>({ico:'alert-triangle',txt:`Low stock: <strong>${i.item}</strong> (${i.qty} ${i.unit})`,t:'Inventory',go:'e_inventory',cls:'b-rd'})),
-  ];
-  el.innerHTML=`
-  ${ph('Notifications','Alerts and pending actions.')}
-  ${items.length===0?`<div class="es"><div class="es-ico">${ic('bell',44)}</div><h3>All clear!</h3><p>No pending notifications.</p></div>`:`
-  <div style="display:flex;flex-direction:column;gap:10px">
-    ${items.map(n=>`
-      <div style="display:flex;align-items:center;gap:12px;padding:14px;background:var(--card);border-radius:10px;border:1px solid var(--border);cursor:pointer" onclick="showPage('${n.go}')">
-        <div style="width:38px;height:38px;border-radius:10px;background:var(--bg);display:flex;align-items:center;justify-content:center;color:var(--navy-lighter);flex-shrink:0">${ic(n.ico,18)}</div>
-        <div style="flex:1"><div style="font-size:13px;color:var(--text)">${n.txt}</div><div style="font-size:11px;color:var(--text-muted);margin-top:2px">${n.t}</div></div>
-        <span class="btn btn-sm ${n.cls}" style="flex-shrink:0">View</span>
-      </div>`).join('')}
-  </div>`}`;
+  if(ROLE==='employer'){
+    const adv=(DB.g('advances')||[]).filter(a=>a.status==='pending');
+    const lv=(DB.g('leaves')||[]).filter(l=>l.status==='pending');
+    const pr=(DB.g('promos')||[]).filter(p=>p.status==='pending');
+    const neg=(DB.g('applicants')||[]).filter(a=>a.offerStatus==='negotiated');
+    const awaitingTasks=(DB.g('tasks')||[]).filter(t=>t.status==='awaiting_verification');
+    const items=[
+      ...adv.map(a=>({ico:'credit-card',txt:`<strong>${a.empName}</strong> requested a salary advance of ${fmt(a.amount)}`,t:'Finance',go:'e_finance',cls:'b-am'})),
+      ...lv.map(l=>({ico:'calendar',txt:`<strong>${l.empName}</strong> submitted a leave request`,t:'HR',go:'e_leaves',cls:'b-bl'})),
+      ...pr.map(p=>({ico:'arrow-up',txt:`<strong>${p.empName}</strong> submitted a promotion request`,t:'HR',go:'e_employees',cls:'b-pr'})),
+      ...neg.map(a=>({ico:'file-text',txt:`<strong>${a.name}</strong> sent a counter-offer`,t:'Recruitment',go:'e_recruitment',cls:'b-nv'})),
+      ...awaitingTasks.map(t=>({ico:'check-square',txt:`Task ready to verify: <strong>${t.title}</strong>`,sub:`Employee: ${t.empName} · Submitted: ${t.completedDate||'—'}`,t:'Tasks',go:'e_performance',cls:'b-gr'})),
+    ];
+    el.innerHTML=`
+    ${ph('Notifications','Alerts and pending actions.')}
+    ${items.length===0?`<div class="es"><div class="es-ico">${ic('bell',44)}</div><h3>All clear!</h3><p>No pending notifications.</p></div>`:`
+    <div style="display:flex;flex-direction:column;gap:10px">
+      ${items.map(n=>`
+        <div style="display:flex;align-items:center;gap:12px;padding:14px;background:var(--card);border-radius:10px;border:1px solid var(--border);cursor:pointer" onclick="showPage('${n.go}')">
+          <div style="width:38px;height:38px;border-radius:10px;background:var(--bg);display:flex;align-items:center;justify-content:center;color:var(--navy-lighter);flex-shrink:0">${ic(n.ico,18)}</div>
+          <div style="flex:1"><div style="font-size:13px;color:var(--text)">${n.txt}</div><div style="font-size:11px;color:var(--text-muted);margin-top:2px">${n.t}</div></div>
+          <span class="btn btn-sm ${n.cls}" style="flex-shrink:0">View</span>
+        </div>`).join('')}
+    </div>`}`;
+
+  } else {
+    // ── EMPLOYEE NOTIFICATIONS ──
+    const myTasks=(DB.g('tasks')||[]).filter(t=>t.empId===CU.id&&t.status==='pending');
+    const myLeaves=(DB.g('leaves')||[]).filter(l=>l.empId===CU.id&&(l.status==='approved'||l.status==='rejected')&&!l.empAccepted&&l.status!=='declined');
+    const myAdvances=(DB.g('advances')||[]).filter(a=>a.empId===CU.id&&(a.status==='approved'||a.status==='rejected'));
+    const myPromos=(DB.g('promos')||[]).filter(p=>p.empId===CU.id&&(p.status==='approved'||p.status==='rejected'));
+    const myComplaints=(DB.g('complaints')||[]).filter(c=>c.empId===CU.id&&c.resolved);
+
+    const items=[
+      ...myTasks.map(t=>({ico:'check-square',txt:`New task assigned: <strong>${t.title}</strong>`,sub:`Due: ${t.dueDate||'No due date'}`,go:'emp_tasks',cls:'b-am'})),
+      ...myLeaves.map(l=>({ico:'calendar',txt:`Your leave request has been <strong>${l.status}</strong>`,sub:`${l.fromDate} → ${l.toDate} · ${l.payStatus||''}`,go:'emp_leave',cls:l.status==='approved'?'b-gr':'b-rd'})),
+      ...myAdvances.map(a=>({ico:'credit-card',txt:`Your advance request of ${fmt(a.amount)} was <strong>${a.status}</strong>`,sub:`Requested on ${a.date}`,go:'emp_finance',cls:a.status==='approved'?'b-gr':'b-rd'})),
+      ...myPromos.map(p=>({ico:'arrow-up',txt:`Your promotion request was <strong>${p.status}</strong>`,sub:`Applied for: ${p.desiredRole}`,go:'emp_promo',cls:p.status==='approved'?'b-gr':'b-rd'})),
+      ...myComplaints.map(c=>({ico:'check-circle',txt:`Your complaint has been <strong>resolved</strong>`,sub:`Subject: ${c.subject}`,go:'emp_complaints',cls:'b-gr'})),
+    ];
+
+    el.innerHTML=`
+    ${ph('My Notifications','Updates on your requests and assigned tasks.')}
+    ${items.length===0?`<div class="es"><div class="es-ico">${ic('bell',44)}</div><h3>All clear!</h3><p>No new notifications.</p></div>`:`
+    <div style="display:flex;flex-direction:column;gap:10px">
+      ${items.map(n=>`
+        <div style="display:flex;align-items:center;gap:12px;padding:14px;background:var(--card);border-radius:10px;border:1px solid var(--border);cursor:pointer" onclick="showPage('${n.go}')">
+          <div style="width:38px;height:38px;border-radius:10px;background:var(--bg);display:flex;align-items:center;justify-content:center;color:var(--navy-lighter);flex-shrink:0">${ic(n.ico,18)}</div>
+          <div style="flex:1">
+            <div style="font-size:13px;color:var(--text)">${n.txt}</div>
+            <div style="font-size:11px;color:var(--text-muted);margin-top:2px">${n.sub||''}</div>
+          </div>
+          <span class="btn btn-sm ${n.cls}" style="flex-shrink:0">View</span>
+        </div>`).join('')}
+    </div>`}`;
+  }
 }
 
 // ─── FINANCE ───
@@ -976,11 +1496,13 @@ function openAddRev(){
     <div class="f"><label>Date</label><input type="date" id="rv-d" value="${today()}"></div>
     <div class="f"><label>Amount (₵)</label><input type="number" id="rv-a" placeholder="e.g. 5000"></div>
     <div class="f"><label>Note</label><input type="text" id="rv-n" placeholder="e.g. Sales revenue, Service fees…"></div>
-  `,[{l:'Add Revenue',c:'b-gr',fn:()=>{
+  `,[{l:'Add Revenue',c:'b-gr',fn:async()=>{
     const a=parseFloat(document.getElementById('rv-a').value);
     if(!a){toast('Enter a valid amount','e');return}
-    DB.push('revenue',{date:document.getElementById('rv-d').value,amount:a,note:document.getElementById('rv-n').value});
+    const rec={date:document.getElementById('rv-d').value,amount:a,note:document.getElementById('rv-n').value};
+    DB.push('revenue',rec);
     closeModal();showPage('e_finance');toast('Revenue added','s');
+    try{await apiFetch('POST','/data/revenue',rec);}catch(e){toast('Revenue error: '+e.message,'e');}
   }}]);
 }
 function openAddCost(){
@@ -991,15 +1513,17 @@ function openAddCost(){
     </div>
     <div class="f"><label>Description</label><input type="text" id="cs-desc" placeholder="Brief description"></div>
     <div class="f"><label>Date</label><input type="date" id="cs-date" value="${today()}"></div>
-  `,[{l:'Add Cost',c:'b-nv',fn:()=>{
-    const costs=DB.g('costs')||[];
-    costs.push({id:Date.now(),cat:document.getElementById('cs-cat').value,desc:document.getElementById('cs-desc').value,amount:parseFloat(document.getElementById('cs-amt').value)||0,date:document.getElementById('cs-date').value});
+  `,[{l:'Add Cost',c:'b-nv',fn:async()=>{
+    const rec={cat:document.getElementById('cs-cat').value,desc:document.getElementById('cs-desc').value,amount:parseFloat(document.getElementById('cs-amt').value)||0,date:document.getElementById('cs-date').value};
+    const costs=DB.g('costs')||[];costs.push(rec);
     DB.s('costs',costs);closeModal();showPage('e_finance');toast('Cost added','s');
+   try{await apiFetch('POST','/data/costs',rec);}catch(e){toast('Cost error: '+e.message,'e');}
   }}]);
 }
 function resolveAdv(i,dec){
   const a=DB.g('advances')||[];a[i].status=dec;DB.s('advances',a);
   toast(`Advance ${dec}`,'s');showPage('e_finance');updNotif();
+  if(a[i].id) apiFetch('PUT',`/data/advances/${a[i].id}`,{status:dec}).catch(()=>{});
 }
 
 // ─── PERFORMANCE ───
@@ -1031,31 +1555,83 @@ function pPerformance(el){
   <div class="card mb">
     <div class="ch"><span class="ct">${ic('list',15)} Task Log</span></div>
     <div class="cb">
-      <div class="tw"><table><thead><tr><th>Employee</th><th>Task</th><th>Status</th><th>Date</th><th>Action</th></tr></thead><tbody>
-        ${(DB.g('tasks')||[]).slice().reverse().map((t,i)=>`<tr>
-          <td>${(DB.g('employees')||[]).find(e=>e.id===t.empId)?.name||t.empId}</td>
-          <td>${t.title}</td>
-          <td><span class="b ${t.status==='done'?'bg':'ba'}">${t.status}</span></td>
-          <td>${t.date}</td>
-          <td><button class="btn b-ol btn-sm" onclick="toggleTask(${i})">${t.status==='done'?'Undo':'Mark Done'}</button></td>
-        </tr>`).join('')}
+      // Look for this section inside pPerformance and replace it:
+
+      <div class="tw"><table><thead><tr><th>Employee</th><th>Task</th><th>Difficulty</th><th>Status</th><th>Due</th><th>Actions</th></tr></thead><tbody>
+        ${(DB.g('tasks')||[]).slice().reverse().map((t,i,arr)=>{
+          // 👇 1. Calculate the correct original index based on the array length
+          const origIdx = arr.length - 1 - i; 
+          
+          const diffCol=t.difficulty==='hard'?'br':t.difficulty==='medium'?'ba':'bg';
+          const stCol=t.status==='verified'?'bg':t.status==='awaiting_verification'?'ba':t.status==='rejected'?'br':t.status==='cancelled'?'bn':'b-ol';
+          const stLabel=t.status==='awaiting_verification'?'Awaiting Verification':t.status==='verified'?'Verified':t.status==='rejected'?'Rejected':t.status==='cancelled'?'Cancelled':'Pending';
+          return`<tr>
+            <td>${(DB.g('employees')||[]).find(e=>e.id===t.empId)?.name||t.empId}</td>
+            <td><strong>${t.title}</strong>${t.desc?`<div style="font-size:11px;color:var(--text-muted)">${t.desc}</div>`:''}</td>
+            <td><span class="b ${diffCol}">${(t.difficulty||'easy').charAt(0).toUpperCase()+(t.difficulty||'easy').slice(1)}</span></td>
+            <td><span class="b ${stCol}">${stLabel}</span></td>
+            <td>${t.dueDate||'—'}</td>
+            <td style="display:flex;gap:4px">
+              ${t.status==='awaiting_verification'?`<button class="btn b-gr btn-sm" onclick="verifyTask(${origIdx})">Verify</button><button class="btn b-rd btn-sm" onclick="rejectTask(${origIdx})">Reject</button>`:''}
+              ${t.status==='pending'?`<button class="btn b-ol btn-sm" onclick="cancelTask(${origIdx})">Cancel</button>`:''}
+            </td>
+          </tr>`;
+        }).join('')}
       </tbody></table></div>
-    </div>
   </div>`;
 }
 function openAddTask(){
   const emps=DB.g('employees')||[];
-  openModal('Log Employee Task',`
+  openModal('Assign Task',`
     <div class="f"><label>Employee</label><select id="tk-emp">${emps.map(e=>`<option value="${e.id}">${e.name}</option>`).join('')}</select></div>
-    <div class="f"><label>Task Title</label><input type="text" id="tk-title" placeholder="e.g. Completed Q2 report"></div>
-    <div class="f"><label>Date</label><input type="date" id="tk-date" value="${today()}"></div>
-  `,[{l:'Add Task',c:'b-nv',fn:()=>{
-    DB.push('tasks',{id:Date.now(),empId:document.getElementById('tk-emp').value,title:document.getElementById('tk-title').value,status:'done',date:document.getElementById('tk-date').value});
-    closeModal();showPage('e_performance');toast('Task logged','s');
+    <div class="f"><label>Task Title</label><input type="text" id="tk-title" placeholder="e.g. Prepare Q2 report"></div>
+    <div class="f"><label>Description (optional)</label><textarea id="tk-desc" placeholder="Additional details about the task…"></textarea></div>
+    <div class="f"><label>Difficulty</label><select id="tk-diff"><option value="easy">Easy (+10pts)</option><option value="medium">Medium (+25pts)</option><option value="hard">Hard (+50pts)</option></select></div>
+    <div class="f"><label>Due Date</label><input type="date" id="tk-due" value="${today()}"></div>
+  `,[{l:'Assign Task',c:'b-nv',fn:async()=>{
+    const empId=document.getElementById('tk-emp').value;
+    const empName=(emps.find(e=>e.id===empId)||{}).name||'';
+    const title=document.getElementById('tk-title').value;
+    if(!title){toast('Please enter a task title','e');return;}
+    const rec={empId,empName,title,desc:document.getElementById('tk-desc').value,difficulty:document.getElementById('tk-diff').value,dueDate:document.getElementById('tk-due').value,status:'pending',assignedDate:today()};
+    DB.push('tasks',rec);
+    closeModal();showPage('e_performance');toast('Task assigned','s');
+    try{
+      const r=await apiFetch('POST','/data/tasks',rec);
+      if(r.record){
+        const t=DB.g('tasks')||[];
+        const i=t.findIndex(x=>x.empId===rec.empId&&x.title===rec.title&&x.dueDate===rec.dueDate);
+        if(i>=0){t[i].id=r.record.id;DB.s('tasks',t);}
+      }
+    }catch(e){toast('Task saved locally','w');}
   }}]);
 }
-function toggleTask(i){
-  const t=DB.g('tasks')||[];t[i].status=t[i].status==='done'?'pending':'done';DB.s('tasks',t);showPage('e_performance');
+function verifyTask(i){
+  const t=DB.g('tasks')||[];
+  if(!t[i]||t[i].status!=='awaiting_verification'){toast('Task is not awaiting verification','i');return;}
+  if(!confirm('Mark this task as verified and completed?')) return;
+  t[i].status='verified';t[i].verifiedDate=today();
+  DB.s('tasks',t);showPage('e_performance');
+  if(t[i].id) apiFetch('PUT',`/data/tasks/${t[i].id}`,{status:'verified',verifiedDate:today()}).catch(()=>{});
+  toast('Task verified','s');
+}
+function rejectTask(i){
+  const t=DB.g('tasks')||[];
+  if(!t[i]||t[i].status!=='awaiting_verification'){toast('Task is not awaiting verification','i');return;}
+  if(!confirm('Reject this task submission? This will reduce performance score.')) return;
+  t[i].status='rejected';
+  DB.s('tasks',t);showPage('e_performance');
+  if(t[i].id) apiFetch('PUT',`/data/tasks/${t[i].id}`,{status:'rejected'}).catch(()=>{});
+  toast('Task rejected','i');
+}
+function cancelTask(i){
+  const t=DB.g('tasks')||[];
+  if(t[i].status==='verified'){toast('Cannot cancel a verified task','i');return;}
+  if(!confirm('Cancel this task?')) return;
+  t[i].status='cancelled';
+  DB.s('tasks',t);showPage('e_performance');
+  if(t[i].id) apiFetch('PUT',`/data/tasks/${t[i].id}`,{status:'cancelled'}).catch(()=>{});
+  toast('Task cancelled','i');
 }
 
 // ─── ATTENDANCE MANAGER ───
@@ -1127,88 +1703,6 @@ function openEditWL(){
   }}]);
 }
 
-// ─── INVENTORY ───
-function pInventory(el){
-  const inv=DB.g('inventory')||[];
-  const low=inv.filter(i=>i.qty<=i.min);
-  el.innerHTML=`
-  ${ph('Inventory Management','Track all stock levels submitted by employees.')}
-  <div class="sg">
-    ${sc('package','Total Items',inv.length)}
-    ${sc('alert-triangle','Low Stock',low.length,'',low.length>0?'dn':'up')}
-    ${sc('check-circle','In Stock',inv.filter(i=>i.qty>i.min).length,'','up')}
-  </div>
-  <div class="card mb">
-    <div class="ch">
-      <span class="ct">${ic('list',15)} Full Inventory</span>
-      <div style="display:flex;gap:8px">
-        <button class="btn b-nv btn-sm" onclick="openAddInv()">${ic('plus',13)} Add Item</button>
-        ${low.length>0?`<button class="btn b-am btn-sm" onclick="printLow()">${ic('printer',13)} Print Low Stock</button>`:''}
-      </div>
-    </div>
-    <div class="cb">
-      <div class="tw"><table><thead><tr><th>#</th><th>Item</th><th>Qty</th><th>Unit</th><th>Min</th><th>Rec. Order</th><th>Location</th><th>Updated By</th><th>Status</th><th></th></tr></thead><tbody>
-        ${inv.map((it,i)=>`<tr>
-          <td style="color:var(--text-muted)">${i+1}</td>
-          <td><strong>${it.item}</strong></td>
-          <td><strong style="color:${it.qty<=it.min?'var(--red)':'inherit'}">${it.qty}</strong></td>
-          <td>${it.unit}</td><td>${it.min}</td><td>${it.rec||'—'}</td><td>${it.loc}</td>
-          <td><span class="b bn">${it.updatedBy}</span></td>
-          <td><span class="b ${it.qty<=it.min?'br':'bg'}">${it.qty<=it.min?'Low':'In Stock'}</span></td>
-          <td><button class="btn b-ol btn-sm" onclick="openEditInv(${i})">${ic('edit-2',12)}</button></td>
-        </tr>`).join('')}
-      </tbody></table></div>
-    </div>
-  </div>`;
-}
-function printLow(){
-  const inv=(DB.g('inventory')||[]).filter(i=>i.qty<=i.min);
-  const w=window.open('','_blank','width=750,height=600');
-  const co=DB.g('company')||{};
-  w.document.write(`<!DOCTYPE html><html><head><title>Low Stock Report</title>
-  <style>body{font-family:'Segoe UI',Arial,sans-serif;margin:30px;font-size:13px;color:#222}
-  h1{font-size:20px;color:#1b2e4b;margin-bottom:4px}
-  .sub{color:#666;margin-bottom:20px;font-size:12px}
-  table{width:100%;border-collapse:collapse}
-  th{background:#1b2e4b;color:#fff;padding:9px 12px;text-align:left;font-size:11px}
-  td{padding:9px 12px;border-bottom:1px solid #dde4ee}
-  .footer{margin-top:24px;font-size:11px;color:#999;border-top:1px solid #eee;padding-top:10px}
-  </style></head><body>
-  <h1>${co.name||'BizTrack'} — Low Stock Report</h1>
-  <div class="sub">Generated: ${new Date().toLocaleString('en-GH')} | Items below minimum stock level</div>
-  <table><thead><tr><th>Item</th><th>Current Qty</th><th>Unit</th><th>Min Level</th><th>Recommended Order</th><th>Location</th></tr></thead><tbody>
-  ${inv.map(it=>`<tr><td><strong>${it.item}</strong></td><td style="color:red"><strong>${it.qty}</strong></td><td>${it.unit}</td><td>${it.min}</td><td><strong>${it.rec||it.min*2}</strong> ${it.unit}</td><td>${it.loc}</td></tr>`).join('')}
-  </tbody></table>
-  <div class="footer">Total items to restock: ${inv.length} | BizTrack Business Management System</div>
-  </body></html>`);
-  w.document.close(); setTimeout(()=>w.print(),500);
-}
-function openAddInv(){
-  openModal('Add Inventory Item',`
-    <div class="fr"><div class="f"><label>Item Name</label><input type="text" id="ni-nm" placeholder="Item name"></div><div class="f"><label>Unit</label><input type="text" id="ni-un" placeholder="e.g. Pcs, Ream"></div></div>
-    <div class="fr3">
-      <div class="f"><label>Quantity</label><input type="number" id="ni-qty" placeholder="0"></div>
-      <div class="f"><label>Min Level</label><input type="number" id="ni-mn" placeholder="0"></div>
-      <div class="f"><label>Rec. Order Qty</label><input type="number" id="ni-rc" placeholder="0"></div>
-    </div>
-    <div class="f"><label>Location</label><input type="text" id="ni-lc" placeholder="e.g. Store A"></div>
-  `,[{l:'Add Item',c:'b-nv',fn:()=>{
-    const inv=DB.g('inventory')||[];
-    inv.push({id:Date.now(),item:document.getElementById('ni-nm').value,qty:parseInt(document.getElementById('ni-qty').value)||0,unit:document.getElementById('ni-un').value,min:parseInt(document.getElementById('ni-mn').value)||0,rec:parseInt(document.getElementById('ni-rc').value)||0,loc:document.getElementById('ni-lc').value,updatedBy:'Admin',date:today()});
-    DB.s('inventory',inv);closeModal();showPage('e_inventory');toast('Item added','s');
-  }}]);
-}
-function openEditInv(i){
-  const inv=DB.g('inventory')||[];const it=inv[i];
-  openModal(`Edit: ${it.item}`,`
-    <div class="fr"><div class="f"><label>Quantity</label><input type="number" id="ei-qty" value="${it.qty}"></div><div class="f"><label>Min Level</label><input type="number" id="ei-mn" value="${it.min}"></div></div>
-    <div class="fr"><div class="f"><label>Rec. Order Qty</label><input type="number" id="ei-rc" value="${it.rec||0}"></div><div class="f"><label>Location</label><input type="text" id="ei-lc" value="${it.loc}"></div></div>
-  `,[{l:'Save',c:'b-gr',fn:()=>{
-    inv[i]={...inv[i],qty:parseInt(document.getElementById('ei-qty').value)||0,min:parseInt(document.getElementById('ei-mn').value)||0,rec:parseInt(document.getElementById('ei-rc').value)||0,loc:document.getElementById('ei-lc').value,date:today()};
-    DB.s('inventory',inv);closeModal();showPage('e_inventory');toast('Updated','s');
-  }}]);
-}
-
 // ─── EMPLOYEES ───
 function pEmployees(el){
   const emps=DB.g('employees')||[];
@@ -1260,8 +1754,11 @@ function openAddEmp(){
     const newEmp={id,name:nm,roleTitle:document.getElementById('ne-rl').value,dept:document.getElementById('ne-dt').value,hourlyRate:parseFloat(document.getElementById('ne-rt').value)||0,joinDate:document.getElementById('ne-sd').value,email:document.getElementById('ne-em').value,active:true};
     emps.push(newEmp); DB.s('employees',emps);
     // Try to sync to backend
-    try{await fetch(`${API}/users`,{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${JWT}`},body:JSON.stringify({...newEmp,password:document.getElementById('ne-pw').value,initials:nm.split(' ').map(n=>n[0]).join('').toUpperCase()})});}catch{}
-    closeModal();showPage('e_employees');toast('Employee added','s');
+try{
+  const r=await fetch(`${API}/users`,{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${JWT}`},body:JSON.stringify({...newEmp,role:'employee',password:document.getElementById('ne-pw').value,initials:nm.split(' ').map(n=>n[0]).join('').toUpperCase()})});
+  if(!r.ok){const e=await r.json();toast('Sync failed: '+e.error,'e');return;}
+}catch(e){toast('Network error: '+e.message,'e');return;}
+closeModal();showPage('e_employees');toast('Employee added','s');
   }}]);
 }
 function openEditEmp(eid){
@@ -1275,23 +1772,24 @@ function openEditEmp(eid){
       const i=emps.findIndex(e=>e.id===eid);
       emps[i]={...emps[i],roleTitle:document.getElementById('ee-rl').value,dept:document.getElementById('ee-dt').value,hourlyRate:parseFloat(document.getElementById('ee-rt').value)||emp.hourlyRate,email:document.getElementById('ee-em').value};
       DB.s('employees',emps);closeModal();showPage('e_employees');toast('Updated','s');
+      if(emps[i].id) apiFetch('PUT',`/users/${emps[i].id}`,{roleTitle:emps[i].roleTitle,dept:emps[i].dept,hourlyRate:emps[i].hourlyRate,email:emps[i].email}).catch(()=>{});
     }},
     {l:'Remove',c:'b-rd',fn:()=>{
-      if(confirm(`Remove ${emp.name}?`)){const i=emps.findIndex(e=>e.id===eid);emps.splice(i,1);DB.s('employees',emps);closeModal();showPage('e_employees');toast('Removed','i');}
+      if(confirm(`Remove ${emp.name}?`)){const i=emps.findIndex(e=>e.id===eid);emps.splice(i,1);DB.s('employees',emps);closeModal();showPage('e_employees');toast('Removed','i');if(emp.id) apiFetch('DELETE',`/users/${emp.id}`).catch(()=>{});}
     }},
   ]);
 }
 function resolvePromo(i,dec){
   const p=DB.g('promos')||[];p[i].status=dec;DB.s('promos',p);
+  if(p[i].id) apiFetch('PUT',`/data/promos/${p[i].id}`,{status:dec}).catch(()=>{});
   toast(`Promotion ${dec}`,'s');showPage('e_employees');updNotif();
 }
 
 // ─── RECRUITMENT ───
+// ─── RECRUITMENT ───
 function pRecruitment(el){
   const apps=DB.g('applicants')||[];
   const stage=DB.g('rec_stage')||'collecting';
-  const link=DB.g('rec_link')||'';
-  const offerLink=DB.g('offer_link')||'';
   const qs=DB.g('apt_qs')||[];
   const ranked=apps.filter(a=>a.score!==undefined).sort((a,b)=>b.score-a.score);
   const tested=apps.filter(a=>a.testScore!==undefined).sort((a,b)=>b.testScore-a.testScore);
@@ -1308,19 +1806,8 @@ function pRecruitment(el){
     <div class="sline ${stage==='interviewing'?'done':''}"></div>
     <div class="si ${stage==='interviewing'?'active':''}"><div class="sn">4</div><span class="sl">Interviews</span></div>
   </div>
+  
   <div class="g2">
-    <div class="card mb">
-      <div class="ch"><span class="ct">${ic('link',15)} Application Portal</span></div>
-      <div class="cb">
-        <p style="font-size:12.5px;color:var(--text-muted);margin-bottom:11px">Share with candidates to receive applications.</p>
-        <div class="link-box">${link}</div>
-        <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
-          <button class="btn b-nv btn-sm" onclick="copyText('${link}')">${ic('copy',13)} Copy</button>
-          <button class="btn b-gr btn-sm" onclick="openApplicantPortal()">${ic('external-link',13)} Preview</button>
-          <button class="btn b-ol btn-sm" onclick="genNewLink()">${ic('refresh-cw',13)} New Link</button>
-        </div>
-      </div>
-    </div>
     <div class="card mb">
       <div class="ch"><span class="ct">${ic('bar-chart-2',15)} Pipeline Stats</span></div>
       <div class="cb">
@@ -1332,24 +1819,49 @@ function pRecruitment(el){
         </div>
       </div>
     </div>
+    
+    <div class="card mb">
+      <div class="ch">
+        <span class="ct">${ic('briefcase',15)} Job Postings (${(DB.g('job_postings')||[]).length})</span>
+        <button class="btn b-nv btn-sm" onclick="openAddJobPosting()">${ic('plus',13)} Add Posting</button>
+      </div>
+      <div class="cb">
+        ${(DB.g('job_postings')||[]).length===0
+          ? `<div class="es"><div class="es-ico">${ic('briefcase',44)}</div><h3>No job postings</h3><p>Add postings to show them on your Careers Portal.</p></div>`
+          : `<div class="tw"><table><thead><tr><th>Role</th><th>Type</th><th>Status</th><th>Actions</th></tr></thead><tbody>
+              ${(DB.g('job_postings')||[]).map((j,i)=>`<tr>
+                <td><strong>${j.title}</strong><br><small style="color:var(--text-muted)">${j.dept||'—'}</small></td>
+                <td>${j.type||'Full-time'}</td>
+                <td><span class="b ${j.active?'bg':'ba'}">${j.active?'Active':'Paused'}</span></td>
+                <td style="display:flex;gap:6px;flex-wrap:wrap">
+                  <button class="btn b-nv btn-sm" onclick="openEditJobPosting(${i})">${ic('edit-2',12)}</button>
+                  <button class="btn ${j.active?'b-am':'b-gr'} btn-sm" onclick="toggleJobPosting(${i})">${j.active?'Pause':'Act.'}</button>
+                  <button class="btn b-rd btn-sm" onclick="deleteJobPosting(${i})">${ic('trash-2',12)}</button>
+                </td>
+              </tr>`).join('')}
+            </tbody></table></div>`
+        }
+      </div>
+    </div>
   </div>
+
   <div class="g2">
     <div class="card mb">
       <div class="ch"><span class="ct">${ic('settings',15)} Aptitude Test</span><button class="btn b-nv btn-sm" onclick="openAptSetup()">Manage (${qs.length} Qs)</button></div>
       <div class="cb"><p style="font-size:12.5px;color:var(--text-muted)">Set questions with pre-keyed answers for the top-50 shortlisted candidates.</p></div>
     </div>
+    
     <div class="card mb">
       <div class="ch"><span class="ct">${ic('file-text',15)} Employment Letter</span><button class="btn b-nv btn-sm" onclick="openLetterSetup()">${ic('edit-2',13)} Configure</button></div>
       <div class="cb">
         <p style="font-size:12.5px;color:var(--text-muted);margin-bottom:8px">Configure company details for the automated employment letter sent to top-10 candidates.</p>
-        <div class="link-box">${offerLink}</div>
         <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
-          <button class="btn b-nv btn-sm" onclick="copyText('${offerLink}')">${ic('copy',13)} Copy Offer Link</button>
-          <button class="btn b-gr btn-sm" onclick="previewOfferPortal()">${ic('external-link',13)} Preview Offer</button>
+          <button class="btn b-gr btn-sm" onclick="previewOfferTemplate()">${ic('external-link',13)} Preview Offer</button>
         </div>
       </div>
     </div>
   </div>
+
   <div class="card mb">
     <div class="ch">
       <span class="ct">${ic('list',15)} All Applicants (${apps.length})</span>
@@ -1361,8 +1873,8 @@ function pRecruitment(el){
       </div>
     </div>
     <div class="cb">
-      ${apps.length===0?`<div class="es"><div class="es-ico">${ic('search',44)}</div><h3>No applications yet</h3><p>Share the portal link to begin receiving applications.</p></div>`:`
-      <div class="tw"><table><thead><tr><th>#</th><th>Applicant</th><th>Education</th><th>Exp</th><th>Merit</th><th>Test</th><th>Offer</th><th>Status</th></tr></thead><tbody>
+      ${apps.length===0?`<div class="es"><div class="es-ico">${ic('search',44)}</div><h3>No applications yet</h3><p>Applicants from the careers portal will appear here.</p></div>`:`
+      <div class="tw"><table><thead><tr><th>#</th><th>Applicant</th><th>Education</th><th>Exp</th><th>Merit</th><th>Test</th><th>Offer</th><th>Status</th><th>Action</th></tr></thead><tbody>
         ${apps.slice().sort((a,b)=>((b.testScore??b.score??0)-(a.testScore??a.score??0))).map((a,i)=>`<tr style="${i<10&&top10.some(t=>t.email===a.email)?'background:rgba(46,204,113,.05)':''}">
           <td><div class="mn ${i===0?'g':i===1?'s':i===2?'bz':''}">${i+1}</div></td>
           <td><strong>${a.name}</strong><br><small style="color:var(--text-muted)">${a.email}</small></td>
@@ -1372,123 +1884,533 @@ function pRecruitment(el){
           <td>${a.testScore!==undefined?`<strong>${a.testScore}/${qs.length}</strong>`:'<span style="color:var(--text-muted)">—</span>'}</td>
           <td>${a.offerStatus?`<span class="b ${a.offerStatus==='accepted'?'bg':a.offerStatus==='rejected'?'br':a.offerStatus==='negotiated'?'ba':'bb'}">${a.offerStatus}</span>`:'—'}</td>
           <td>${a.invited?`<span class="b bg">Interview</span>`:a.offerSent?`<span class="b bb">Offer Sent</span>`:a.testInvited?`<span class="b bl">Test Sent</span>`:a.score!==undefined?`<span class="b bn">Ranked</span>`:`<span class="b ba">Applied</span>`}</td>
+          <td>
+            ${ (DB.g('employees')||[]).some(e => e.email === a.email) 
+               ? `<span style="color:var(--accent);font-weight:700;font-size:11px">Hired</span>`
+               : (a.testScore !== undefined 
+                  ? `<button class="btn b-nv btn-sm" onclick="manualCreateEmployee('${a.email}')">Generate User</button>` 
+                  : `<span style="color:var(--text-muted);font-size:11px">Pending Test</span>`)
+            }
+          </td>
         </tr>`).join('')}
       </tbody></table></div>`}
     </div>
   </div>`;
+}  // ─── JOB POSTINGS (Employer) ───
+function openAddJobPosting(){
+  openModal('Add Job Posting',`
+    <div class="fr"><div class="f"><label>Job Title *</label><input type="text" id="jp-title" placeholder="e.g. Marketing Officer"></div><div class="f"><label>Department</label><input type="text" id="jp-dept" placeholder="e.g. Sales"></div></div>
+    <div class="fr"><div class="f"><label>Employment Type</label>
+      <select id="jp-type"><option>Full-time</option><option>Part-time</option><option>Contract</option><option>Internship</option><option>Remote</option></select>
+    </div><div class="f"><label>Location</label><input type="text" id="jp-loc" placeholder="e.g. Accra, Ghana"></div></div>
+    <div class="fr"><div class="f"><label>Salary Range (optional)</label><input type="text" id="jp-sal" placeholder="e.g. ₵2,000 – ₵3,500/mo"></div><div class="f"><label>Deadline (optional)</label><input type="date" id="jp-dead"></div></div>
+    <div class="f"><label>Job Description *</label><textarea id="jp-desc" placeholder="Describe the role and responsibilities…" rows="4"></textarea></div>
+    <div class="f"><label>Requirements</label><textarea id="jp-req" placeholder="List qualifications, skills, experience required…" rows="3"></textarea></div>
+  `,[{l:'Post Job',c:'b-gr',fn:async ()=>{
+    const title=document.getElementById('jp-title').value.trim();
+    const desc=document.getElementById('jp-desc').value.trim();
+    if(!title||!desc){toast('Title and Description required','e');return;}
+    
+    // We package the data exactly how Supabase expects it
+    const newJob={
+      title: title,
+      dept: document.getElementById('jp-dept').value,
+      type: document.getElementById('jp-type').value,
+      location: document.getElementById('jp-loc').value,
+      salary: document.getElementById('jp-sal').value,
+      deadline: document.getElementById('jp-dead').value,
+      description: desc,
+      requirements: document.getElementById('jp-req').value,
+      active: true,
+      postedDate: today()
+    };
+    
+    try {
+      // 1. Try to save to Supabase FIRST
+      const r = await apiFetch('POST','/data/job_postings',newJob);
+      
+      if(r.record){
+        // 2. If successful, save to local browser with the real Supabase ID
+        const jobs=DB.g('job_postings')||[];
+        jobs.push(r.record);
+        DB.s('job_postings',jobs);
+        
+        closeModal();
+        showPage('e_recruitment');
+        toast('Job posted to Careers Portal successfully!','s');
+      }
+    } catch(err) {
+      // 3. IF IT FAILS, SHOW THE EXACT SUPABASE ERROR!
+      alert("Database Error: " + err.message + "\n\nPlease check your Supabase table columns.");
+    }
+  }}]);
+}
+function openEditJobPosting(idx){
+  const jobs=DB.g('job_postings')||[];const j=jobs[idx];
+  openModal('Edit Job Posting',`
+    <div class="fr"><div class="f"><label>Job Title</label><input type="text" id="ep-title" value="${j.title}"></div><div class="f"><label>Department</label><input type="text" id="ep-dept" value="${j.dept||''}"></div></div>
+    <div class="fr"><div class="f"><label>Employment Type</label>
+      <select id="ep-type"><option ${j.type==='Full-time'?'selected':''}>Full-time</option><option ${j.type==='Part-time'?'selected':''}>Part-time</option><option ${j.type==='Contract'?'selected':''}>Contract</option><option ${j.type==='Internship'?'selected':''}>Internship</option><option ${j.type==='Remote'?'selected':''}>Remote</option></select>
+    </div><div class="f"><label>Location</label><input type="text" id="ep-loc" value="${j.location||''}"></div></div>
+    <div class="fr"><div class="f"><label>Salary Range</label><input type="text" id="ep-sal" value="${j.salary||''}"></div><div class="f"><label>Deadline</label><input type="date" id="ep-dead" value="${j.deadline||''}"></div></div>
+    <div class="f"><label>Job Description</label><textarea id="ep-desc" rows="4">${j.description}</textarea></div>
+    <div class="f"><label>Requirements</label><textarea id="ep-req" rows="3">${j.requirements||''}</textarea></div>
+  `,[{l:'Save Changes',c:'b-gr',fn:()=>{
+    jobs[idx]={...jobs[idx],title:document.getElementById('ep-title').value,dept:document.getElementById('ep-dept').value,type:document.getElementById('ep-type').value,location:document.getElementById('ep-loc').value,salary:document.getElementById('ep-sal').value,deadline:document.getElementById('ep-dead').value,description:document.getElementById('ep-desc').value,requirements:document.getElementById('ep-req').value};
+    DB.s('job_postings',jobs);
+    apiFetch('PUT','/data/job_postings',jobs[idx]).catch(()=>{});
+    closeModal();showPage('e_recruitment');toast('Job posting updated','s');
+  }}]);
 }
 
-function copyText(t){navigator.clipboard.writeText(t).then(()=>toast('Copied!','s')).catch(()=>toast('Link: '+t,'i'));}
-function genNewLink(){DB.s('rec_link','https://biztrack.app/apply/'+Math.random().toString(36).substr(2,9));showPage('e_recruitment');}
-function openApplicantPortal(){
-  document.getElementById('app').style.display='none';
-  document.getElementById('ap-form-wrap').style.display='block';
-  document.getElementById('ap-test-wrap').style.display='none';
-  document.getElementById('ap-done-wrap').style.display='none';
-  document.getElementById('ap-msg').innerHTML='';
-  document.getElementById('applicant-portal').classList.add('open');
-  window._portalReturn=true;
-}
-function backFromPortal(){
-  document.getElementById('applicant-portal').classList.remove('open');
-  document.getElementById('offer-portal').classList.remove('open');
-  document.getElementById('app').style.display='block';
-  window._portalReturn=false;
+function toggleJobPosting(idx){
+  const jobs=DB.g('job_postings')||[];
+  jobs[idx].active=!jobs[idx].active;
+  DB.s('job_postings',jobs);
+  apiFetch('PUT','/data/job_postings',jobs[idx]).catch(()=>{});
   showPage('e_recruitment');
+  toast(jobs[idx].active?'Job posting activated':'Job posting paused','i');
 }
 
-async function rankApplicants(){
-  const btn=document.getElementById('rank-btn');
-  if(btn){btn.innerHTML=`<span class="ldr"></span> Ranking…`;btn.disabled=true;}
-  const apps=DB.g('applicants')||[];
-  if(apps.length===0){toast('No applications to rank','w');return;}
-
-  // Score locally: edu score + exp score + random variance
-  const updated=apps.map(a=>{
-    const eduScore=parseInt(a.eduScore||50);
-    const expScore=parseInt(a.expScore||0);
-    const score=Math.min(100,Math.max(5,eduScore+expScore+Math.floor(Math.random()*8)));
-    return{...a,score};
-  });
-  DB.s('applicants',updated);
-  DB.s('rec_stage','shortlisted');
-  setTimeout(()=>{showPage('e_recruitment');toast('Candidates ranked by merit','s');},600);
-}
-
-function inviteTop50(){
-  const apps=DB.g('applicants')||[];
-  const top=apps.slice().sort((a,b)=>(b.score||0)-(a.score||0)).slice(0,50);
-  const updated=apps.map(a=>({...a,testInvited:top.some(t=>t.email===a.email)}));
-  DB.s('applicants',updated); DB.s('rec_stage','testing');
-  toast(`Top ${Math.min(50,top.length)} candidates invited for aptitude test`,'s');
+function deleteJobPosting(idx){
+  if(!confirm('Delete this job posting?'))return;
+  const jobs=DB.g('job_postings')||[];
+  const job=jobs[idx];
+  jobs.splice(idx,1);
+  DB.s('job_postings',jobs);
   showPage('e_recruitment');
+  toast('Deleted','i');
+  if(job&&job.id) apiFetch('DELETE',`/data/job_postings/${job.id}`).catch(()=>{});
 }
-function selectTop10(){
-  const apps=DB.g('applicants')||[];
-  const tested=apps.filter(a=>a.testScore!==undefined).sort((a,b)=>b.testScore-a.testScore).slice(0,10);
-  const updated=apps.map(a=>({...a,invited:tested.some(t=>t.email===a.email)}));
-  DB.s('applicants',updated); DB.s('rec_stage','interviewing');
-  toast(`Top ${tested.length} candidates selected for interviews`,'s');
-  showPage('e_recruitment');
-}
-function sendOffers(){
-  const apps=DB.g('applicants')||[];
-  const updated=apps.map(a=>a.invited&&!a.offerSent?{...a,offerSent:true}:a);
-  DB.s('applicants',updated);
-  toast('Offer links sent to top-10 candidates','s');
-  showPage('e_recruitment');
-}
-function openAptSetup(){
-  const qs=DB.g('apt_qs')||[];
-  openModal('Aptitude Test Questions',`
-    <div style="max-height:260px;overflow-y:auto;margin-bottom:16px">
-      ${qs.length===0?'<p style="color:var(--text-muted);font-size:13px">No questions yet.</p>':qs.map((q,i)=>`
-        <div style="background:var(--bg);border-radius:8px;padding:12px;margin-bottom:9px">
-          <div style="font-size:11px;font-weight:700;color:var(--text-muted);margin-bottom:5px">Q${i+1}</div>
-          <div style="font-size:13px;font-weight:700">${q.q}</div>
-          <div style="margin-top:6px;font-size:12px">${q.opts.map((o,oi)=>`<span style="margin-right:9px;${oi===q.ans?'color:var(--accent);font-weight:700':'color:var(--text-muted)'}">${String.fromCharCode(65+oi)}) ${o}</span>`).join('')}</div>
-        </div>`).join('')}
+function openPublicCareersPreview(){openCareersPortal();}
+// ─── OFFER CONFIGURATION ───
+function openLetterSetup() {
+  const co = DB.g('company') || {};
+  openModal('Configure Employment Letter', `
+    <div style="margin-bottom:15px; padding-bottom:15px; border-bottom:1px solid var(--border);">
+      <div style="font-size:12px; font-weight:700; color:var(--text-muted); text-transform:uppercase; margin-bottom:10px;">Business Header Styling</div>
+      <div class="f">
+        <label>Full Letterhead Banner URL (Optional)</label>
+        <input type="text" id="ol-head" value="${co.letterhead||''}" placeholder="e.g., https://yourdomain.com/banner.png">
+        <div style="font-size:11px; color:var(--text-muted); margin-top:4px;">If provided, this image replaces the default text name/address at the top of the letter.</div>
+      </div>
+      <div class="fr">
+        <div class="f"><label>Company Tagline / Motto</label><input type="text" id="ol-tag" value="${co.tagline||''}" placeholder="e.g., Innovating the Future"></div>
+        <div class="f"><label>Registration / TIN No.</label><input type="text" id="ol-reg" value="${co.regNumber||''}" placeholder="e.g., CS1234567"></div>
+      </div>
     </div>
-    <hr class="divider">
-    <div style="font-size:12px;font-weight:700;margin-bottom:11px">+ Add New Question</div>
-    <div class="f"><label>Question</label><input type="text" id="nq-q" placeholder="Enter question text"></div>
-    <div class="fr"><div class="f"><label>Option A</label><input type="text" id="nq-a"></div><div class="f"><label>Option B</label><input type="text" id="nq-b"></div></div>
-    <div class="fr"><div class="f"><label>Option C</label><input type="text" id="nq-c"></div><div class="f"><label>Option D</label><input type="text" id="nq-d"></div></div>
-    <div class="f"><label>Correct Answer</label><select id="nq-ans"><option value="0">A</option><option value="1">B</option><option value="2">C</option><option value="3">D</option></select></div>
-  `,[{l:'Add Question',c:'b-nv',fn:()=>{
-    const q=document.getElementById('nq-q').value;
-    if(!q){toast('Enter question text','e');return;}
-    const qs=DB.g('apt_qs')||[];
-    qs.push({q,opts:[document.getElementById('nq-a').value,document.getElementById('nq-b').value,document.getElementById('nq-c').value,document.getElementById('nq-d').value],ans:parseInt(document.getElementById('nq-ans').value)});
-    DB.s('apt_qs',qs);closeModal();showPage('e_recruitment');toast('Question added','s');
-  }}]);
+
+    <div class="fr">
+      <div class="f"><label>Default Hourly Rate (₵)</label><input type="number" id="ol-rate" value="${co.defaultRate||20}"></div>
+      <div class="f"><label>Probation Period</label><input type="text" id="ol-prob" value="${co.probation||'3 months'}"></div>
+    </div>
+    <div class="fr">
+      <div class="f"><label>Work Schedule</label><input type="text" id="ol-sched" value="${co.workSchedule||'Monday – Friday, 8:00 AM – 5:00 PM'}"></div>
+      <div class="f"><label>Offer Expiry (Days from now)</label><input type="number" id="ol-exp" value="${co.offerExpiry||7}"></div>
+    </div>
+    <div class="fr">
+      <div class="f"><label>Reporting Manager (Optional)</label><input type="text" id="ol-mgr" value="${co.managerName||''}" placeholder="e.g. Jane Doe"></div>
+      <div class="f"><label>Benefits Summary (Optional)</label><input type="text" id="ol-ben" value="${co.benefitsSummary||''}" placeholder="e.g. Health Insurance, PTO"></div>
+    </div>
+    <div class="f">
+      <label>Custom Opening Paragraph (Optional)</label>
+      <textarea id="ol-intro" rows="2" placeholder="Leave blank to use the default welcome message...">${co.offerIntro||''}</textarea>
+    </div>
+    <div class="f">
+      <label>Additional Terms & Conditions (Optional)</label>
+      <textarea id="ol-terms" rows="2" placeholder="e.g., Must provide valid ID, subject to background check...">${co.offerTerms||''}</textarea>
+    </div>
+    <div class="fr">
+      <div class="f"><label>Signatory Name</label><input type="text" id="ol-sign" value="${co.signatory||'The Director'}"></div>
+      <div class="f"><label>Signatory Title</label><input type="text" id="ol-sigt" value="${co.sigTitle||'Managing Director'}"></div>
+    </div>
+  `, [{
+    l: 'Save Configuration', c: 'b-nv', fn: () => {
+      const newCo = {
+        ...DB.g('company') || {},
+        letterhead: document.getElementById('ol-head').value,
+        tagline: document.getElementById('ol-tag').value,
+        regNumber: document.getElementById('ol-reg').value,
+        defaultRate: parseFloat(document.getElementById('ol-rate').value) || 20,
+        workSchedule: document.getElementById('ol-sched').value,
+        probation: document.getElementById('ol-prob').value,
+        offerExpiry: parseInt(document.getElementById('ol-exp').value) || 7,
+        managerName: document.getElementById('ol-mgr').value,
+        benefitsSummary: document.getElementById('ol-ben').value,
+        offerIntro: document.getElementById('ol-intro').value,
+        offerTerms: document.getElementById('ol-terms').value,
+        signatory: document.getElementById('ol-sign').value,
+        sigTitle: document.getElementById('ol-sigt').value
+      };
+      DB.s('company', newCo);
+      closeModal(); 
+      showPage('e_recruitment'); 
+      toast('Offer configuration saved', 's');
+    }
+  }]);
+}
+function previewOfferTemplate() {
+  const co = DB.g('company') || {};
+  const dummyApp = { name: 'Jane Doe', position: 'Software Engineer' };
+  openModal('Preview Employment Letter', generateOfferLetterHTML(dummyApp, co), []);
+}
+// ─── CAREERS PORTAL (Public) ───
+let _cpSelectedJob = null;
+let _cpUser = null; // logged-in portal user
+
+function openCareersPortal(){
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('app').style.display='none';
+  const co=DB.g('company')||{};
+  document.getElementById('cp-company-name').textContent=(co.name?'Careers at '+co.name:'Join Our Team');
+  // restore session
+  const saved=localStorage.getItem('cp_jwt');
+  const savedUser=localStorage.getItem('cp_user');
+  if(saved&&savedUser){_cpUser=JSON.parse(savedUser);setCPLoggedIn();}
+  else{setCPLoggedOut();}
+  showJobsList();
+  document.getElementById('careers-portal').classList.add('open');
 }
 
-function openLetterSetup(){
-  const co=DB.g('company')||{};
-  openModal('Employment Letter Configuration',`
-    <div class="al al-b">These details will appear on the automated employment letter sent to top-10 candidates.</div>
-    <div class="fr"><div class="f"><label>Company Name</label><input type="text" id="cl-nm" value="${co.name||''}"></div><div class="f"><label>Company Email</label><input type="email" id="cl-em" value="${co.email||''}"></div></div>
-    <div class="fr"><div class="f"><label>Company Phone</label><input type="text" id="cl-ph" value="${co.phone||''}"></div><div class="f"><label>Website</label><input type="text" id="cl-wb" value="${co.web||''}"></div></div>
-    <div class="f"><label>Company Address</label><input type="text" id="cl-ad" value="${co.address||''}"></div>
-    <div class="fr"><div class="f"><label>Signatory Name</label><input type="text" id="cl-sg" value="${co.signatory||''}"></div><div class="f"><label>Signatory Title</label><input type="text" id="cl-st" value="${co.sigTitle||''}"></div></div>
-    <div class="f"><label>Company Logo URL (optional)</label><input type="url" id="cl-lg" value="${co.logo||''}" placeholder="https://…/logo.png"></div>
-    <div class="f"><label>Default Hourly Rate for New Hires (₵)</label><input type="number" id="cl-rt" value="${co.defaultRate||20}"></div>
-    <div class="f"><label>Work Schedule</label><input type="text" id="cl-ws" value="${co.workSchedule||'Monday – Friday, 8:00 AM – 5:00 PM'}"></div>
-    <div class="f"><label>Probation Period</label><input type="text" id="cl-pb" value="${co.probation||'3 months'}"></div>
-  `,[{l:'Save & Generate Link',c:'b-gr',fn:()=>{
-    DB.s('company',{name:document.getElementById('cl-nm').value,email:document.getElementById('cl-em').value,phone:document.getElementById('cl-ph').value,web:document.getElementById('cl-wb').value,address:document.getElementById('cl-ad').value,signatory:document.getElementById('cl-sg').value,sigTitle:document.getElementById('cl-st').value,logo:document.getElementById('cl-lg').value,defaultRate:parseFloat(document.getElementById('cl-rt').value)||20,workSchedule:document.getElementById('cl-ws').value,probation:document.getElementById('cl-pb').value});
-    closeModal();showPage('e_recruitment');toast('Letter configuration saved','s');
-  }}]);
+function closeCareersPortal(){
+  document.getElementById('careers-portal').classList.remove('open');
+  document.getElementById('login-screen').style.display='flex';
 }
-function previewOfferPortal(){
-  document.getElementById('app').style.display='none';
-  // Load first invited applicant or demo
+
+function setCPLoggedIn(){
+  document.getElementById('cp-login-btn').style.display='none';
+  document.getElementById('cp-signup-btn').style.display='none';
+  document.getElementById('cp-logout-btn').style.display='inline-flex';
+  const s=document.getElementById('cp-auth-status');
+  s.style.display='block';
+  s.textContent='Hi, '+(_cpUser?.name?.split(' ')[0]||'there')+'!';
+}
+
+function setCPLoggedOut(){
+  _cpUser=null;
+  localStorage.removeItem('cp_jwt');
+  localStorage.removeItem('cp_user');
+  document.getElementById('cp-login-btn').style.display='inline-flex';
+  document.getElementById('cp-signup-btn').style.display='inline-flex';
+  document.getElementById('cp-logout-btn').style.display='none';
+  document.getElementById('cp-auth-status').style.display='none';
+}
+
+function cpLogout(){setCPLoggedOut();showJobsList();toast('Logged out','i');}
+
+function showCPAuth(tab){
+  document.getElementById('cp-jobs-view').style.display='none';
+  document.getElementById('cp-apply-view').style.display='none';
+  document.getElementById('cp-track-view').style.display='none';
+  document.getElementById('cp-offer-view').style.display='none';
+  document.getElementById('cp-auth-view').style.display='block';
+  document.getElementById('cp-login-form').style.display=tab==='login'?'block':'none';
+  document.getElementById('cp-signup-form').style.display=tab==='signup'?'block':'none';
+  document.getElementById('cp-forgot-form').style.display=tab==='forgot'?'block':'none';
+}
+
+async function doCPLogin(){
+  const email=document.getElementById('cpl-email').value.trim();
+  const pw=document.getElementById('cpl-pw').value;
+  const msg=document.getElementById('cpl-msg');
+  if(!email||!pw){msg.innerHTML='<div class="al al-r">Please fill all fields.</div>';return;}
+  msg.innerHTML='<div class="al al-b">Logging in…</div>';
+  try{
+    const r=await fetch(`${API}/portal-login`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password:pw})});
+    const d=await r.json();
+    if(!r.ok){msg.innerHTML=`<div class="al al-r">${d.error||'Login failed.'}</div>`;return;}
+    _cpUser=d.applicant;
+    localStorage.setItem('cp_jwt',d.token);
+    localStorage.setItem('cp_user',JSON.stringify(d.applicant));
+    setCPLoggedIn();
+    msg.innerHTML='';
+    // Check if they have an offer
+    const apps=DB.g('applicants')||[];
+    const myApp=apps.find(a=>a.email===_cpUser.email&&a.offerSent);
+    if(myApp){showCPOffer(myApp);}
+    else{showJobsList();}
+    toast('Welcome back, '+(_cpUser.name?.split(' ')[0]||'')+'!','s');
+  }catch(e){msg.innerHTML=`<div class="al al-r">Network error. Try again.</div>`;}
+}
+
+async function doCPSignup(){
+  const name=document.getElementById('cps-name').value.trim();
+  const email=document.getElementById('cps-email').value.trim();
+  const pw=document.getElementById('cps-pw').value;
+  const cpw=document.getElementById('cps-cpw').value;
+  const sq=document.getElementById('cps-sq').value;
+  const sa=document.getElementById('cps-sa').value.trim();
+  const msg=document.getElementById('cps-msg');
+  
+  if(!name||!email||!pw||!sq||!sa){msg.innerHTML='<div class="al al-r">Please fill all fields.</div>';return;}
+  if(pw!==cpw){msg.innerHTML='<div class="al al-r">Passwords do not match.</div>';return;}
+  if(pw.length<6){msg.innerHTML='<div class="al al-r">Password must be at least 6 characters.</div>';return;}
+  
+  msg.innerHTML='<div class="al al-b">Creating account…</div>';
+  
+  try {
+    const r=await fetch(`${API}/portal-signup`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,email,password:pw,securityQuestion:sq,securityAnswer:sa})});
+    
+    // Improved error parsing to catch Vercel HTML errors
+    const text = await r.text(); 
+    let d;
+    try { d = JSON.parse(text); } catch(err) { throw new Error('Server returned an invalid response: ' + text.substring(0, 500)); }
+    
+    if(!r.ok){msg.innerHTML=`<div class="al al-r">${d.error||'Signup failed.'}</div>`;return;}
+    
+    _cpUser=d.applicant;
+    localStorage.setItem('cp_jwt',d.token);
+    localStorage.setItem('cp_user',JSON.stringify(d.applicant));
+    setCPLoggedIn();
+    msg.innerHTML='';
+    showJobsList();
+    toast('Account created! Welcome.','s');
+  } catch(e) {
+    console.error(e);
+    msg.innerHTML=`<div class="al al-r">System Error: ${e.message}</div>`;
+  }
+}
+async function doCPForgotStep1(){
+  const email=document.getElementById('cpf-email').value.trim();
+  const msg=document.getElementById('cpf-msg1');
+  if(!email){msg.innerHTML='<div class="al al-r">Please enter your email.</div>';return;}
+  msg.innerHTML='<div class="al al-b">Looking up your account…</div>';
+  try{
+    const r=await fetch(`${API}/portal-reset`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,step:'question'})});
+    const d=await r.json();
+    if(!r.ok){msg.innerHTML=`<div class="al al-r">${d.error||'Account not found.'}</div>`;return;}
+    document.getElementById('cpf-question-display').textContent='Security Question: '+d.question;
+    document.getElementById('cpf-step1').style.display='none';
+    document.getElementById('cpf-step2').style.display='block';
+    msg.innerHTML='';
+    // store email for step 2
+    document.getElementById('cpf-step2').dataset.email=email;
+  }catch(e){msg.innerHTML=`<div class="al al-r">Network error.</div>`;}
+}
+
+async function doCPForgotStep2(){
+  const email=document.getElementById('cpf-step2').dataset.email;
+  const answer=document.getElementById('cpf-answer').value.trim();
+  const np=document.getElementById('cpf-newpw').value;
+  const cnp=document.getElementById('cpf-cnewpw').value;
+  const msg=document.getElementById('cpf-msg2');
+  if(!answer||!np||!cnp){msg.innerHTML='<div class="al al-r">Please fill all fields.</div>';return;}
+  if(np!==cnp){msg.innerHTML='<div class="al al-r">Passwords do not match.</div>';return;}
+  if(np.length<6){msg.innerHTML='<div class="al al-r">Password must be at least 6 characters.</div>';return;}
+  msg.innerHTML='<div class="al al-b">Resetting password…</div>';
+  try{
+    const r=await fetch(`${API}/portal-reset`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,securityAnswer:answer,newPassword:np,step:'reset'})});
+    const d=await r.json();
+    if(!r.ok){msg.innerHTML=`<div class="al al-r">${d.error||'Reset failed.'}</div>`;return;}
+    msg.innerHTML='<div class="al al-g">Password reset! You can now log in.</div>';
+    setTimeout(()=>showCPAuth('login'),1800);
+  }catch(e){msg.innerHTML=`<div class="al al-r">Network error.</div>`;}
+}
+
+function showJobsList(){
+  document.getElementById('cp-auth-view').style.display='none';
+  document.getElementById('cp-jobs-view').style.display='block';
+  document.getElementById('cp-apply-view').style.display='none';
+  document.getElementById('cp-track-view').style.display='none';
+  document.getElementById('cp-offer-view').style.display='none';
+  
+  // Use a standard fetch so it doesn't attach an employer/employee token!
+  fetch(`${API}/data/job_postings`)
+    .then(r => r.json())
+    .then(data => {
+      if(data.records) DB.s('job_postings', data.records);
+      renderJobsList();
+    })
+    .catch(() => renderJobsList());
+}function renderJobsList(){
+  const jobs=(DB.g('job_postings')||[]).filter(j=>j.active);
+  const list=document.getElementById('cp-jobs-list');
+  // If logged in, show dashboard links
+  let dashHTML='';
+  if(_cpUser){
+    const myApps=(DB.g('applicants')||[]).filter(a=>a.email===_cpUser.email);
+    const myOffer=myApps.find(a=>a.offerSent);
+    dashHTML=`<div style="background:rgba(46,204,113,.12);border:1px solid rgba(46,204,113,.25);border-radius:12px;padding:16px 20px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+      <div>
+        <div style="font-size:13px;font-weight:800;color:#fff">My Portal</div>
+        <div style="font-size:12px;color:rgba(255,255,255,.55)">${myApps.length} application${myApps.length!==1?'s':''} on file</div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn b-ol btn-sm" onclick="showTrackView()">${ic('search',13)} Track Applications</button>
+        ${myOffer?`<button class="btn b-gr btn-sm" onclick="showCPOffer(null)">${ic('file-text',13)} View My Offer</button>`:''}
+      </div>
+    </div>`;
+  }
+  if(jobs.length===0){
+    list.innerHTML=dashHTML+`<div class="cp-empty"><div class="cp-empty-ico">${ic('briefcase',44)}</div><p>No open positions at the moment. Check back soon!</p></div>
+    <div style="text-align:center;margin-top:20px"><button class="btn b-ol btn-sm" onclick="showTrackView()">${ic('search',13)} Track my application</button></div>`;
+  } else {
+    list.innerHTML=dashHTML+jobs.map((j,i)=>`
+      <div class="job-card" onclick="openJobApply(${i})">
+        <div class="job-card-top">
+          <div>
+            <div class="job-card-dept">${j.dept||'Open Role'}</div>
+            <div class="job-card-title">${j.title}</div>
+          </div>
+          <button class="job-apply-btn" onclick="event.stopPropagation();openJobApply(${i})">Apply Now</button>
+        </div>
+        <div class="job-card-meta">
+          ${j.type?`<span class="job-meta-pill">${ic('briefcase',12)} ${j.type}</span>`:''}
+          ${j.location?`<span class="job-meta-pill">${ic('map-pin',12)} ${j.location}</span>`:''}
+          ${j.salary?`<span class="job-meta-pill">${ic('dollar-sign',12)} ${j.salary}</span>`:''}
+          ${j.deadline?`<span class="job-meta-pill">${ic('clock',12)} Deadline: ${j.deadline}</span>`:''}
+          <span class="job-meta-pill">${ic('calendar',12)} Posted: ${j.postedDate||'Recently'}</span>
+        </div>
+        ${j.description?`<div class="job-card-desc">${j.description.substring(0,160)}${j.description.length>160?'…':''}</div>`:''}
+      </div>`).join('')+
+      `<div style="text-align:center;margin-top:24px"><button class="btn b-ol btn-sm" onclick="showTrackView()">${ic('search',13)} Already applied? Track your application</button></div>`;
+  }
+}
+
+function openJobApply(idx){
+  if(!_cpUser){
+    // Require login before applying
+    showCPAuth('login');
+    document.getElementById('cpl-msg').innerHTML='<div class="al al-b">Please log in or create an account to apply.</div>';
+    return;
+  }
+  const jobs=(DB.g('job_postings')||[]).filter(j=>j.active);
+  _cpSelectedJob=jobs[idx];
+  document.getElementById('cp-auth-view').style.display='none';
+  document.getElementById('cp-jobs-view').style.display='none';
+  document.getElementById('cp-apply-view').style.display='block';
+  document.getElementById('cp-track-view').style.display='none';
+  document.getElementById('cp-apply-role-title').textContent='Apply for: '+_cpSelectedJob.title;
+  document.getElementById('cp-apply-form').style.display='block';
+  document.getElementById('cp-apply-done').style.display='none';
+  document.getElementById('cp-apply-msg').innerHTML='';
+  // Pre-fill from account
+  if(_cpUser){
+    const nameEl=document.getElementById('cp-name');
+    const emailEl=document.getElementById('cp-email');
+    if(nameEl)nameEl.value=_cpUser.name||'';
+    if(emailEl){emailEl.value=_cpUser.email||'';emailEl.readOnly=true;}
+  }
+  ['cp-phone','cp-field','cp-emp','cp-skills','cp-cover'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  ['cp-edu','cp-exp'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+}
+
+function submitCareersApplication(){
+  const name=document.getElementById('cp-name').value.trim();
+  const email=document.getElementById('cp-email').value.trim();
+  const edu=document.getElementById('cp-edu').value;
+  const exp=document.getElementById('cp-exp').value;
+  const msg=document.getElementById('cp-apply-msg');
+  if(!name||!email||!edu||!exp){msg.innerHTML='<div class="al al-r">Please fill all required fields.</div>';return;}
   const apps=DB.g('applicants')||[];
-  const app=apps.find(a=>a.invited)||{name:'Demo Candidate',position:'Test Role',email:'demo@test.com'};
-  loadOfferPortal(app.email||'demo@test.com');
-  document.getElementById('offer-portal').classList.add('open');
-  window._portalReturn=true;
+  if(apps.find(a=>a.email===email&&a.position===(_cpSelectedJob?.title||''))){msg.innerHTML='<div class="al al-a">You have already applied for this position.</div>';return;}
+  const newApp={name,email,phone:document.getElementById('cp-phone').value,position:_cpSelectedJob?.title||'General Application',dept:_cpSelectedJob?.dept||'',education:document.getElementById('cp-edu').options[document.getElementById('cp-edu').selectedIndex]?.text,eduScore:parseInt(edu)||50,experience:parseInt(exp)||0,expScore:parseInt(exp)||0,field:document.getElementById('cp-field').value,previousEmployers:document.getElementById('cp-emp').value,skills:document.getElementById('cp-skills').value,coverLetter:document.getElementById('cp-cover').value,date:today(),status:'pending',source:'careers_portal'};
+  apps.push(newApp);DB.s('applicants',apps);
+  apiFetch('POST','/data/applicants',newApp).then(r=>{if(r.record){const a2=DB.g('applicants')||[];const i=a2.findIndex(x=>x.email===newApp.email&&x.position===newApp.position);if(i>=0){a2[i].id=r.record.id;DB.s('applicants',a2);}}}).catch(()=>{});
+  document.getElementById('cp-apply-form').style.display='none';
+  document.getElementById('cp-apply-done').innerHTML=`
+    <div style="margin-bottom:12px;color:var(--accent)">${ic('check-circle',52)}</div>
+    <h3 style="font-size:20px;font-weight:900;color:#fff;margin-bottom:8px">Application Submitted!</h3>
+    <p style="color:rgba(255,255,255,.55);font-size:14px;margin-bottom:20px">Thank you for applying. We'll review your application and be in touch.</p>
+    <div class="al al-g" style="text-align:left"><strong>Track anytime</strong> by clicking "Track Applications" from the portal home.</div>
+    <button class="btn b-ol" style="margin-top:16px" onclick="showJobsList()">← Back to Jobs</button>`;
+  document.getElementById('cp-apply-done').style.display='block';
+}
+
+function showTrackView(){
+  document.getElementById('cp-auth-view').style.display='none';
+  document.getElementById('cp-jobs-view').style.display='none';
+  document.getElementById('cp-apply-view').style.display='none';
+  document.getElementById('cp-track-view').style.display='block';
+  document.getElementById('cp-offer-view').style.display='none';
+  document.getElementById('cp-track-result').innerHTML='';
+  document.getElementById('cp-track-msg').innerHTML='';
+  if(_cpUser){loadCPTrackForLoggedIn();}
+}
+
+function loadCPTrackForLoggedIn(){
+  if(!_cpUser){
+    document.getElementById('cp-track-msg').innerHTML='<div class="al al-r">Please log in to track your application.</div>';
+    setTimeout(()=>showCPAuth('login'),1200);
+    return;
+  }
+  const email=_cpUser.email;
+  const apps=(DB.g('applicants')||[]).filter(a=>a.email===email);
+  const res=document.getElementById('cp-track-result');
+  if(apps.length===0){res.innerHTML=`<div class="al al-a">No applications found for <strong>${email}</strong>. Browse open positions to apply.</div>`;return;}
+  const stageMap={pending:'Under Review',shortlisted:'Shortlisted',testing:'Aptitude Test',interviewing:'Interview Stage',accepted:'Offer Extended',rejected:'Not Selected'};
+  res.innerHTML=apps.map(a=>{
+    const stage=a.offerStatus==='accepted'?'accepted':a.offerStatus==='rejected'?'rejected':a.invited?'interviewing':a.testInvited?'testing':a.score!==undefined?'shortlisted':'pending';
+    const stages=['pending','shortlisted','testing','interviewing','accepted'];
+    const si=stages.indexOf(stage);
+    return `<div class="cp-progress">
+      <div class="cp-progress-title">${ic('file-text',13)} ${a.position||'Application'}</div>
+      <div style="font-size:12px;color:rgba(255,255,255,.4);margin-bottom:12px">Applied: ${a.date||'—'}</div>
+      ${stages.map((s,i)=>`<div class="cp-stage">
+        <div class="cp-stage-dot ${i<si?'done':i===si?'current':''}"></div>
+        <div class="cp-stage-label ${i<si?'done':i===si?'current':''}">${stageMap[s]||s}</div>
+        ${i===si?`<span style="font-size:11px;color:rgba(255,255,255,.35);margin-left:auto">● Current</span>`:''}
+      </div>`).join('')}
+      ${a.offerSent?`<button class="btn b-gr" style="width:100%;margin-top:12px;justify-content:center" onclick="showCPOffer(null)">${ic('file-text',14)} View My Offer Letter</button>`:''}
+      ${stage==='rejected'?`<div class="al al-r" style="margin-top:12px;margin-bottom:0">Thank you for applying. We have moved forward with other candidates.</div>`:''}
+    </div>`;
+  }).join('');
+}
+
+function showCPOffer(app){
+  if(!_cpUser){showCPAuth('login');return;}
+  const apps=DB.g('applicants')||[];
+  const myApp=app||(apps.find(a=>a.email===_cpUser.email&&a.offerSent));
+  if(!myApp){toast('No offer found for your account','e');return;}
+  document.getElementById('cp-auth-view').style.display='none';
+  document.getElementById('cp-jobs-view').style.display='none';
+  document.getElementById('cp-apply-view').style.display='none';
+  document.getElementById('cp-track-view').style.display='none';
+  document.getElementById('cp-offer-view').style.display='block';
+  const co=DB.g('company')||{};
+  document.getElementById('cp-offer-details').innerHTML=generateOfferLetterHTML(myApp,co)+
+    `<button class="btn b-ol btn-full" style="margin-top:10px" onclick="downloadOfferLetter('${myApp.name}','${myApp.position}')">${ic('download',14)} Download Letter</button>`;
+  document.getElementById('cp-offer-details').dataset.email=myApp.email;
+  document.getElementById('cp-offer-neg-wrap').style.display='none';
+  const alreadyResponded=myApp.offerStatus==='accepted'||myApp.offerStatus==='rejected';
+  document.getElementById('cp-offer-action-btns').style.display=alreadyResponded?'none':'flex';
+  document.getElementById('cp-offer-msg').innerHTML=alreadyResponded?`<div class="al ${myApp.offerStatus==='accepted'?'al-g':'al-r'}">You have already <strong>${myApp.offerStatus}</strong> this offer.</div>`:'';
+}
+
+async function respondCPOffer(decision){
+  if(!_cpUser){return;}
+  const email=_cpUser.email;
+  const apps=DB.g('applicants')||[];
+  const i=apps.findIndex(a=>a.email===email&&a.offerSent);
+  if(i>=0){apps[i].offerStatus=decision;DB.s('applicants',apps);
+    if(apps[i].id) apiFetch('PUT',`/data/applicants/${apps[i].id}`,{offerStatus:decision}).catch(()=>{});}
+  document.getElementById('cp-offer-action-btns').style.display='none';
+  document.getElementById('cp-offer-neg-wrap').style.display='none';
+  const msg=document.getElementById('cp-offer-msg');
+  if(decision==='accept'){
+    // Added 'true' here to silence the credential popup for the applicant
+    await createEmployeeFromApplicant(apps[i], true); 
+    msg.innerHTML=`<div class="al al-g">${ic('check-circle',14)} <strong>Offer Accepted! Welcome to the team.</strong> Your login credentials will be shared with you by HR.</div>`;
+  } else {
+    msg.innerHTML=`<div class="al al-r">You have declined this offer. Thank you for your time.</div>`;
+  }
+}
+
+function submitCPNegotiation(){
+  if(!_cpUser)return;
+  const email=_cpUser.email;
+  const rate=document.getElementById('cp-neg-rate').value;
+  const hours=document.getElementById('cp-neg-hours').value;
+  const benefits=Array.from(document.getElementById('cp-neg-benefits').selectedOptions).map(o=>o.value);
+  const note=document.getElementById('cp-neg-note').value;
+  const apps=DB.g('applicants')||[];
+  const i=apps.findIndex(a=>a.email===email&&a.offerSent);
+  if(i>=0){apps[i].offerStatus='negotiated';apps[i].negotiation={rate,hours,benefits,note};DB.s('applicants',apps);
+    if(apps[i].id) apiFetch('PUT',`/data/applicants/${apps[i].id}`,{offerStatus:'negotiated',negotiation:{rate,hours,benefits,note}}).catch(()=>{});}
+  document.getElementById('cp-offer-msg').innerHTML='<div class="al al-b">Counter-offer sent. The employer will review and respond shortly.</div>';
+  document.getElementById('cp-offer-neg-wrap').style.display='none';
+  document.getElementById('cp-offer-action-btns').style.display='none';
+  updNotif();
 }
 
 // ─── LEAVES ───
@@ -1510,7 +2432,7 @@ function pLeaves(el){
         ${leaves.map((l,i)=>`<tr>
           <td><strong>${l.empName}</strong></td>
           <td><span class="b bb">${l.type}</span></td>
-          <td>${l.from}</td><td>${l.to}</td><td>${l.days||'—'}</td>
+          <td>${l.fromDate}</td><td>${l.toDate}</td><td>${l.days||'—'}</td>
           <td style="max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${l.reason}</td>
           <td><span class="b ${l.status==='pending'?'ba':l.status==='approved'?'bg':'br'}">${l.status}</span></td>
           <td>${l.status==='pending'?`<button class="btn b-gr btn-sm" onclick="respondLeave(${i})">Respond</button>`:`${l.payStatus?`<span class="b ${l.payStatus==='paid'?'bg':'ba'}">${l.payStatus}</span>`:'—'}`}</td>
@@ -1524,15 +2446,18 @@ function respondLeave(i){
   const from=new Date(l.from),to=new Date(l.to);
   const days=Math.ceil((to-from)/(1000*3600*24))+1;
   openModal(`Leave Response — ${l.empName}`,`
-    <div class="al al-b">Request: <strong>${l.type}</strong> | ${l.from} to ${l.to} (${days} day${days>1?'s':''})</div>
+    <div class="al al-b">Request: <strong>${l.type}</strong> | ${l.fromDate} to ${l.toDate} (${days} day${days>1?'s':''})</div>
     <div class="f"><label>Decision</label><select id="lv-dec"><option value="approved">Approve</option><option value="rejected">Reject</option></select></div>
     <div class="f"><label>Pay Status</label><select id="lv-pay"><option value="paid">Paid Leave</option><option value="unpaid">Unpaid Leave</option><option value="half-pay">Half Pay</option></select></div>
     <div class="f"><label>Terms / Notes for Employee</label><textarea id="lv-terms" placeholder="e.g. Approved for 5 days paid leave. Please ensure handover is completed before departure…"></textarea></div>
     <div class="f"><label>Conditions (optional)</label><input type="text" id="lv-cond" placeholder="e.g. Subject to project handover completion"></div>
   `,[{l:'Send Response',c:'b-gr',fn:()=>{
     const dec=document.getElementById('lv-dec').value;
-    leaves[i]={...l,status:dec,payStatus:document.getElementById('lv-pay').value,terms:document.getElementById('lv-terms').value,conditions:document.getElementById('lv-cond').value,days,respondedDate:today()};
-    DB.s('leaves',leaves);closeModal();showPage('e_leaves');toast(`Leave ${dec}`,'s');updNotif();
+    const updated={...l,status:dec,payStatus:document.getElementById('lv-pay').value,terms:document.getElementById('lv-terms').value,conditions:document.getElementById('lv-cond').value,days,respondedDate:today()};
+    leaves[i]=updated;
+    DB.s('leaves',leaves);
+    if(updated.id) apiFetch('PUT',`/data/leaves/${updated.id}`,{status:dec,payStatus:updated.payStatus,terms:updated.terms,conditions:updated.conditions,days,respondedDate:updated.respondedDate}).catch(()=>{});
+    closeModal();showPage('e_leaves');toast(`Leave ${dec}`,'s');updNotif();
   }}]);
 }
 
@@ -1611,11 +2536,16 @@ function pComplaints(el){
     </div>
   </div>`}`;
 }
-function resolveComp(i){const c=DB.g('complaints')||[];c[i].resolved=true;DB.s('complaints',c);showPage('e_complaints');toast('Marked resolved','s');}
+function resolveComp(i){
+  const c=DB.g('complaints')||[];c[i].resolved=true;DB.s('complaints',c);
+  if(c[i].id) apiFetch('PUT',`/data/complaints/${c[i].id}`,{resolved:true}).catch(()=>{});
+  showPage('e_complaints');toast('Marked resolved','s');
+}
 
 // ─── SETTINGS ───
 function pSettings(el){
   const co=DB.g('company')||{};
+  const as=DB.g('att_settings')||{};
   el.innerHTML=`
   ${ph('Settings','System configuration and preferences.')}
   <div class="g2">
@@ -1648,39 +2578,118 @@ function pSettings(el){
     </div>
   </div>
   <div class="card mb">
+    <div class="ch"><span class="ct">${ic('map-pin',15)} Attendance Settings</span></div>
+    <div class="cb">
+      <div class="f"><label>Office Address (display only)</label><input type="text" id="att-addr" placeholder="e.g. 12 Independence Ave, Accra" value="${as.work_address||''}"></div>
+      <div class="fr">
+        <div class="f"><label>Latitude</label><input type="number" step="any" id="att-lat" placeholder="e.g. 5.6037" value="${as.work_lat||''}"></div>
+        <div class="f"><label>Longitude</label><input type="number" step="any" id="att-lng" placeholder="e.g. -0.1870" value="${as.work_lng||''}"></div>
+        <div class="f"><label>Allowed Radius (metres)</label><input type="number" id="att-rad" placeholder="e.g. 100" value="${as.work_radius||'100'}"></div>
+      </div>
+      <div class="fr">
+        <div class="f"><label>Shift Start Time</label><input type="time" id="att-start" value="${as.shift_start||'08:00'}"></div>
+        <div class="f"><label>Shift End Time</label><input type="time" id="att-end" value="${as.shift_end||'17:00'}"></div>
+      </div>
+      <button class="btn b-nv" style="margin-top:4px" onclick="getCurrentLocation()">${ic('map-pin',14)} Use My Current Location</button>
+      <button class="btn b-gr" style="margin-top:4px;margin-left:8px" onclick="saveAttSettings()">${ic('save',14)} Save Attendance Settings</button>
+      <div id="att-msg" style="margin-top:10px"></div>
+    </div>
+  </div>
+  <div class="card mb">
     <div class="ch"><span class="ct">${ic('alert-triangle',15)} Data Management</span></div>
     <div class="cb" style="display:flex;gap:10px;flex-wrap:wrap">
-      <button class="btn b-ol" onclick="if(confirm('Clear all applicants?')){DB.s('applicants',[]);DB.s('rec_stage','collecting');toast('Cleared','i');}">Clear Applicants</button>
-      <button class="btn b-ol" onclick="if(confirm('Clear all complaints?')){DB.s('complaints',[]);toast('Cleared','i');}">Clear Complaints</button>
-      <button class="btn b-ol" onclick="if(confirm('Clear attendance?')){DB.s('attendance',[]);toast('Cleared','i');}">Clear Attendance</button>
-      <button class="btn b-rd" onclick="if(confirm('RESET ALL DATA? This cannot be undone.')){localStorage.clear();location.reload();}">Reset All Data</button>
+      <button class="btn b-ol" onclick="clearTable('applicants')">Clear Applicants</button>
+      <button class="btn b-ol" onclick="clearTable('complaints')">Clear Complaints</button>
+      <button class="btn b-ol" onclick="clearTable('attendance')">Clear Attendance</button>
+      <button class="btn b-rd" onclick="if(confirm('RESET ALL DATA? This cannot be undone.')){['costs','revenue','inventory','tasks','attendance','leaves','advances','promos','complaints','applicants'].forEach(t=>apiFetch('POST','/data/'+t+'/bulk',{records:[]}).catch(()=>{}));localStorage.clear();location.reload();}">Reset All Data</button>
     </div>
   </div>`;
+}
+async function clearTable(table){
+  const labels={applicants:'all applicants',complaints:'all complaints',attendance:'attendance'};
+  if(!confirm(`Clear ${labels[table]||table}?`)) return;
+  try{
+    await apiFetch('POST',`/data/${table}/bulk`,{records:[]});
+    if(table==='applicants') DB.s('rec_stage','collecting');
+    DB.s(table,[]);
+    toast('Cleared','i');
+    showPage('e_settings');
+  }catch(e){
+    console.error('Remote clear failed:',e);
+    toast('Clear failed — database not updated','e');
+  }
+}
+function getCurrentLocation(){
+  const msg=document.getElementById('att-msg');
+  msg.innerHTML='<div class="al al-b">Getting your location…</div>';
+  if(!navigator.geolocation){
+    msg.innerHTML='<div class="al al-r">Geolocation is not supported by your browser.</div>';
+    return;
+  }
+  navigator.geolocation.getCurrentPosition(
+    pos=>{
+      document.getElementById('att-lat').value=pos.coords.latitude.toFixed(6);
+      document.getElementById('att-lng').value=pos.coords.longitude.toFixed(6);
+      msg.innerHTML=`<div class="al al-g">Location captured: ${pos.coords.latitude.toFixed(6)}, ${pos.coords.longitude.toFixed(6)}</div>`;
+    },
+    err=>{
+      msg.innerHTML=`<div class="al al-r">Could not get location: ${err.message}</div>`;
+    },
+    {enableHighAccuracy:true,timeout:10000}
+  );
+}
+
+async function saveAttSettings(){
+  const msg=document.getElementById('att-msg');
+  const lat=parseFloat(document.getElementById('att-lat').value)||0;
+  const lng=parseFloat(document.getElementById('att-lng').value)||0;
+  const rad=parseInt(document.getElementById('att-rad').value)||100;
+  const start=document.getElementById('att-start').value;
+  const end=document.getElementById('att-end').value;
+  const addr=document.getElementById('att-addr').value;
+  if(isNaN(lat)||isNaN(lng)){msg.innerHTML='<div class="al al-r">Please enter or capture a valid location.</div>';return;}
+  if(!start||!end){msg.innerHTML='<div class="al al-r">Please set shift start and end times.</div>';return;}
+  try{
+    await apiFetch('POST','/settings',{
+      work_lat:lat,
+      work_lng:lng,
+      work_radius:rad,
+      shift_start:start,
+      shift_end:end,
+      work_address:addr
+    });
+    const current=DB.g('att_settings')||{};
+    DB.s('att_settings',{...current,work_lat:String(lat),work_lng:String(lng),work_radius:String(rad),shift_start:start,shift_end:end,work_address:addr});
+    msg.innerHTML='<div class="al al-g">Attendance settings saved successfully.</div>';
+  }catch(e){
+    msg.innerHTML=`<div class="al al-r">Failed to save: ${e.message}</div>`;
+  }
 }
 function saveBizInfo(){
   const co=DB.g('company')||{};
   DB.s('company',{...co,name:document.getElementById('s-nm').value,email:document.getElementById('s-em').value,phone:document.getElementById('s-ph').value,address:document.getElementById('s-ad').value});
   toast('Business info saved','s');
 }
-function changeAdminPw(){
+async function changeAdminPw(){
   const cp=document.getElementById('s-cp').value;
   const np=document.getElementById('s-np').value;
   const cnp=document.getElementById('s-cnp').value;
   const msg=document.getElementById('s-pw-msg');
-  if(cp!=='admin123'){msg.innerHTML=`<div class="al al-r">Current password incorrect.</div>`;return;}
-  if(!np){msg.innerHTML=`<div class="al al-r">Enter a new password.</div>`;return;}
+  if(!cp||!np){msg.innerHTML=`<div class="al al-r">Fill all fields.</div>`;return;}
   if(np!==cnp){msg.innerHTML=`<div class="al al-r">Passwords do not match.</div>`;return;}
-  msg.innerHTML=`<div class="al al-g">Password updated successfully.</div>`;
+  try{
+    await apiFetch('POST','/change-password',{currentPassword:cp,newPassword:np});
+    msg.innerHTML=`<div class="al al-g">Password updated successfully.</div>`;
+  }catch(e){msg.innerHTML=`<div class="al al-r">${e.message}</div>`;}
 }
 function showCredentials(){
   const emps=DB.g('employees')||[];
-  const pwMap={'EMP001':'emp123','EMP002':'emp123','EMP003':'emp456','EMP004':'emp456','EMP005':'emp789','EMP006':'emp789','EMP007':'emp321','EMP008':'emp321'};
   document.getElementById('creds-table').innerHTML=`
-  <div class="tw" style="margin-top:14px"><table><thead><tr><th>Employee ID</th><th>Name</th><th>Password</th></tr></thead><tbody>
-    ${emps.map(e=>`<tr><td><span class="b bn">${e.id}</span></td><td>${e.name}</td><td><span style="font-family:'DM Mono',monospace;font-size:12px">${pwMap[e.id]||'emp123'}</span></td></tr>`).join('')}
-  </tbody></table></div>`;
+  <div class="tw" style="margin-top:14px"><table><thead><tr><th>Employee ID</th><th>Name</th><th>Email</th></tr></thead><tbody>
+    ${emps.map(e=>`<tr><td><span class="b bn">${e.id}</span></td><td>${e.name}</td><td>${e.email || '—'}</td></tr>`).join('')}
+  </tbody></table></div>
+  <div class="al al-b" style="margin-top:10px">Passwords are securely hidden. If an employee forgets their password, reset it in the database.</div>`;
 }
-
 // ═══════════════════════════════════════════════
 // ══════════ EMPLOYEE PAGES ════════════════════
 // ═══════════════════════════════════════════════
@@ -1710,7 +2719,6 @@ function pEmpDash(el){
         <button class="btn b-gr btn-full" onclick="showPage('emp_advance')">${ic('credit-card',15)} Request Advance</button>
         <button class="btn b-am btn-full" onclick="showPage('emp_promo')">${ic('arrow-up',15)} Request Promotion</button>
         <button class="btn b-bl btn-full" onclick="showPage('emp_leave')">${ic('calendar',15)} Request Leave</button>
-        <button class="btn b-ol btn-full" onclick="showPage('emp_inventory')">${ic('package',15)} Submit Inventory</button>
         <button class="btn b-ol btn-full" onclick="showPage('emp_complaints')">${ic('message-square',15)} Submit Complaint</button>
       </div>
     </div>
@@ -1802,13 +2810,18 @@ function pAdvance(el){
 function submitAdvance(){
   const amt=parseFloat(document.getElementById('adv-amt').value);
   const rsn=document.getElementById('adv-rsn').value;
-  if(!amt||!rsn){document.getElementById('adv-msg').innerHTML='<div class="al al-r">Please fill all fields.</div>';return;}
-  DB.push('advances',{empId:CU.id,empName:CU.name,amount:amt,reason:rsn,repay:document.getElementById('adv-rep').value,date:today(),status:'pending'});
-  document.getElementById('adv-msg').innerHTML='<div class="al al-g">Request submitted successfully. Awaiting employer approval.</div>';
-  document.getElementById('adv-amt').value=''; document.getElementById('adv-rsn').value='';
+  const msg=document.getElementById('adv-msg');
+  if(!amt||!rsn){msg.innerHTML='<div class="al al-r">Please fill all fields.</div>';return;}
+  const rec={empId:CU.id,empName:CU.name,amount:amt,reason:rsn,repay:document.getElementById('adv-rep').value,date:today(),status:'pending'};
+  DB.push('advances',rec);
+  apiFetch('POST','/data/advances',rec)
+    .then(r=>{if(r.record){const adv=DB.g('advances')||[];const i=adv.findIndex(a=>a.empId===rec.empId&&a.date===rec.date);if(i>=0){adv[i].id=r.record.id;DB.s('advances',adv);}}})
+    .catch(()=>{});
+  msg.innerHTML='<div class="al al-g">Request submitted successfully. Awaiting employer approval.</div>';
+  document.getElementById('adv-amt').value='';
+  document.getElementById('adv-rsn').value='';
   updNotif();
 }
-
 // ─── PROMOTION ───
 function pPromo(el){
   const pr=(DB.g('promos')||[]).filter(p=>p.empId===CU.id);
@@ -1845,12 +2858,96 @@ function submitPromo(){
   const just=document.getElementById('pr-just').value;
   const empData=(DB.g('employees')||[]).find(e=>e.id===CU.id)||CU;
   if(!role||!just){document.getElementById('pr-msg').innerHTML='<div class="al al-r">Please fill all required fields.</div>';return;}
-  DB.push('promos',{empId:CU.id,empName:CU.name,currentRole:empData.roleTitle||'—',desiredRole:role,years:document.getElementById('pr-yrs').value,justification:just,date:today(),status:'pending'});
+  const rec={empId:CU.id,empName:CU.name,currentRole:empData.roleTitle||'—',desiredRole:role,years:document.getElementById('pr-yrs').value,justification:just,date:today(),status:'pending'};
+  DB.push('promos',rec);
+  apiFetch('POST','/data/promos',rec)
+    .then(r=>{if(r.record){const promos=DB.g('promos')||[];const i=promos.findIndex(p=>p.empId===rec.empId&&p.date===rec.date);if(i>=0){promos[i].id=r.record.id;DB.s('promos',promos);}}})
+    .catch(()=>{});
   document.getElementById('pr-msg').innerHTML='<div class="al al-g">Promotion request submitted. Awaiting management review.</div>';
   updNotif();
 }
 
 // ─── EMPLOYEE ATTENDANCE ───
+
+
+function pMyTasks(el){
+  const allTasks=DB.g('tasks')||[];
+  const tasks=allTasks.filter(t=>t.empId===CU.id);
+  const pending=tasks.filter(t=>t.status==='pending');
+  const done=tasks.filter(t=>['done','awaiting_verification','verified','rejected'].includes(t.status));
+  el.innerHTML=`
+  ${ph('My Tasks','Tasks assigned to you by your employer.')}
+  <div class="card mb">
+    <div class="ch"><span class="ct">${ic('clock',15)} Pending Tasks (${pending.length})</span></div>
+    <div class="cb">
+      ${pending.length===0?'<p style="color:var(--text-muted);font-size:13px">No pending tasks.</p>':pending.map(t=>{
+        const idx=allTasks.findIndex(x=>x===t);
+        return `<div class="card mb" style="border-left:3px solid var(--amber);padding:14px">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start">
+            <div>
+              <div style="font-weight:700;font-size:14px">${t.title}</div>
+              ${t.desc?`<div style="font-size:12px;color:var(--text-muted);margin-top:2px">${t.desc}</div>`:''}
+              <div style="font-size:11.5px;color:var(--text-muted);margin-top:4px">Due: ${t.dueDate||'—'} &nbsp;|&nbsp; Assigned: ${t.assignedDate||'—'}</div>
+            </div>
+            <button class="btn b-gr btn-sm" onclick="completeTask(${idx})">Mark Complete</button>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>
+  </div>
+  <div class="card mb">
+    <div class="ch"><span class="ct">${ic('check-circle',15)} Completed Tasks (${done.length})</span></div>
+    <div class="cb">
+      ${(()=>{
+        const awaiting=tasks.filter(t=>t.status==='awaiting_verification');
+        const verified=tasks.filter(t=>t.status==='verified');
+        const rejected=tasks.filter(t=>t.status==='rejected');
+        return `
+          ${awaiting.length>0?`<p style="font-weight:600;font-size:13px;margin-bottom:6px">${ic('clock',13)} Awaiting Verification</p>`:''}
+          ${awaiting.map(t=>`
+            <div class="card mb" style="border-left:3px solid var(--amber);padding:14px;opacity:0.9">
+              <div style="font-weight:700;font-size:14px">${t.title}</div>
+              ${t.desc?`<div style="font-size:12px;color:var(--text-muted);margin-top:2px">${t.desc}</div>`:''}
+              <div style="font-size:11.5px;color:var(--text-muted);margin-top:4px">Submitted: ${t.completedDate||'—'} &nbsp;|&nbsp; Awaiting employer confirmation</div>
+            </div>`).join('')}
+          ${verified.length>0?`<p style="font-weight:600;font-size:13px;margin:10px 0 6px">${ic('check-circle',13)} Verified & Completed</p>`:''}
+          ${verified.map(t=>`
+            <div class="card mb" style="border-left:3px solid var(--accent);padding:14px;opacity:0.85">
+              <div style="font-weight:700;font-size:14px">${t.title}</div>
+              ${t.desc?`<div style="font-size:12px;color:var(--text-muted);margin-top:2px">${t.desc}</div>`:''}
+              <div style="font-size:11.5px;color:var(--text-muted);margin-top:4px">Verified: ${t.verifiedDate||t.completedDate||'—'} &nbsp;|&nbsp; <span style="color:var(--accent)">+${TASK_SCORES[t.difficulty||'easy']}pts</span></div>
+            </div>`).join('')}
+          ${rejected.length>0?`<p style="font-weight:600;font-size:13px;margin:10px 0 6px">${ic('x-circle',13)} Rejected</p>`:''}
+          ${rejected.map(t=>`
+            <div class="card mb" style="border-left:3px solid var(--red);padding:14px;opacity:0.85">
+              <div style="font-weight:700;font-size:14px">${t.title}</div>
+              ${t.desc?`<div style="font-size:12px;color:var(--text-muted);margin-top:2px">${t.desc}</div>`:''}
+              <div style="font-size:11.5px;color:var(--red);margin-top:4px">Rejected by employer &nbsp;|&nbsp; -${TASK_SCORES[t.difficulty||'easy']}pts</div>
+            </div>`).join('')}
+          ${(awaiting.length+verified.length+rejected.length)===0?'<p style="color:var(--text-muted);font-size:13px">No completed tasks yet.</p>':''}`;
+      })()}
+    </div>
+  </div>`;
+}
+
+async function completeTask(i){
+  const t=DB.g('tasks')||[];
+  if(!t[i]){toast('Task not found','e');return;}
+  t[i].status='awaiting_verification';
+  t[i].completedDate=today();
+  DB.s('tasks',t);
+  showPage('emp_tasks');
+  toast('Task submitted — awaiting employer verification','s');
+  updNotif();
+  if(t[i].id){
+    try{
+      await apiFetch('PUT',`/data/tasks/${t[i].id}`,{status:'awaiting_verification',completedDate:today()});
+    }catch(e){
+      toast('Sync failed — will update on next login','w');
+    }
+  }
+}
+
 function pMyAtt(el){
   const att=(DB.g('attendance')||[]).filter(a=>a.empId===CU.id);
   const todayRec=att.find(a=>a.date===today());
@@ -1919,37 +3016,87 @@ function clockIn(){
   const msg=document.getElementById('att-msg');
   msg.innerHTML=`<div class="al al-b"><span class="ldr"></span> Verifying your location…</div>`;
   if(!navigator.geolocation){
-    // No geolocation — allow with warning (demo mode)
-    completeClock(true, 'Location unavailable (demo mode — clocking in anyway)');
+    msg.innerHTML='<div class="al al-r">Geolocation is not supported by your browser.</div>';
     return;
   }
-  navigator.geolocation.getCurrentPosition(pos=>{
-    const wl=DB.g('work_location')||{lat:5.6037,lng:-0.1870,radius:500};
-    const dist=getDistance(pos.coords.latitude,pos.coords.longitude,wl.lat,wl.lng);
-    if(dist<=wl.radius){
-      completeClock(true,null);
-    } else {
-      // Demo override — in a real system this would be blocked
-      completeClock(true,`Note: ${Math.round(dist)}m from office (demo: allowed anyway).`);
-    }
-  },err=>{
-    completeClock(true,'Location access denied — clocking in (demo mode).');
-  },{timeout:8000,maximumAge:0,enableHighAccuracy:true});
+  navigator.geolocation.getCurrentPosition(
+    pos=>completeClock(pos),
+    err=>{
+      msg.innerHTML=`<div class="al al-r">Could not get your location: ${err.message}. Please enable location access and try again.</div>`;
+    },
+    {timeout:10000,maximumAge:0,enableHighAccuracy:true}
+  );
 }
 
-function completeClock(allowed, note){
-  if(!allowed){document.getElementById('att-msg').innerHTML=`<div class="al al-r">You are too far from the work location.</div>`;return;}
+function completeClock(pos){
+  const as=DB.g('att_settings')||{};
+  const workLat=parseFloat(as.work_lat||'0');
+  const workLng=parseFloat(as.work_lng||'0');
+  const radius=parseFloat(as.work_radius||'100');
+  const shiftStart=as.shift_start||'08:00';
+  const workAddress=as.work_address||'Office';
+
+  if(!workLat||!workLng){
+    toast('Attendance not configured yet. Contact your employer.','e');
+    return;
+  }
+
+  // Calculate distance from office using Haversine formula
+  const R=6371000;
+  const empLat=pos.coords.latitude;
+  const empLng=pos.coords.longitude;
+  const lat1=empLat*Math.PI/180;
+  const lat2=workLat*Math.PI/180;
+  const dLat=(workLat-empLat)*Math.PI/180;
+  const dLng=(workLng-empLng)*Math.PI/180;
+  const a=Math.sin(dLat/2)*Math.sin(dLat/2)+Math.cos(lat1)*Math.cos(lat2)*Math.sin(dLng/2)*Math.sin(dLng/2);
+  const dist=R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+
+  if(dist>radius){
+    const msg=document.getElementById('att-msg');
+    msg.innerHTML=`<div class="al al-r">You are ${Math.round(dist)}m away from ${workAddress}. You must be within ${radius}m to clock in.</div>`;
+    return;
+  }
+
   const now=new Date();
-  const hour=now.getHours();
-  const status=hour<8?'present':hour<9?'late':'late';
-  const att=DB.g('attendance')||[];
-  att.push({empId:CU.id,empName:CU.name,date:today(),clockIn:now.toISOString(),clockOut:null,status});
-  DB.s('attendance',att);
-  const noteHtml=note?`<div class="al al-a" style="margin-top:8px">${note}</div>`:'';
-  document.getElementById('att-msg').innerHTML=`<div class="al al-g">Clocked in at ${now.toLocaleTimeString('en-GH',{hour:'2-digit',minute:'2-digit'})}. Status: <strong>${status}</strong></div>${noteHtml}`;
-  setTimeout(()=>showPage('emp_attendance'),1200);
+  const timeStr=now.toISOString();
+  const dateStr=now.toISOString().split('T')[0];
+  const [sh,sm]=shiftStart.split(':').map(Number);
+  const [eh,em]=(as.shift_end||'17:00').split(':').map(Number);
+  const shiftMinutes=sh*60+sm;
+  const shiftEndMinutes=eh*60+em;
+  const earlyWindowMinutes=shiftMinutes-60; // allow clock-in up to 1 hour early
+  const nowMinutes=now.getHours()*60+now.getMinutes();
+
+// Block clock-in more than 1 hour before shift
+if(nowMinutes<earlyWindowMinutes){
+  const msg=document.getElementById('att-msg');
+  msg.innerHTML=`<div class="al al-r">Too early to clock in. Your shift starts at ${as.shift_start||'08:00'}. You can clock in from ${String(Math.floor(earlyWindowMinutes/60)).padStart(2,'0')}:${String(earlyWindowMinutes%60).padStart(2,'0')}.</div>`;
+  return;
 }
 
+// Block clock-in after shift end
+if(nowMinutes>shiftEndMinutes){
+  const msg=document.getElementById('att-msg');
+  msg.innerHTML=`<div class="al al-r">Shift has ended. Clock-in is not allowed after ${as.shift_end||'17:00'}.</div>`;
+  return;
+}
+
+const status=nowMinutes<=shiftMinutes?'present':'late';
+
+  const att=DB.g('attendance')||[];
+  const newRec={empId:CU.id,empName:CU.name,date:dateStr,status,clockIn:timeStr,clockOut:null};
+  att.push(newRec);
+  DB.s('attendance',att);
+  DB.s('clocked_in','1');
+
+  apiFetch('POST','/data/attendance',newRec)
+    .then(r=>{if(r.record){newRec.id=r.record.id;DB.s('attendance',att);}})
+    .catch(()=>{});
+
+  showPage('emp_attendance');
+  toast(`Clocked in — ${status}`,'s');
+}
 function clockOut(){
   const att=DB.g('attendance')||[];
   const i=att.slice().reverse().findIndex(a=>a.empId===CU.id&&a.date===today()&&!a.clockOut);
@@ -1957,6 +3104,7 @@ function clockOut(){
   if(ri<0){toast('No active clock-in found','e');return;}
   att[ri].clockOut=new Date().toISOString();
   DB.s('attendance',att);
+  if(att[ri].id) apiFetch('PUT',`/data/attendance/${att[ri].id}`,{clockOut:att[ri].clockOut}).catch(()=>{});
   toast('Clocked out successfully','s');
   showPage('emp_attendance');
 }
@@ -1965,62 +3113,6 @@ function getDistance(la1,lo1,la2,lo2){
   const R=6371000,dL=(la2-la1)*Math.PI/180,dl=(lo2-lo1)*Math.PI/180;
   const a=Math.sin(dL/2)**2+Math.cos(la1*Math.PI/180)*Math.cos(la2*Math.PI/180)*Math.sin(dl/2)**2;
   return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
-}
-
-// ─── EMPLOYEE INVENTORY ───
-function pMyInventory(el){
-  const inv=DB.g('inventory')||[];
-  el.innerHTML=`
-  ${ph('Submit Inventory','Update current stock levels or add new items.')}
-  <div class="g2">
-    <div class="card mb">
-      <div class="ch"><span class="ct">${ic('edit-2',15)} Update Inventory</span></div>
-      <div class="cb">
-        <div class="f"><label>Select Item</label>
-          <select id="si-sel" onchange="toggleNewInv(this.value)">
-            <option value="">— Select existing item —</option>
-            ${inv.map((it,i)=>`<option value="${i}">${it.item} (Current: ${it.qty} ${it.unit})</option>`).join('')}
-            <option value="new">+ Add new item</option>
-          </select>
-        </div>
-        <div id="si-new-fields" style="display:none">
-          <div class="fr"><div class="f"><label>Item Name</label><input type="text" id="si-nm" placeholder="Item name"></div><div class="f"><label>Unit</label><input type="text" id="si-un" placeholder="e.g. Pcs"></div></div>
-          <div class="fr"><div class="f"><label>Min Level</label><input type="number" id="si-mn" placeholder="0"></div><div class="f"><label>Rec. Order Qty</label><input type="number" id="si-rc" placeholder="0"></div></div>
-          <div class="f"><label>Location</label><input type="text" id="si-lc" placeholder="e.g. Store A"></div>
-        </div>
-        <div class="f"><label>Actual Quantity (Physical Count)</label><input type="number" id="si-qty" placeholder="Enter actual count"></div>
-        <div class="f"><label>Notes (optional)</label><input type="text" id="si-nt" placeholder="Any notes…"></div>
-        <button class="btn b-nv btn-full" onclick="submitInvUpdate()">Submit Update</button>
-        <div id="si-msg" style="margin-top:10px"></div>
-      </div>
-    </div>
-    <div class="card mb">
-      <div class="ch"><span class="ct">${ic('list',15)} Current Inventory</span></div>
-      <div class="cb">
-        <div class="tw"><table><thead><tr><th>Item</th><th>Qty</th><th>Unit</th><th>Status</th></tr></thead><tbody>
-          ${inv.map(it=>`<tr><td><strong>${it.item}</strong></td><td style="color:${it.qty<=it.min?'var(--red)':'inherit'}">${it.qty}</td><td>${it.unit}</td><td><span class="b ${it.qty<=it.min?'br':'bg'}">${it.qty<=it.min?'Low':'Good'}</span></td></tr>`).join('')}
-        </tbody></table></div>
-      </div>
-    </div>
-  </div>`;
-}
-function toggleNewInv(v){document.getElementById('si-new-fields').style.display=v==='new'?'block':'none';}
-function submitInvUpdate(){
-  const sel=document.getElementById('si-sel').value;
-  const qty=parseInt(document.getElementById('si-qty').value);
-  const msg=document.getElementById('si-msg');
-  if(!sel||isNaN(qty)){msg.innerHTML='<div class="al al-r">Please select an item and enter a quantity.</div>';return;}
-  const inv=DB.g('inventory')||[];
-  if(sel==='new'){
-    const nm=document.getElementById('si-nm').value;
-    if(!nm){msg.innerHTML='<div class="al al-r">Please enter item name.</div>';return;}
-    inv.push({id:Date.now(),item:nm,qty,unit:document.getElementById('si-un').value||'Pcs',min:parseInt(document.getElementById('si-mn').value)||0,rec:parseInt(document.getElementById('si-rc').value)||0,loc:document.getElementById('si-lc').value,updatedBy:CU.id,date:today()});
-  } else {
-    const i=parseInt(sel);
-    inv[i]={...inv[i],qty,updatedBy:CU.id,date:today()};
-  }
-  DB.s('inventory',inv);
-  msg.innerHTML='<div class="al al-g">Inventory updated successfully.</div>';
 }
 
 // ─── EMPLOYEE LEAVE ───
@@ -2054,7 +3146,7 @@ function pMyLeave(el){
               <strong style="font-size:13px">${l.type}</strong>
               <span class="b ${l.status==='pending'?'ba':l.status==='approved'?'bg':'br'}">${l.status}</span>
             </div>
-            <div style="font-size:11.5px;color:var(--text-muted)">${l.from} → ${l.to}${l.days?' ('+l.days+' day'+ (l.days>1?'s':'') + ')':''}</div>
+            <div style="font-size:11.5px;color:var(--text-muted)">${l.fromDate} → ${l.toDate}${l.days?' ('+l.days+' day'+ (l.days>1?'s':'') + ')':''}</div>
             ${l.status==='approved'?`
               <div style="margin-top:8px;padding:8px;background:var(--card);border-radius:6px;border:1px solid var(--border)">
                 <div style="font-size:11.5px;font-weight:700;color:var(--navy);margin-bottom:4px">Employer Response:</div>
@@ -2065,8 +3157,8 @@ function pMyLeave(el){
                 </div>
                 ${!l.empAccepted?`
                   <div style="display:flex;gap:8px;margin-top:10px">
-                    <button class="btn b-gr btn-sm" onclick="acceptLeaveTerms('${l.from}')">Accept Terms</button>
-                    <button class="btn b-rd btn-sm" onclick="declineLeaveTerms('${l.from}')">Decline</button>
+                    <button class="btn b-gr btn-sm" onclick="acceptLeaveTerms('${l.fromDate}')">Accept Terms</button>
+                    <button class="btn b-rd btn-sm" onclick="declineLeaveTerms('${l.fromDate}')">Decline</button>
                   </div>`:
                   `<div class="al al-g" style="margin-top:8px;margin-bottom:0">You accepted these terms on ${l.acceptedDate||l.respondedDate}.</div>`}
               </div>`:''}
@@ -2083,16 +3175,20 @@ function submitLeave(){
   if(!from||!to||!rsn){msg.innerHTML='<div class="al al-r">Please fill all fields.</div>';return;}
   const days=Math.ceil((new Date(to)-new Date(from))/(1000*3600*24))+1;
   if(days<1){msg.innerHTML='<div class="al al-r">End date must be after start date.</div>';return;}
-  DB.push('leaves',{empId:CU.id,empName:CU.name,type:document.getElementById('lv-type').value,from,to,days,reason:rsn,date:today(),status:'pending'});
+  const rec={empId:CU.id,empName:CU.name,type:document.getElementById('lv-type').value,fromDate:from,toDate:to,days,reason:rsn,date:today(),status:'pending'};
+  DB.push('leaves',rec);
+  apiFetch('POST','/data/leaves',rec)
+    .then(r=>{if(r.record){const leaves=DB.g('leaves')||[];const i=leaves.findIndex(l=>l.empId===rec.empId&&l.fromDate===rec.fromDate);if(i>=0){leaves[i].id=r.record.id;DB.s('leaves',leaves);}}})
+    .catch(()=>{});
   msg.innerHTML='<div class="al al-g">Leave request submitted successfully. Awaiting employer response.</div>';
   updNotif();
 }
 function acceptLeaveTerms(fromDate){
-  DB.upd('leaves',l=>l.empId===CU.id&&l.from===fromDate,{empAccepted:true,acceptedDate:today()});
+  DB.upd('leaves',l=>l.empId===CU.id&&l.fromDate===fromDate,{empAccepted:true,acceptedDate:today()});
   showPage('emp_leave'); toast('Leave terms accepted','s');
 }
 function declineLeaveTerms(fromDate){
-  DB.upd('leaves',l=>l.empId===CU.id&&l.from===fromDate,{status:'declined',empAccepted:false});
+  DB.upd('leaves',l=>l.empId===CU.id&&l.fromDate===fromDate,{status:'declined',empAccepted:false});
   showPage('emp_leave'); toast('Leave terms declined','i');
 }
 
@@ -2139,7 +3235,11 @@ function submitComplaint(){
   const anon=document.getElementById('cm-anon').value==='yes';
   const res=document.getElementById('cm-res');
   if(!subj||!msg){res.innerHTML='<div class="al al-r">Please fill all fields.</div>';return;}
-  DB.push('complaints',{empId:CU.id,empName:anon?'Anonymous':CU.name,type:document.getElementById('cm-type').value,subject:subj,message:msg,date:today(),resolved:false});
+  const rec={empId:CU.id,empName:anon?'Anonymous':CU.name,type:document.getElementById('cm-type').value,subject:subj,message:msg,date:today(),resolved:false};
+  DB.push('complaints',rec);
+  apiFetch('POST','/data/complaints',rec)
+    .then(r=>{if(r.record){const complaints=DB.g('complaints')||[];const i=complaints.findIndex(c=>c.empId===rec.empId&&c.date===rec.date);if(i>=0){complaints[i].id=r.record.id;DB.s('complaints',complaints);}}})
+    .catch(()=>{});
   res.innerHTML='<div class="al al-g">Submitted successfully. Management will review your submission.</div>';
   document.getElementById('cm-subj').value=''; document.getElementById('cm-msg').value='';
 }
@@ -2196,38 +3296,62 @@ function pProfile(el){
     </div>
   </div>`;
 }
-function changeEmpPw(){
+async function changeEmpPw(){
   const msg=document.getElementById('pp-msg');
   const cp=document.getElementById('pp-cp').value;
   const np=document.getElementById('pp-np').value;
-  const pwMap={'EMP001':'emp123','EMP002':'emp123','EMP003':'emp456','EMP004':'emp456','EMP005':'emp789','EMP006':'emp789','EMP007':'emp321','EMP008':'emp321'};
-  if(cp!==pwMap[CU.id]&&cp!=='emp123'){msg.innerHTML='<div class="al al-r">Current password is incorrect.</div>';return;}
-  if(!np){msg.innerHTML='<div class="al al-r">Enter a new password.</div>';return;}
-  msg.innerHTML='<div class="al al-g">Password updated successfully.</div>';
+  if(!cp||!np){msg.innerHTML='<div class="al al-r">Please fill all fields.</div>';return;}
+  try{
+    await apiFetch('POST','/change-password',{currentPassword:cp,newPassword:np});
+    msg.innerHTML='<div class="al al-g">Password updated successfully.</div>';
+    document.getElementById('pp-cp').value='';
+    document.getElementById('pp-np').value='';
+  }catch(e){msg.innerHTML=`<div class="al al-r">${e.message}</div>`;}
 }
-
+  
 // ═══════════════════════════════════════════════
 // ══════════ APPLICANT PORTAL LOGIC ════════════
 // ═══════════════════════════════════════════════
-function submitApplication(){
-  const nm=document.getElementById('ap-name').value;
-  const em=document.getElementById('ap-email').value;
-  const pos=document.getElementById('ap-pos').value;
-  const edu=document.getElementById('ap-edu');
-  const exp=document.getElementById('ap-exp');
-  const msg=document.getElementById('ap-msg');
-  if(!nm||!em||!pos||!edu.value||!exp.value){msg.innerHTML='<div class="al al-r">Please fill all required fields.</div>';return;}
-  const apps=DB.g('applicants')||[];
-  if(apps.find(a=>a.email===em)){msg.innerHTML='<div class="al al-a">This email has already been used to apply.</div>';return;}
-  const newApp={name:nm,email:em,phone:document.getElementById('ap-phone').value,position:pos,education:edu.options[edu.selectedIndex].text,eduScore:parseInt(edu.value)||40,experience:parseInt(exp.value)||0,expScore:Math.min(22,parseInt(exp.value)||0),employers:document.getElementById('ap-emp').value,skills:document.getElementById('ap-skills').value,cover:document.getElementById('ap-cover').value,appliedDate:today(),testInvited:DB.g('rec_stage')==='testing'||false};
-  apps.push(newApp); DB.s('applicants',apps);
-  const stage=DB.g('rec_stage')||'collecting';
-  if(stage==='testing'&&newApp.testInvited){
-    msg.innerHTML=''; loadAptTest(em);
-  } else {
-    document.getElementById('ap-form-wrap').style.display='none';
-    document.getElementById('ap-done-wrap').style.display='block';
-    if(window._portalReturn) setTimeout(backFromPortal,3000);
+async function submitApplication(){
+  const pos = document.getElementById('ap-pos').value;
+  const edu = document.getElementById('ap-edu').value;
+  const exp = document.getElementById('ap-exp').value;
+  const ph  = document.getElementById('ap-phone').value;
+  const msg = document.getElementById('ap-msg');
+
+  if(!edu || !exp || !ph){ msg.innerHTML='<div class="al al-r">Please fill all fields.</div>'; return; }
+
+  msg.innerHTML = '<div class="al al-b">Submitting application...</div>';
+
+  const updateData = {
+    phone: ph,
+    position: pos,
+    education: edu,
+    experience: parseFloat(exp) || 0,
+    appliedDate: new Date().toISOString().split('T')[0],
+    // Initializing tracking fields
+    offerStatus: null,
+    invited: false,
+    offerSent: false,
+    testInvited: false
+  };
+
+  try {
+    // _cpUser.id is the applicant's ID from signup/login
+    const r = await apiFetch('PUT', `/data/applicants/${_cpUser.id}`, updateData);
+    
+    if(r.record){
+      // Update local state
+      _cpUser = r.record;
+      localStorage.setItem('cp_user', JSON.stringify(_cpUser));
+      
+      msg.innerHTML = '<div class="al al-g">Application submitted successfully! Redirecting...</div>';
+      setTimeout(() => {
+        showJobsList(); // Go back to jobs
+      }, 2000);
+    }
+  } catch(e) {
+    msg.innerHTML = `<div class="al al-r">Submission Error: ${e.message}</div>`;
   }
 }
 function loadAptTest(email){
@@ -2258,11 +3382,20 @@ function submitAptTest(){
   const email=document.getElementById('ap-test-wrap').dataset.email;
   const apps=DB.g('applicants')||[];
   const i=apps.findIndex(a=>a.email===email);
-  if(i>=0){apps[i].testScore=correct;DB.s('applicants',apps);}
+  if(i>=0){
+    apps[i].testScore=correct;
+    DB.s('applicants',apps);
+    
+    // --- AUTOMATIC PROFILE GENERATION ---
+    // If they score perfectly (or you can change the math to be correct >= passing_score)
+    if (correct === qs.length && qs.length > 0) {
+      createEmployeeFromApplicant(apps[i], true); // TRUE = Silent, candidate doesn't see it
+    }
+  }
+  
   document.getElementById('ap-test-msg').innerHTML=`<div class="al al-g">Test submitted! You scored ${correct}/${qs.length}. We will contact you with next steps.</div>`;
   setTimeout(()=>{document.getElementById('ap-test-wrap').style.display='none';document.getElementById('ap-done-wrap').style.display='block';if(window._portalReturn)setTimeout(backFromPortal,2500);},1500);
 }
-
 // ═══════════════════════════════════════════════
 // ══════════ OFFER PORTAL LOGIC ════════════════
 // ═══════════════════════════════════════════════
@@ -2281,26 +3414,56 @@ function generateOfferLetterHTML(app,co){
   const rate=co.defaultRate||20;
   const schedule=co.workSchedule||'Monday – Friday, 8:00 AM – 5:00 PM';
   const probation=co.probation||'3 months';
+  const expiryDays=co.offerExpiry||7;
+  
+  const expDate = new Date();
+  expDate.setDate(expDate.getDate() + expiryDays);
+  const formattedExp = expDate.toLocaleDateString('en-GH', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
+  const introText = co.offerIntro 
+    ? co.offerIntro.replace(/\n/g, '<br>') 
+    : `We are pleased to offer you the position of <strong>${app.position}</strong> at <strong>${co.name||'our company'}</strong>. After a thorough review of your application and performance in our aptitude test, we believe you are an excellent fit for our team.`;
+
+  // Build the Header
+  let headerBlock = '';
+  if (co.letterhead) {
+    headerBlock = `<img src="${co.letterhead}" style="width:100%; max-height:130px; object-fit:cover; border-radius:8px 8px 0 0; margin-bottom:14px; display:block">`;
+  } else {
+    headerBlock = `
+      ${co.logo?`<img src="${co.logo}" style="height:50px;margin-bottom:14px;display:block">`:''}
+      <div style="font-size:20px;font-weight:900;color:var(--navy);margin-bottom:2px">${co.name||'Company Name'}</div>
+      ${co.tagline ? `<div style="font-size:12px; font-style:italic; color:var(--text-muted); margin-bottom:8px">${co.tagline}</div>` : ''}
+      <div style="font-size:11.5px;color:var(--text-muted);margin-bottom:4px">${co.address||''} | ${co.phone||''} | ${co.email||''}</div>
+      ${co.regNumber ? `<div style="font-size:11px;color:var(--text-muted);margin-bottom:18px; font-weight:600;">Reg/TIN: ${co.regNumber}</div>` : '<div style="margin-bottom:18px"></div>'}
+    `;
+  }
+
   return`
   <div style="border:2px solid var(--border);border-radius:10px;padding:24px;background:var(--bg)">
-    ${co.logo?`<img src="${co.logo}" style="height:50px;margin-bottom:14px;display:block">`:''}
-    <div style="font-size:18px;font-weight:900;color:var(--navy);margin-bottom:2px">${co.name||'Company Name'}</div>
-    <div style="font-size:11.5px;color:var(--text-muted);margin-bottom:18px">${co.address||''} | ${co.phone||''} | ${co.email||''}</div>
+    ${headerBlock}
     <hr style="border:none;border-top:1px solid var(--border);margin-bottom:14px">
     <div style="font-size:13.5px;font-weight:800;margin-bottom:12px">OFFER OF EMPLOYMENT</div>
     <p style="font-size:13px;margin-bottom:10px">Dear <strong>${app.name}</strong>,</p>
-    <p style="font-size:13px;margin-bottom:10px">We are pleased to offer you the position of <strong>${app.position}</strong> at <strong>${co.name||'our company'}</strong>. After a thorough review of your application and performance in our aptitude test, we believe you are an excellent fit for our team.</p>
+    <p style="font-size:13px;margin-bottom:10px;line-height:1.5">${introText}</p>
+    
     <div style="background:var(--card);border-radius:8px;padding:14px;margin:14px 0">
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
         <div><div style="font-size:10.5px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.6px">Position</div><div style="font-size:13px;font-weight:700">${app.position}</div></div>
         <div><div style="font-size:10.5px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.6px">Hourly Rate</div><div style="font-size:13px;font-weight:700">${GHS}${rate}/hour</div></div>
         <div><div style="font-size:10.5px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.6px">Work Schedule</div><div style="font-size:13px;font-weight:700">${schedule}</div></div>
         <div><div style="font-size:10.5px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.6px">Probation Period</div><div style="font-size:13px;font-weight:700">${probation}</div></div>
-        <div><div style="font-size:10.5px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.6px">Start Date</div><div style="font-size:13px;font-weight:700">To be confirmed</div></div>
-        <div><div style="font-size:10.5px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.6px">Earnings Model</div><div style="font-size:13px;font-weight:700">Per-hour (post-completion)</div></div>
+        ${co.managerName ? `<div><div style="font-size:10.5px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.6px">Reporting To</div><div style="font-size:13px;font-weight:700">${co.managerName}</div></div>` : ''}
+        ${co.benefitsSummary ? `<div><div style="font-size:10.5px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.6px">Benefits</div><div style="font-size:13px;font-weight:700">${co.benefitsSummary}</div></div>` : ''}
       </div>
     </div>
-    <p style="font-size:12.5px;color:var(--text-muted);margin-bottom:14px">This offer is conditional upon satisfactory completion of reference checks and any pre-employment screening. The hourly rate is applied after each completed hour of work and tracked through our attendance system.</p>
+    
+    <p style="font-size:12.5px;color:var(--text-muted);margin-bottom:10px">This offer is conditional upon satisfactory completion of reference checks and any pre-employment screening.</p>
+    ${co.offerTerms ? `<p style="font-size:12.5px;color:var(--text-muted);margin-bottom:14px;white-space:pre-wrap;"><strong>Additional Terms:</strong><br>${co.offerTerms}</p>` : ''}
+    
+    <div class="al al-a" style="margin-top:14px; margin-bottom: 14px;">
+      <strong>Offer Expiration:</strong> Please respond to this offer by <strong>${formattedExp}</strong>.
+    </div>
+    
     <div style="margin-top:16px;padding-top:12px;border-top:1px solid var(--border)">
       <div style="font-size:13px;font-weight:700">${co.signatory||'The Director'}</div>
       <div style="font-size:12px;color:var(--text-muted)">${co.sigTitle||'Managing Director'}</div>
@@ -2311,46 +3474,74 @@ function generateOfferLetterHTML(app,co){
     ${ic('download',14)} Download Letter (PDF)
   </button>`;
 }
-
 function downloadOfferLetter(name,position){
   const co=DB.g('company')||{};
+  const expiryDays=co.offerExpiry||7;
+  
+  const expDate = new Date();
+  expDate.setDate(expDate.getDate() + expiryDays);
+  const formattedExp = expDate.toLocaleDateString('en-GH', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+  
+  const introText = co.offerIntro 
+    ? co.offerIntro.replace(/\n/g, '<br>') 
+    : `We are pleased to offer you the position of <strong>${position}</strong> at <strong>${co.name||'our company'}</strong>. After a thorough review of your application and performance in our assessment process, we believe you are an excellent fit for our team.`;
+
+  let headerBlock = '';
+  if (co.letterhead) {
+    headerBlock = `<img src="${co.letterhead}" style="width:100%; max-height:150px; object-fit:cover; margin-bottom:14px; display:block;">`;
+  } else {
+    headerBlock = `
+      ${co.logo?`<img src="${co.logo}" style="height:60px;margin-bottom:14px">`:''}
+      <h1>${co.name||'Company'}</h1>
+      ${co.tagline ? `<p style="color:#666; font-size:13px; font-style:italic; margin-top:0; margin-bottom:8px;">${co.tagline}</p>` : ''}
+      <p style="color:#666;font-size:12px;margin-top:0;margin-bottom:4px;">${co.address||''} | ${co.phone||''} | ${co.email||''}</p>
+      ${co.regNumber ? `<p style="color:#666;font-size:11px;font-weight:bold;margin-top:0;">Reg/TIN: ${co.regNumber}</p>` : ''}
+    `;
+  }
+
   const w=window.open('','_blank');
   w.document.write(`<!DOCTYPE html><html><head><title>Offer Letter – ${name}</title>
   <style>body{font-family:'Segoe UI',Arial,sans-serif;max-width:700px;margin:40px auto;font-size:13px;color:#222;line-height:1.6}
-  h1{font-size:20px;color:#1b2e4b}
+  h1{font-size:22px;color:#1b2e4b;margin-bottom:2px;}
   .box{border:1px solid #dde4ee;border-radius:8px;padding:16px;margin:14px 0;background:#f9fbfc}
-  .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
   .lbl{font-size:10px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.6px;margin-bottom:2px}
   .val{font-size:13px;font-weight:700;color:#1b2e4b}
   .footer{margin-top:30px;padding-top:14px;border-top:1px solid #dde4ee}
-  @media print{body{margin:20px}}</style>
+  .alert{background-color:#fcf8e3;border:1px solid #faebcc;color:#8a6d3b;padding:10px;border-radius:4px;margin-top:15px;}
+  @media print{body{margin:20px;max-width:100%}}</style>
   </head><body>
-  ${co.logo?`<img src="${co.logo}" style="height:50px;margin-bottom:14px">`:''}
-  <h1>${co.name||'Company'}</h1>
-  <p style="color:#666;font-size:12px">${co.address||''} | ${co.phone||''} | ${co.email||''}</p>
-  <hr>
+  
+  ${headerBlock}
+  <hr style="border:none; border-top:1px solid #dde4ee; margin-bottom:20px;">
+  
   <h2>OFFER OF EMPLOYMENT</h2>
   <p>Dear <strong>${name}</strong>,</p>
-  <p>We are pleased to offer you the position of <strong>${position}</strong> at <strong>${co.name||'our company'}</strong>. After a thorough review of your application and performance in our assessment process, we believe you are an excellent fit for our team.</p>
+  <p>${introText}</p>
   <div class="box"><div class="grid">
     <div><div class="lbl">Position</div><div class="val">${position}</div></div>
     <div><div class="lbl">Hourly Rate</div><div class="val">₵${co.defaultRate||20}/hour</div></div>
     <div><div class="lbl">Work Schedule</div><div class="val">${co.workSchedule||'Mon–Fri, 8:00 AM – 5:00 PM'}</div></div>
     <div><div class="lbl">Probation Period</div><div class="val">${co.probation||'3 months'}</div></div>
-    <div><div class="lbl">Earnings Model</div><div class="val">Per-hour (post-completion)</div></div>
-    <div><div class="lbl">Currency</div><div class="val">Ghanaian Cedis (₵)</div></div>
+    ${co.managerName ? `<div><div class="lbl">Reporting To</div><div class="val">${co.managerName}</div></div>` : ''}
+    ${co.benefitsSummary ? `<div><div class="lbl">Benefits</div><div class="val">${co.benefitsSummary}</div></div>` : ''}
   </div></div>
   <p style="font-size:12px;color:#666">This offer is conditional upon satisfactory completion of reference checks and pre-employment screening. The hourly rate is applied after each completed hour of work.</p>
+  ${co.offerTerms ? `<p style="font-size:12px;color:#666;white-space:pre-wrap;"><strong>Additional Terms:</strong><br>${co.offerTerms}</p>` : ''}
+  
+  <div class="alert">
+    <strong>Offer Expiration:</strong> Please respond to this offer by <strong>${formattedExp}</strong>.
+  </div>
+
   <div class="footer">
-    <p style="font-weight:700">${co.signatory||'The Director'}</p>
-    <p style="color:#666;font-size:12px">${co.sigTitle||'Managing Director'} | ${co.name||''}</p>
+    <p style="font-weight:700;margin-bottom:2px;">${co.signatory||'The Director'}</p>
+    <p style="color:#666;font-size:12px;margin-top:0;">${co.sigTitle||'Managing Director'} | ${co.name||''}</p>
     <p style="color:#666;font-size:12px">Date: ${new Date().toLocaleDateString('en-GH')}</p>
   </div>
   </body></html>`);
   w.document.close(); setTimeout(()=>w.print(),500);
 }
-
-function respondOffer(decision){
+async function respondOffer(decision){
   const email=document.getElementById('offer-details-wrap').dataset.email;
   const apps=DB.g('applicants')||[];
   const i=apps.findIndex(a=>a.email===email);
@@ -2359,29 +3550,62 @@ function respondOffer(decision){
   document.getElementById('offer-action-btns').style.display='none';
   document.getElementById('offer-neg-wrap').style.display='none';
   if(decision==='accept'){
-    // Auto-create login credentials
-    createEmployeeFromApplicant(apps[i]);
+    // Added 'true' here to silently generate the profile
+    await createEmployeeFromApplicant(apps[i], true);
     msg.innerHTML=`<div class="al al-g"><strong>Offer Accepted!</strong> Welcome to the team. Your login credentials have been generated and will be shared with you. ${ic('check-circle',15)}</div>`;
   } else {
     msg.innerHTML=`<div class="al al-r">You have declined this offer. Thank you for your time. We wish you success in your job search.</div>`;
   }
   setTimeout(()=>{if(window._portalReturn)backFromPortal();},4000);
 }
-
-function createEmployeeFromApplicant(app){
-  const emps=DB.g('employees')||[];
-  const newId='EMP'+(emps.length+1+10).toString().padStart(3,'0');
-  const pw='pass'+Math.random().toString(36).substr(2,6);
-  const co=DB.g('company')||{};
-  emps.push({id:newId,name:app.name,roleTitle:app.position,dept:'New Hire',hourlyRate:co.defaultRate||20,joinDate:today(),email:app.email,active:true,tempPassword:pw});
-  DB.s('employees',emps);
-  // Store credentials for display
-  const newCreds=DB.g('new_hires')||[];
-  newCreds.push({id:newId,name:app.name,email:app.email,password:pw,date:today()});
-  DB.s('new_hires',newCreds);
-  toast(`Account created for ${app.name}: ${newId} / ${pw}`,'s');
+async function createEmployeeFromApplicant(app, isSilent = false){
+  const emps = DB.g('employees') || [];
+  
+  // Prevent duplicate accounts if they were already generated
+  if(emps.find(e => e.email === app.email)) {
+    if(!isSilent) toast('Account already exists for this candidate', 'i');
+    return;
+  }
+  
+  const newId = 'EMP' + (emps.length + 1 + 10).toString().padStart(3, '0');
+  const pw = 'pass' + Math.random().toString(36).substr(2, 6);
+  const co = DB.g('company') || {};
+  
+  const newEmp = {
+    id: newId, name: app.name, roleTitle: app.position, dept: 'New Hire',
+    hourlyRate: co.defaultRate || 20, joinDate: today(), email: app.email,
+    active: true, role: 'employee',
+    initials: app.name.split(' ').map(n => n[0]).join('').toUpperCase()
+  };
+  
+  emps.push({ ...newEmp, tempPassword: pw });
+  DB.s('employees', emps);
+  
+  try {
+    await apiFetch('POST', '/users', { ...newEmp, password: pw });
+  } catch(e) {
+    console.error('Failed to create Supabase account for new hire:', e);
+  }
+  
+  const newCreds = DB.g('new_hires') || [];
+  newCreds.push({ id: newId, name: app.name, email: app.email, password: pw, date: today() });
+  DB.s('new_hires', newCreds);
+  
+  // Only show the toast to the Admin, NOT the candidate
+  if(!isSilent) {
+    toast(`Profile generated for ${app.name}! Check settings for credentials.`, 's');
+  }
 }
 
+// Function for the Admin to manually trigger profile creation
+function manualCreateEmployee(email) {
+  const apps = DB.g('applicants') || [];
+  const app = apps.find(a => a.email === email);
+  if(!app) { toast('Applicant not found', 'e'); return; }
+  
+  createEmployeeFromApplicant(app, false); // Admin sees the toast
+  showPage('e_recruitment'); // Refresh the view
+}
 function toggleNeg(){
   const wrap=document.getElementById('offer-neg-wrap');
   wrap.style.display=wrap.style.display==='none'?'block':'none';
@@ -2421,6 +3645,20 @@ if(params.get('offer')){
   loadOfferPortal(email);
   document.getElementById('offer-portal').classList.add('open');
 }
+
+// Listen for Back/Forward button clicks
+window.addEventListener('popstate', (event) => {
+  if (event.state && event.state.page) {
+    // The 'true' stops it from infinitely looping the history
+    showPage(event.state.page, true); 
+  }
+});
+
+function toggleMobileMenu() {
+  document.querySelector('.sidebar').classList.toggle('mobile-open');
+  document.getElementById('mobile-overlay').classList.toggle('active');
+}
 </script>
+>>>>>>> 4e072e51db007e5e34ece89dee645321da2dd76c
 </body>
 </html>
