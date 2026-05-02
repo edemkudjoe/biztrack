@@ -417,11 +417,18 @@
 <div id="toast-wrap"></div>
 
 
-<script src="/js/ui.js"></script>
-<script src="/js/app.js"></script>
-<script src="/js/pages/employer.js"></script>
-<script src="/js/pages/employee.js"></script>
+<!-- Base functions and UI helpers go FIRST -->
+<script src="js/ui.js"></script>
+
+<!-- Then your page-specific logic -->
+<script src="js/pages/employer.js"></script>
+<script src="js/pages/employee.js"></script>
 <script src="/js/pages/careers.js"></script>
+<!-- Any other page scripts... -->
+
+<!-- Finally, your main app logic that triggers the rendering -->
+<script src="js/app.js"></script>
+
 
 </body>
 </html>
