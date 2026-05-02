@@ -266,7 +266,7 @@ footer {
 @media print{.sidebar,.topbar,footer,button,.btn{display:none!important}.main{margin-left:0!important}body{background:#fff!important;color:#000!important}}
 
 /* ── Mobile Responsiveness ── */
-.mobile-toggle { display: none; background: transparent; border: none; color: var(--navy); cursor: pointer; margin-right: 12px; }
+.mobile-toggle { display: none; background: transparent; border: none; color: var(--navy); cursor: pointer; margin-right: 4px; }
 [data-theme=dark] .mobile-toggle { color: var(--text); }
 .sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 98; }
 .sidebar-overlay.active { display: block; }
@@ -274,4 +274,8 @@ footer {
 @media (max-width: 768px) {
   .modal { animation: slideUpModal .28s ease; }
   @keyframes slideUpModal { from { transform: translateY(100%); } to { transform: translateY(0); } }
+  .mobile-toggle { display: flex !important; }
+  .sg { grid-template-columns: 1fr 1fr !important; }
+  .sc { text-align: center; }
+  .sc-ico { margin: 0 auto 6px; }
 }
