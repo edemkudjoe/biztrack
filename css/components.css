@@ -270,3 +270,8 @@ footer {
 [data-theme=dark] .mobile-toggle { color: var(--text); }
 .sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 98; }
 .sidebar-overlay.active { display: block; }
+
+@media (max-width: 768px) {
+  .modal { animation: slideUpModal .28s ease; }
+  @keyframes slideUpModal { from { transform: translateY(100%); } to { transform: translateY(0); } }
+}
