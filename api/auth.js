@@ -19,7 +19,7 @@ module.exports = async function (req, res) {
 }
 
     if (role === 'employee') {
-      const { data: user, error } = await getSupabase().from('users').select('*').eq('empId', id).single();
+      const { data: user, error } = await getSupabase().from('users').select('*').eq('id', id).eq('role', 'employee').single();
       if (error || !user) return res.status(401).json({ error: 'Invalid Employee ID or password.' });
       const match = await bcrypt.compare(password, user.password);
       if (!match) return res.status(401).json({ error: 'Invalid Employee ID or password.' });
