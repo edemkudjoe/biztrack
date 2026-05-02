@@ -5,8 +5,9 @@ module.exports = async function (req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
 
   const parts = (req.query['...route'] || []).filter(Boolean);
-  const table = parts[1];
-  const recordId = parts[2];
+const urlParts = (req.url || '').split('?')[0].split('/').filter(Boolean);
+const table = parts[1] || urlParts[2];
+const recordId = parts[2] || urlParts[3];
 
   if (!ALLOWED_TABLES.includes(table)) return res.status(404).end();
 
