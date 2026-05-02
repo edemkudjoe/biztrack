@@ -34,7 +34,8 @@ a{text-decoration:none;color:inherit}
   .sidebar.mobile-open { transform: translateX(0); }
   .main { margin-left: 0 !important; }
   .mobile-toggle { display: flex; align-items: center; }
-  .content { padding: 12px; }
+  td, th { text-align: left; }
+  .content { padding: 12px; text-align: center; }
   .topbar { padding: 0 12px; }
   .tb-title { font-size: 15px; }
   .tb-clock { display: none; }
@@ -45,11 +46,11 @@ a{text-decoration:none;color:inherit}
   .sc-val { font-size: 20px; }
   .ph h2 { font-size: 17px; }
   .ph p { font-size: 12px; }
-  .ph { margin-bottom: 12px; }
+  .ph { margin-bottom: 12px; text-align: center; }
   .g2, .g3 { grid-template-columns: 1fr; gap: 10px; }
   .fr, .fr3 { grid-template-columns: 1fr 1fr; gap: 10px; }
-  .card { border-radius: 10px; }
-  .ch { padding: 11px 13px; flex-wrap: wrap; gap: 8px; }
+  .card { border-radius: 10px; text-align: left;}
+  .ch { padding: 11px 13px; flex-wrap: wrap; gap: 8px; text-align: left;}
   .ct { font-size: 12.5px; }
   .cb { padding: 13px; }
   table { font-size: 12px; }
