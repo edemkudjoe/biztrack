@@ -36,9 +36,13 @@ const recordId = parts[2] || urlParts[3];
       const { data, error } = await getSupabase().from(table).update(req.body).eq('id', recordId).select().single();
       return error ? res.status(400).json({ error: error.message }) : res.status(200).json({ record: data });
     }
-
+if (req.method === 'DELETE' && recordId) {
+const { error } = await getSupabase().from(table).delete().eq('id', recordId);
+return error ? res.status(400).json({ error: error.message }) : res.status(200).json({ success: true });
+}
     return res.status(405).end();
-  } catch (err) {
+  }
+  catch (err) {
     return res.status(500).json({ error: err.message });
   }
 };
