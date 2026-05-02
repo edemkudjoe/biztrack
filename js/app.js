@@ -40,6 +40,10 @@ const IP={
   'external-link':'<path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>',
   'log-out':'<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>',
   shield:'<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>',
+  save:'<path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/>',
+  'check-square':'<polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>',
+  plus:'<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>',
+  'trash-2':'<polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>',
 };
 const ic=(n,s=16)=>`<span class="ico"><svg width="${s}" height="${s}" viewBox="0 0 24 24">${IP[n]||'<circle cx="12" cy="12" r="10"/>'}</svg></span>`;
 
@@ -55,8 +59,9 @@ let CU=JSON.parse(localStorage.getItem('bt_cu')||'null');
 let ROLE=null;
 let DARK=localStorage.getItem('bt_dk')==='1';
 if(DARK) document.documentElement.setAttribute('data-theme','dark');
-let _cpUser = null;
-let _cpSelectedJob = null;
+let _cpUser=null;
+let _cpSelectedJob=null;
+
 // ═══════════════════════════ DB ═══════════════════════════
 const DB={
   g(k){try{return JSON.parse(localStorage.getItem('bt_'+k))||null}catch{return null}},
@@ -68,47 +73,49 @@ const DB={
 // ═══════════════════════════ SEED ═══════════════════════════
 function seed(){
   if(DB.g('seeded')) return;
-  
-  DB.s('employees', []);
-  DB.s('costs', []);
-  DB.s('revenue', []);
-  DB.s('tasks', []);
-  DB.s('attendance', []);
-  DB.s('leaves', []);
-  DB.s('advances', []);
-  DB.s('promos', []);
-  DB.s('complaints', []);
-  DB.s('applicants', []);
-  
-  // Keep the configuration defaults so the app doesn't break
+  DB.s('employees',[]);
+  DB.s('costs',[]);
+  DB.s('revenue',[]);
+  DB.s('tasks',[]);
+  DB.s('attendance',[]);
+  DB.s('leaves',[]);
+  DB.s('advances',[]);
+  DB.s('promos',[]);
+  DB.s('complaints',[]);
+  DB.s('applicants',[]);
+  DB.s('job_postings',[]);
   DB.s('rec_stage','collecting');
-  DB.s('rec_link','https://biztrack.app/apply/'+Math.random().toString(36).substr(2,9));
-  DB.s('offer_link','https://biztrack.app/offer/'+Math.random().toString(36).substr(2,9));
   DB.s('company',{name:'My Business Ltd',address:'Accra, Ghana',phone:'+233 XX XXX XXXX',email:'info@mybusiness.com',web:'www.mybusiness.com',signatory:'The Director',sigTitle:'Managing Director',logo:''});
   DB.s('work_location',{lat:5.6037,lng:-0.1870,radius:500,name:'Head Office, Accra'});
-  
   DB.s('seeded',true);
 }
+
+// ═══════════════════════════ HELPERS ═══════════════════════════
+async function safeJson(res){
+  const text=await res.text();
+  try{return JSON.parse(text);}catch{return {};}
+}
+
 // ═══════════════════════════ AUTH ═══════════════════════════
 let loginRole='employer';
 function setRole(r){
   loginRole=r;
   document.querySelectorAll('.login-tab').forEach((t,i)=>t.classList.toggle('active',(i===0&&r==='employer')||(i===1&&r==='employee')));
   document.getElementById('id-lbl').textContent=r==='employer'?'Username':'Employee ID';
-  document.getElementById('l-id').value=''; 
+  document.getElementById('l-id').value='';
   document.getElementById('l-pw').value='';
-  document.getElementById('l-hint').innerHTML=''; 
+  document.getElementById('l-hint').innerHTML='';
 }
 
-async function apiFetch(method, path, body){
+async function apiFetch(method,path,body){
   const opts={method,headers:{'Content-Type':'application/json','Authorization':`Bearer ${JWT}`}};
   if(body!==undefined) opts.body=JSON.stringify(body);
   const res=await fetch(`${API}${path}`,opts);
   if(!res.ok){
-    const err=await res.json().catch(()=>({}));
+    const err=await safeJson(res);
     throw new Error(err.error||`HTTP ${res.status}`);
   }
-  return res.json();
+  return safeJson(res);
 }
 
 async function doLogin(){
@@ -117,179 +124,129 @@ async function doLogin(){
   const err=document.getElementById('l-err');
   const btn=document.getElementById('l-btn');
   err.style.display='none'; btn.textContent='Signing in…'; btn.disabled=true;
-
   let user=null;
   try{
     const res=await fetch(`${API}/auth`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id,password:pw,role:loginRole})});
-    const data=await res.json();
-    if(res.ok){JWT=data.token; user=data.user; localStorage.setItem('bt_jwt',JWT);}
+    const data=await safeJson(res);
+    if(res.ok){JWT=data.token;user=data.user;localStorage.setItem('bt_jwt',JWT);}
     else{err.textContent=data.error||'Invalid credentials.';err.style.display='block';}
   }catch(e){err.textContent='Could not reach the server. Check your connection.';err.style.display='block';}
-
-  if(user){CU=user; ROLE=user.role; localStorage.setItem('bt_cu',JSON.stringify(CU)); launchApp();}
-  btn.textContent='Sign In'; btn.disabled=false;
+  if(user){CU=user;ROLE=user.role;localStorage.setItem('bt_cu',JSON.stringify(CU));launchApp();}
+  btn.textContent='Sign In';btn.disabled=false;
 }
 
 function logout(){
-  JWT=null; CU=null; ROLE=null;
-  localStorage.removeItem('bt_jwt'); localStorage.removeItem('bt_cu');
+  JWT=null;CU=null;ROLE=null;
+  localStorage.removeItem('bt_jwt');localStorage.removeItem('bt_cu');
   if(window._pollInterval){clearInterval(window._pollInterval);window._pollInterval=null;}
   document.getElementById('app').style.display='none';
   document.getElementById('login-screen').style.display='flex';
 }
 
-// ═══════════════════════════ LAUNCH (SUPABASE SYNC) ═══════════════════════════
+// ═══════════════════════════ SYNC HELPERS ═══════════════════════════
+async function syncData(headers){
+  const [uRes,tRes,aRes,cRes,rRes,lRes,adRes,prRes,cmRes,apRes,jpRes,stRes]=await Promise.all([
+    fetch(`${API}/users`,            {headers}),
+    fetch(`${API}/data/tasks`,       {headers}),
+    fetch(`${API}/data/attendance`,  {headers}),
+    fetch(`${API}/data/costs`,       {headers}),
+    fetch(`${API}/data/revenue`,     {headers}),
+    fetch(`${API}/data/leaves`,      {headers}),
+    fetch(`${API}/data/advances`,    {headers}),
+    fetch(`${API}/data/promos`,      {headers}),
+    fetch(`${API}/data/complaints`,  {headers}),
+    fetch(`${API}/data/applicants`,  {headers}),
+    fetch(`${API}/data/job_postings`,{headers}),
+    fetch(`${API}/settings`,         {headers}),
+  ]);
+
+  // Users — employer gets all, employee gets own record
+  if(uRes.ok){
+    const d=await safeJson(uRes);
+    const freshUsers=d.users||[];
+    DB.s('employees',freshUsers);
+    const me=freshUsers.find(e=>e.id===CU?.id);
+    if(me){CU={...CU,...me};localStorage.setItem('bt_cu',JSON.stringify(CU));}
+  } else if(uRes.status===403){
+    try{
+      const meRes=await fetch(`${API}/users/me`,{headers});
+      if(meRes.ok){
+        const d=await safeJson(meRes);
+        const me=d.user;
+        if(me){
+          const emps=DB.g('employees')||[];
+          const idx=emps.findIndex(e=>e.id===me.id);
+          if(idx>=0) emps[idx]=me; else emps.push(me);
+          DB.s('employees',emps);
+          CU={...CU,...me};
+          localStorage.setItem('bt_cu',JSON.stringify(CU));
+        }
+      }
+    }catch(e){console.warn('Could not fetch own profile',e);}
+  }
+
+  if(tRes.ok)   DB.s('tasks',       (await safeJson(tRes)).records  ||[]);
+  if(aRes.ok)   DB.s('attendance',  (await safeJson(aRes)).records  ||[]);
+  if(cRes.ok)   DB.s('costs',       (await safeJson(cRes)).records  ||[]);
+  if(rRes.ok)   DB.s('revenue',     (await safeJson(rRes)).records  ||[]);
+  if(lRes.ok)   DB.s('leaves',      (await safeJson(lRes)).records  ||[]);
+  if(adRes.ok)  DB.s('advances',    (await safeJson(adRes)).records ||[]);
+  if(prRes.ok)  DB.s('promos',      (await safeJson(prRes)).records ||[]);
+  if(cmRes.ok)  DB.s('complaints',  (await safeJson(cmRes)).records ||[]);
+  if(apRes.ok)  DB.s('applicants',  (await safeJson(apRes)).records ||[]);
+  if(jpRes.ok)  DB.s('job_postings',(await safeJson(jpRes)).records ||[]);
+  if(stRes.ok)  DB.s('att_settings',(await safeJson(stRes)).settings||{});
+}
+
+// ═══════════════════════════ LAUNCH ═══════════════════════════
 async function launchApp(){
   document.getElementById('login-screen').style.display='none';
   ['applicant-portal','offer-portal'].forEach(id=>document.getElementById(id).classList.remove('open'));
   document.getElementById('app').style.display='block';
 
-  const authHeaders = {
-    'Content-Type': 'application/json',
-    'Authorization': `Bearer ${JWT}`
-  };
+  const headers={'Content-Type':'application/json','Authorization':`Bearer ${JWT}`};
 
-  try {
-    const [uRes, tRes, aRes, cRes, rRes, lRes, adRes, prRes, cmRes, apRes, jpRes] = await Promise.all([
-      fetch(`${API}/users`,              { headers: authHeaders }),
-      fetch(`${API}/data/tasks`,         { headers: authHeaders }),
-      fetch(`${API}/data/attendance`,    { headers: authHeaders }),
-      fetch(`${API}/data/costs`,         { headers: authHeaders }),
-      fetch(`${API}/data/revenue`,       { headers: authHeaders }),
-      fetch(`${API}/data/leaves`,        { headers: authHeaders }),
-      fetch(`${API}/data/advances`,      { headers: authHeaders }),
-      fetch(`${API}/data/promos`,        { headers: authHeaders }),
-      fetch(`${API}/data/complaints`,    { headers: authHeaders }),
-      fetch(`${API}/data/applicants`,    { headers: authHeaders }),
-      fetch(`${API}/data/job_postings`,  { headers: authHeaders }), // ADD THIS LINE
-    ]);
-
-    if (uRes.ok) {
-  const freshUsers = (await uRes.json()).users || [];
-  DB.s('employees', freshUsers);
-} else if (uRes.status === 403) {
-  // Employee — fetch only their own record
-  try {
-    const meRes = await fetch(`${API}/users/me`, { headers: authHeaders });
-    if (meRes.ok) {
-      const me = (await meRes.json()).user;
-      if (me) {
-        const emps = DB.g('employees') || [];
-        const idx = emps.findIndex(e => e.id === me.id);
-        if (idx >= 0) emps[idx] = me;
-        else emps.push(me);
-        DB.s('employees', emps);
-        // Also update CU with fresh data
-        CU = {...CU, ...me};
-        localStorage.setItem('bt_cu', JSON.stringify(CU));
-      }
-    }
-  } catch(e) { console.warn('Could not fetch own profile on launch', e); }
-}
-    if (tRes.ok)  DB.s('tasks',      (await tRes.json()).records  || []);
-    if (aRes.ok)  DB.s('attendance', (await aRes.json()).records  || []);
-    if (cRes.ok)  DB.s('costs',      (await cRes.json()).records  || []);
-    if (rRes.ok)  DB.s('revenue',    (await rRes.json()).records  || []);
-    if (lRes.ok)  DB.s('leaves',     (await lRes.json()).records  || []);
-    if (adRes.ok) DB.s('advances',   (await adRes.json()).records || []);
-    if (prRes.ok) DB.s('promos',     (await prRes.json()).records || []);
-    if (cmRes.ok) DB.s('complaints', (await cmRes.json()).records || []);
-    if (apRes.ok) DB.s('applicants', (await apRes.json()).records || []);
-    const stRes = await fetch(`${API}/settings`, { headers: authHeaders });
-    if (stRes.ok) DB.s('att_settings', (await stRes.json()).settings || {});
-    if(window._pollInterval) clearInterval(window._pollInterval);
-window._pollInterval = setInterval(async()=>{
-  if(!JWT) return;
-  const h={'Authorization':`Bearer ${JWT}`};
   try{
-    const [uRes, tRes, aRes, lRes, adRes, prRes, cmRes, apRes, cRes, rRes, jpRes] = await Promise.all([
-      fetch(`${API}/users`,             {headers:h}),
-      fetch(`${API}/data/tasks`,        {headers:h}),
-      fetch(`${API}/data/attendance`,   {headers:h}),
-      fetch(`${API}/data/leaves`,       {headers:h}),
-      fetch(`${API}/data/advances`,     {headers:h}),
-      fetch(`${API}/data/promos`,       {headers:h}),
-      fetch(`${API}/data/complaints`,   {headers:h}),
-      fetch(`${API}/data/applicants`,   {headers:h}),
-      fetch(`${API}/data/costs`,        {headers:h}),
-      fetch(`${API}/data/revenue`,      {headers:h}),
-      fetch(`${API}/data/job_postings`, {headers:h}), // ADD THIS LINE
-    ]);
-
-    // ... (keep the existing 'if' statements below it, and add this at the end) ...
-    if(cRes.ok) DB.s('costs',   (await cRes.json()).records ||[]);
-    if(rRes.ok) DB.s('revenue', (await rRes.json()).records ||[]);
-    if(jpRes.ok) DB.s('job_postings', (await jpRes.json()).records ||[]); // ADD THIS LINE
-    if(uRes.ok){
-  const freshUsers = (await uRes.json()).users || [];
-  DB.s('employees', freshUsers);
-  const updatedMe = freshUsers.find(e => e.id === CU?.id);
-  if(updatedMe){
-    CU = {...CU, ...updatedMe};
-    localStorage.setItem('bt_cu', JSON.stringify(CU));
-    document.getElementById('sb-nm').textContent = CU.name;
-    document.getElementById('sb-av').textContent = CU.initials || CU.name.slice(0,2).toUpperCase();
-  }
-} else if(uRes.status === 403) {
-  try {
-    const meRes = await fetch(`${API}/users/me`, {headers: h});
-    if(meRes.ok){
-      const updatedMe = (await meRes.json()).user;
-      if(updatedMe){
-        CU = {...CU, ...updatedMe};
-        localStorage.setItem('bt_cu', JSON.stringify(CU));
-        const emps = DB.g('employees') || [];
-        const idx = emps.findIndex(e => e.id === CU.id);
-        if(idx >= 0) emps[idx] = {...emps[idx], ...updatedMe};
-        else emps.push(updatedMe);
-        DB.s('employees', emps);
-        document.getElementById('sb-nm').textContent = CU.name;
-        document.getElementById('sb-av').textContent = CU.initials || CU.name.slice(0,2).toUpperCase();
-      }
-    }
-  } catch(e){ console.warn('Could not fetch own profile', e); }
-}   
-    if(tRes.ok)  DB.s('tasks',      (await tRes.json()).records  ||[]);
-    if(aRes.ok)  DB.s('attendance', (await aRes.json()).records  ||[]);
-    if(lRes.ok)  DB.s('leaves',     (await lRes.json()).records  ||[]);
-    if(adRes.ok) DB.s('advances',   (await adRes.json()).records ||[]);
-    if(prRes.ok) DB.s('promos',     (await prRes.json()).records ||[]);
-    if(cmRes.ok) DB.s('complaints', (await cmRes.json()).records ||[]);
-    if(apRes.ok) DB.s('applicants', (await apRes.json()).records ||[]);
-    if(cRes.ok) DB.s('costs',   (await cRes.json()).records ||[]);
-    if(rRes.ok) DB.s('revenue', (await rRes.json()).records ||[]);
-    
-    // 👇 Replace the old showPage call with this:
-    const cur=document.querySelector('.nav-item.active');
-    if(cur && cur.dataset.page) {
-      // Check if the user is actively typing in a form
-      const activeTag = document.activeElement ? document.activeElement.tagName : '';
-      const isTyping = activeTag === 'INPUT' || activeTag === 'TEXTAREA' || activeTag === 'SELECT';
-      
-      // Only refresh the page silently if they aren't typing
-      if (!isTyping) {
-        showPage(cur.dataset.page, true, true);
-      }
-    }
-    
-    updNotif();
-  }catch(e){console.warn('Poll failed',e);}
-},5000);
-  }
-  catch(e) {
-    console.error('Failed to sync with Supabase', e);
+    await syncData(headers);
+  }catch(e){
+    console.error('Initial sync failed',e);
   }
 
-  ROLE=CU.role;
+  // Update UI with fresh CU data
   document.getElementById('sb-nm').textContent=CU.name;
   document.getElementById('sb-em').textContent=CU.email||CU.id||'';
   document.getElementById('sb-av').textContent=CU.initials||CU.name.slice(0,2).toUpperCase();
+  ROLE=CU.role;
   document.getElementById('sb-role').textContent=ROLE==='employer'?'Employer Portal':'Employee Portal';
   document.getElementById('yr').textContent=new Date().getFullYear();
-  const p=document.getElementById('dk-pill'); if(p) p.classList.toggle('on',DARK);
-  buildNav(); showPage(ROLE==='employer'?'e_dash':'emp_dash'); updNotif();
-} 
-  // ═══════════════════════════ NAV ═══════════════════════════
+  const p=document.getElementById('dk-pill');if(p) p.classList.toggle('on',DARK);
+  buildNav();
+  showPage(ROLE==='employer'?'e_dash':'emp_dash');
+  updNotif();
+
+  // Start polling
+  if(window._pollInterval) clearInterval(window._pollInterval);
+  window._pollInterval=setInterval(async()=>{
+    if(!JWT) return;
+    const h={'Authorization':`Bearer ${JWT}`};
+    try{
+      await syncData(h);
+      // Update sidebar name/avatar in case profile changed
+      document.getElementById('sb-nm').textContent=CU.name;
+      document.getElementById('sb-av').textContent=CU.initials||CU.name.slice(0,2).toUpperCase();
+      // Silently refresh current page if user isn't typing
+      const cur=document.querySelector('.nav-item.active');
+      if(cur&&cur.dataset.page){
+        const tag=document.activeElement?document.activeElement.tagName:'';
+        const typing=tag==='INPUT'||tag==='TEXTAREA'||tag==='SELECT';
+        if(!typing) showPage(cur.dataset.page,true,true);
+      }
+      updNotif();
+    }catch(e){console.warn('Poll failed',e);}
+  },5000);
+}
+
+// ═══════════════════════════ NAV ═══════════════════════════
 const EMP_NAV=[
   {s:'MAIN',items:[{id:'e_dash',ic:'grid',l:'Dashboard'},{id:'notifications',ic:'bell',l:'Notifications'}]},
   {s:'BUSINESS',items:[{id:'e_finance',ic:'dollar-sign',l:'Finance & Revenue'},{id:'e_performance',ic:'trending-up',l:'Performance'},{id:'e_attendance_mgr',ic:'clock',l:'Attendance'}]},
@@ -311,6 +268,7 @@ const PT={
   emp_advance:'Salary Advance',emp_promo:'Promotion Request',emp_attendance:'Attendance',
   emp_tasks:'My Tasks',emp_leave:'Leave Request',emp_complaints:'Complaints',emp_profile:'My Profile',
 };
+
 function buildNav(){
   const nav=document.getElementById('sidebar-nav');
   nav.innerHTML=(ROLE==='employer'?EMP_NAV:EE_NAV).map(s=>`
@@ -318,20 +276,17 @@ function buildNav(){
     ${s.items.map(it=>`<div class="nav-item" data-page="${it.id}" id="n-${it.id}" onclick="showPage('${it.id}')">${ic(it.ic,16)}<span>${it.l}</span></div>`).join('')}
   `).join('');
 }
-function showPage(pid, skipHistory = false, isPoll = false){
+
+function showPage(pid,skipHistory=false,isPoll=false){
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
-  const nav=document.getElementById('n-'+pid); if(nav) nav.classList.add('active');
+  const nav=document.getElementById('n-'+pid);if(nav) nav.classList.add('active');
   document.getElementById('tb-title').textContent=PT[pid]||'BizTrack';
-  
   const mc=document.getElementById('mc');
   let pg=document.getElementById('pg');
-  
-  // Only rebuild the container (which triggers the fade-in animation) if it's NOT a poll
-  if (!isPoll || !pg) {
+  if(!isPoll||!pg){
     mc.innerHTML='<div class="page active" id="pg"></div>';
     pg=document.getElementById('pg');
   }
-  
   const R={
     e_dash:pEDash,notifications:pNotifications,e_finance:pFinance,
     e_performance:pPerformance,e_attendance_mgr:pAttMgr,
@@ -342,17 +297,13 @@ function showPage(pid, skipHistory = false, isPoll = false){
     emp_leave:pMyLeave,emp_complaints:pMyComplaints,emp_profile:pProfile,
   };
   if(R[pid]) R[pid](pg); else pg.innerHTML='<p style="color:var(--text-muted)">Page not found.</p>';
-  
-  if (!skipHistory && !isPoll) {
-    history.pushState({ page: pid }, '', '#' + pid);
-  }
-
-  // Auto-close mobile menu after selecting a page
-  if (window.innerWidth <= 768 && !isPoll) {
+  if(!skipHistory&&!isPoll) history.pushState({page:pid},'','#'+pid);
+  if(window.innerWidth<=768&&!isPoll){
     document.querySelector('.sidebar').classList.remove('mobile-open');
     document.getElementById('mobile-overlay').classList.remove('active');
   }
 }
+
 function updNotif(){
   let cnt=0;
   if(ROLE==='employer'){
@@ -366,22 +317,50 @@ function updNotif(){
       +(DB.g('advances')||[]).filter(a=>a.empId===CU.id&&(a.status==='approved'||a.status==='rejected')).length
       +(DB.g('promos')||[]).filter(p=>p.empId===CU.id&&(p.status==='approved'||p.status==='rejected')).length;
   }
-  const d=document.getElementById('nb-dot'); if(d) d.style.display=cnt>0?'block':'none';
+  const d=document.getElementById('nb-dot');if(d) d.style.display=cnt>0?'block':'none';
 }
 
-// ═══════════════════════════════════════════════
-// ══════════ INIT ══════════════════════════════
-// ═══════════════════════════════════════════════
+// ═══════════════════════════ DARK MODE ═══════════════════════════
+function toggleDark(){
+  DARK=!DARK;
+  document.documentElement.setAttribute('data-theme',DARK?'dark':'light');
+  localStorage.setItem('bt_dk',DARK?'1':'0');
+  const p=document.getElementById('dk-pill');if(p) p.classList.toggle('on',DARK);
+}
+
+// ═══════════════════════════ MODAL ═══════════════════════════
+function openModal(title,body,btns=[]){
+  document.getElementById('m-title').innerHTML=title;
+  document.getElementById('m-body').innerHTML=body;
+  const f=document.getElementById('m-foot');
+  f.innerHTML=btns.map((b,i)=>`<button class="btn ${b.c}" id="mb-${i}">${b.l}</button>`).join('');
+  btns.forEach((b,i)=>document.getElementById('mb-'+i).onclick=b.fn);
+  document.getElementById('modal-ov').classList.add('open');
+}
+function closeModal(){document.getElementById('modal-ov').classList.remove('open');}
+
+// ═══════════════════════════ TOAST ═══════════════════════════
+function toast(msg,type='i'){
+  const w=document.getElementById('toast-wrap');
+  const t=document.createElement('div');
+  t.className=`ti ${type}`;
+  t.innerHTML=msg;
+  w.appendChild(t);
+  setTimeout(()=>t.remove(),3200);
+}
+
+// ═══════════════════════════ UI HELPERS ═══════════════════════════
+const ph=(t,s)=>`<div class="ph"><h2>${t}</h2>${s?`<p>${s}</p>`:''}</div>`;
+const sc=(ico,lbl,val,sub='',dir='')=>`<div class="sc"><div class="sc-ico">${ic(ico,18)}</div><div class="sc-lbl">${lbl}</div><div class="sc-val">${val}</div>${sub?`<div class="sc-ch ${dir}">${sub}</div>`:''}</div>`;
+const bDot=s=>s==='present'?'bg':s==='late'?'ba':s==='absent'?'br':'bn';
+const perfColor=s=>s>=80?'#2ecc71':s>=60?'#f39c12':'#e74c3c';
+
+// ═══════════════════════════ INIT ═══════════════════════════
 seed();
 document.getElementById('yr').textContent=new Date().getFullYear();
 
-// Resume session if JWT and user are stored
-if(JWT&&CU){
-  ROLE=CU.role;
-  launchApp();
-}
+if(JWT&&CU){ROLE=CU.role;launchApp();}
 
-// Offer portal link support (e.g. ?offer=email@test.com)
 const params=new URLSearchParams(window.location.search);
 if(params.get('offer')){
   const email=params.get('offer');
@@ -389,15 +368,11 @@ if(params.get('offer')){
   document.getElementById('offer-portal').classList.add('open');
 }
 
-// Listen for Back/Forward button clicks
-window.addEventListener('popstate', (event) => {
-  if (event.state && event.state.page) {
-    // The 'true' stops it from infinitely looping the history
-    showPage(event.state.page, true); 
-  }
+window.addEventListener('popstate',(event)=>{
+  if(event.state&&event.state.page) showPage(event.state.page,true);
 });
 
-function toggleMobileMenu() {
+function toggleMobileMenu(){
   document.querySelector('.sidebar').classList.toggle('mobile-open');
   document.getElementById('mobile-overlay').classList.toggle('active');
 }
