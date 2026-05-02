@@ -10,12 +10,13 @@ module.exports = async function (req, res) {
     const { id, password, role } = req.body;
 
     if (role === 'employer') {
-      const adminId = process.env.ADMIN_ID || 'admin';
-      const adminPw = process.env.ADMIN_PASSWORD || 'admin123';
-      if (id !== adminId || password !== adminPw) return res.status(401).json({ error: 'Invalid credentials.' });
-      const token = jwt.sign({ id: 'admin', email: 'admin@biztrack.com', role: 'employer', name: 'Admin' }, JWT_SECRET);
-      return res.status(200).json({ token, user: { id: 'admin', name: 'Admin', email: 'admin@biztrack.com', role: 'employer', initials: 'AD' } });
-    }
+  const { data: user, error } = await getSupabase().from('users').select('*').eq('id', id).eq('role', 'employer').single();
+  if (error || !user) return res.status(401).json({ error: 'Invalid credentials.' });
+  const match = await bcrypt.compare(password, user.password);
+  if (!match) return res.status(401).json({ error: 'Invalid credentials.' });
+  const token = jwt.sign({ id: user.id, email: user.email || 'admin@biztrack.com', role: 'employer', name: user.name }, JWT_SECRET);
+  return res.status(200).json({ token, user: { ...user, role: 'employer' } });
+}
 
     if (role === 'employee') {
       const { data: user, error } = await getSupabase().from('users').select('*').eq('empId', id).single();
