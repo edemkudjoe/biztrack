@@ -1,7 +1,4 @@
-const ph=(t,s)=>`<div class="ph"><h2>${t}</h2>${s?`<p>${s}</p>`:''}</div>`;
-const sc=(ico,lbl,val,sub='',dir='')=>`<div class="sc"><div class="sc-ico">${ic(ico,18)}</div><div class="sc-lbl">${lbl}</div><div class="sc-val">${val}</div>${sub?`<div class="sc-ch ${dir}">${sub}</div>`:''}</div>`;
-const bDot=s=>s==='present'?'bg':s==='late'?'ba':s==='absent'?'br':'bn';
-const perfColor=s=>s>=80?'#2ecc71':s>=60?'#f39c12':'#e74c3c';
+
 
 // ═══════════════════════════ CLOCK ═══════════════════════════
 function tickClock(){
