@@ -32,7 +32,7 @@ a{text-decoration:none;color:inherit}
   :root { --header-h: 54px; }
   .sidebar { transform: translateX(-100%); transition: transform 0.3s ease; box-shadow: 4px 0 20px rgba(0,0,0,0.3); }
   .sidebar.mobile-open { transform: translateX(0); }
-  .main { margin-left: 0; }
+  .main { margin-left: 0 !important; }
   .mobile-toggle { display: flex; align-items: center; }
   .content { padding: 12px; }
   .topbar { padding: 0 12px; }
