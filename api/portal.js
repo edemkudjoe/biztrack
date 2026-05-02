@@ -7,7 +7,9 @@ module.exports = async function (req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
 
   const parts = (req.query['...route'] || []).filter(Boolean);
-  const route = parts[0];
+  // Fallback: derive route from the request URL path (e.g. /api/portal-login → 'portal-login')
+  const urlRoute = (req.url || '').split('?')[0].split('/').filter(Boolean).pop();
+  const route = parts[0] || urlRoute;
 
   try {
     // ── PORTAL SIGNUP ──
