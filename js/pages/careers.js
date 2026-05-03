@@ -354,7 +354,6 @@ async function showCPAptTest(){
   if(!myApp){toast('You have not been invited to take the aptitude test yet.','e');return;}
   if(myApp.testScore!==undefined){toast('You have already completed the aptitude test.','i');showTrackView();return;}
 
-  // Fetch questions from settings table (employer saves them there)
   let qs=DB.g('apt_qs')||[];
   if(qs.length===0){
     try{
@@ -373,12 +372,10 @@ async function showCPAptTest(){
 
   if(qs.length===0){toast('No test questions available yet. Please check back later.','e');return;}
 
-  // Hide all views
   ['cp-auth-view','cp-jobs-view','cp-apply-view','cp-track-view','cp-offer-view'].forEach(id=>{
     document.getElementById(id).style.display='none';
   });
 
-  // Create or reuse test view — using querySelector('.cp-body') not getElementById
   let testView=document.getElementById('cp-test-view');
   if(!testView){
     testView=document.createElement('div');
