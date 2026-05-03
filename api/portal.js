@@ -28,7 +28,7 @@ const { data, error } = await getSupabase().from('applicants').insert([{
         created_at: new Date().toISOString()
       }]).select().single();
       if (error) return res.status(400).json({ error: error.message });
-      const token = jwt.sign({ id: data.id, email: data.email }, , { expiresIn: '8h' });
+      const token = jwt.sign({ id: data.id, email: data.email }, JWT_SECRET, { expiresIn: '8h' });
       return res.status(201).json({ token, applicant: data });
     }
 
