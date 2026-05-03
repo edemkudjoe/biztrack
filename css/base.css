@@ -35,7 +35,7 @@ a{text-decoration:none;color:inherit}
   .main { margin-left: 0 !important; }
   .mobile-toggle { display: flex; align-items: center; }
   td, th { text-align: left; }
-  .content { padding: 12px; text-align: center; }
+  .content { padding: 12px; }
   .topbar { padding: 0 12px; }
   .tb-title { font-size: 15px; }
   .tb-clock { display: none; }
@@ -48,7 +48,7 @@ a{text-decoration:none;color:inherit}
   .ph p { font-size: 12px; }
   .ph { margin-bottom: 12px; text-align: center; }
   .g2, .g3 { grid-template-columns: 1fr; gap: 10px; }
-  .fr, .fr3 { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .fr, .fr3 { grid-template-columns: 1fr; gap: 10px; }
   .card { border-radius: 10px; text-align: left;}
   .ch { padding: 11px 13px; flex-wrap: wrap; gap: 8px; text-align: left;}
   .ct { font-size: 12.5px; }
@@ -57,12 +57,12 @@ a{text-decoration:none;color:inherit}
   th { padding: 7px 8px; font-size: 9px; }
   td { padding: 8px; }
   .btn { font-size: 11.5px; padding: 7px 11px; }
-  .btn-sm { padding: 4px 8px; font-size: 11px; }
+  .btn-sm { padding: 8px 12px; font-size: 11px; }
   .modal { max-width: 100%; margin: 0; border-radius: 16px 16px 0 0; }
   .ov { align-items: flex-end; padding: 0; }
   .mh { padding: 13px 16px; }
-  .mb2 { padding: 14px; }
-  .mf { padding: 10px 14px; }
+  .mb2 { padding: 16px; }
+  .mf { padding: 12px 14px; }
   footer { font-size: 10.5px; padding: 10px; }
   #toast-wrap { bottom: 12px; right: 12px; left: 12px; }
   .ti { max-width: 100%; }
@@ -79,7 +79,7 @@ a{text-decoration:none;color:inherit}
   .ph h2 { font-size: 15px; }
   .cb { padding: 11px; }
   .ch { padding: 10px 11px; }
-  .steps { gap: 2px 0; }
+  .steps { flex-direction: column; align-items: flex-start; gap: 6px; }
   .sl { font-size: 10px; }
   .sn { width: 22px; height: 22px; font-size: 10px; }
   .tw { margin: 0 -11px; width: calc(100% + 22px); }
