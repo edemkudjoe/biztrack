@@ -21,8 +21,8 @@
     { "source": "/api/data/:path*", "destination": "/api/data.js" },
     { "source": "/api/users/:path*", "destination": "/api/users.js" },
     { "source": "/careers", "destination": "/careers.html" },
-    { "source": "/app",     "destination": "/app.html" },
     { "source": "/",        "destination": "/index.html" },
-    { "source": "/((?!api/).*)", "destination": "/index.html" }
+    { "source": "/app",     "destination": "/app.html" },
+    { "source": "/((?!api/).*)", "destination": "/app.html" } 
   ]
 }
