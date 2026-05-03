@@ -611,7 +611,7 @@ async function rankApplicants(){
   for(let i=0;i<batches.length;i++){
     toast(`Scoring batch ${i+1} of ${batches.length}…`,'i');
     try{
-      const res=await apiFetch('POST','/api/rank',{
+      const res=await apiFetch('POST','/rank',{
         applicants:batches[i],
         jobRequirements
       });
