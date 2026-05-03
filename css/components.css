@@ -121,8 +121,8 @@
 @media(max-width:860px){.g2,.g3{grid-template-columns:1fr}}
 
 /* ── Table ── */
-.tw{overflow-x:auto}
-table{width:100%;border-collapse:collapse;font-size:13px}
+.tw{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{width:100%;border-collapse:collapse;font-size:13px;min-width:560px}
 th{text-align:left;padding:9px 12px;font-size:10px;font-weight:800;text-transform:uppercase;
   letter-spacing:.8px;color:var(--text-muted);border-bottom:2px solid var(--border)}
 td{padding:10px 12px;border-bottom:1px solid var(--border);color:var(--text);vertical-align:middle}
