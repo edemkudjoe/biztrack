@@ -12,29 +12,19 @@ module.exports = async function (req, res) {
     // ── SETTINGS ──
 if (route === 'settings') {
   if (req.method === 'GET') {
-    const { key } = req.query;
-    if (key) {
-      // Fetch a specific key
-      const { data, error } = await getSupabase().from('settings').select('*').eq('key', key).single();
-      if (error) return res.status(200).json({ settings: {} });
-      return res.status(200).json({ settings: data.value || {} });
-    } else {
-      // Fetch all settings rows
-      const { data, error } = await getSupabase().from('settings').select('*');
-      if (error) return res.status(200).json({ records: [] });
-      return res.status(200).json({ records: data });
-    }
+    const { data, error } = await getSupabase().from('settings').select('*');
+    if (error) return res.status(200).json({ records: [] });
+    return res.status(200).json({ records: data });
   }
   if (req.method === 'POST') {
     if (decoded.role !== 'employer') return res.status(403).json({ error: 'Forbidden' });
-    const { key, value, ...rest } = req.body;
-    // If a key is explicitly provided, upsert by that key
-    const upsertKey = key || 'attendance';
-    const upsertValue = key ? value : req.body;
-    const { error } = await getSupabase().from('settings').upsert(
-      { key: upsertKey, value: upsertValue, updated_at: new Date().toISOString() },
-      { onConflict: 'key' }
-    );
+    const { key, value } = req.body;
+    if (!key) return res.status(400).json({ error: 'key is required.' });
+    const { error } = await getSupabase().from('settings')
+      .upsert(
+        { key, value: typeof value === 'string' ? value : JSON.stringify(value), updated_at: new Date().toISOString() },
+        { onConflict: 'key' }
+      );
     if (error) return res.status(400).json({ error: error.message });
     return res.status(200).json({ success: true });
   }
