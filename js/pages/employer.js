@@ -575,6 +575,13 @@ function sendOffers(){
 }
 
 function openAptSetup(){
+  apiFetch('GET','/data/apt_questions').then(r=>{
+    if(r.records) DB.s('apt_qs',r.records);
+    _renderAptSetupModal();
+  }).catch(()=>_renderAptSetupModal());
+}
+
+function _renderAptSetupModal(){
   const qs=DB.g('apt_qs')||[];
   openModal('Manage Aptitude Test Questions',`
     <div style="margin-bottom:12px">
@@ -592,7 +599,6 @@ function openAptSetup(){
     </div>
   `,[{l:'Done',c:'b-nv',fn:()=>{closeModal();showPage('e_recruitment');}}]);
 }
-
 function addAptQuestion(){
   closeModal();
   openModal('Add Aptitude Question',`
@@ -611,23 +617,23 @@ function addAptQuestion(){
     const c=document.getElementById('aq-c').value.trim();
     const d=document.getElementById('aq-d').value.trim();
     if(!q||!a||!b||!c||!d){toast('Fill all fields','e');return;}
-    const qs=DB.g('apt_qs')||[];
-    // AFTER
-qs.push({q, opts:[a,b,c,d], ans:parseInt(document.getElementById('aq-ans').value)});
-DB.s('apt_qs', qs);
-// Sync entire questions array to Supabase settings table
-apiFetch('POST', '/settings', {key:'apt_qs', value:JSON.stringify(qs)}).catch(()=>{});
-closeModal();
-openAptSetup();
-toast('Question added','s');
-  }}]);
+    const ans=parseInt(document.getElementById('aq-ans').value);
+const newQ={q,opts:[a,b,c,d],ans};
+apiFetch('POST','/data/apt_questions',newQ).then(r=>{
+  const qs=DB.g('apt_qs')||[];
+  qs.push(r.record||newQ);
+  DB.s('apt_qs',qs);
+  closeModal();
+  openAptSetup();
+  toast('Question added','s');
+}).catch(()=>toast('Failed to save question','e'));  }}]);
 }
 
 function deleteAptQuestion(i){
   const qs=DB.g('apt_qs')||[];
-  qs.splice(i,1);
-  DB.s('apt_qs', qs);
-apiFetch('POST', '/settings', {key:'apt_qs', value:JSON.stringify(qs)}).catch(()=>{});
+  const deleted=qs.splice(i,1)[0];
+  DB.s('apt_qs',qs);
+  if(deleted?.id) apiFetch('DELETE',`/data/apt_questions/${deleted.id}`).catch(()=>{});
   closeModal();
   openAptSetup();
   toast('Question deleted','i');
@@ -635,8 +641,9 @@ apiFetch('POST', '/settings', {key:'apt_qs', value:JSON.stringify(qs)}).catch(()
 
 function clearAptQuestions(){
   if(!confirm('Delete all aptitude questions?')) return;
-  DB.s('apt_qs', []);
-apiFetch('POST', '/settings', {key:'apt_qs', value:JSON.stringify([])}).catch(()=>{});
+  const oldQs=DB.g('apt_qs')||[];
+  DB.s('apt_qs',[]);
+  oldQs.forEach(q=>{if(q.id) apiFetch('DELETE',`/data/apt_questions/${q.id}`).catch(()=>{});});
   closeModal();
   openAptSetup();
   toast('Questions cleared','i');
