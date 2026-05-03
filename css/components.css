@@ -279,3 +279,25 @@ footer {
   .sc { text-align: center; }
   .sc-ico { margin: 0 auto 6px; }
 }
+
+.sb-close {
+  display: none;
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.1);
+  color: rgba(255,255,255,.7);
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background .2s;
+  z-index: 10;
+}
+.sb-close:hover { background: rgba(255,255,255,.2); }
+@media (max-width: 768px) {
+  .sidebar { position: fixed; }
+  .sb-close { display: flex; }
+}
