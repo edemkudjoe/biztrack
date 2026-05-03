@@ -1088,8 +1088,11 @@ function openAddBenefit(){
     <div class="f"><label>Value / Description</label><input type="text" id="nb-vl" placeholder="e.g. ₵150/month"></div>
   `,[{l:'Add Benefit',c:'b-nv',fn:()=>{
     const benefits=DB.g('benefits')||[];
-    benefits.push({id:Date.now(),name:document.getElementById('nb-nm').value,value:document.getElementById('nb-vl').value,empIds:[]});
-    DB.s('benefits',benefits);closeModal();showPage('e_benefits');toast('Benefit added','s');
+    const newB={name:document.getElementById('nb-nm').value,value:document.getElementById('nb-vl').value,empIds:[]};
+apiFetch('POST','/data/benefits',newB).then(r=>{
+  if(r.record){benefits.push(r.record);DB.s('benefits',benefits);}
+  closeModal();showPage('e_benefits');toast('Benefit added','s');
+}).catch(()=>toast('Failed to save benefit','e'));
   }}]);
 }
 function openEditBenefit(i){
@@ -1106,7 +1109,9 @@ function openEditBenefit(i){
   `,[{l:'Save',c:'b-gr',fn:()=>{
     const sel=Array.from(document.getElementById('eb-emps').selectedOptions).map(o=>o.value);
     benefits[i]={...b,value:document.getElementById('eb-vl').value,empIds:sel};
-    DB.s('benefits',benefits);closeModal();showPage('e_benefits');toast('Benefits updated','s');
+DB.s('benefits',benefits);
+if(b.id) apiFetch('PUT',`/data/benefits/${b.id}`,{value:benefits[i].value,empIds:sel}).catch(()=>{});
+closeModal();showPage('e_benefits');toast('Benefits updated','s');
   }}]);
 }
 
