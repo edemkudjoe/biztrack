@@ -10,20 +10,36 @@ module.exports = async function (req, res) {
     let decoded;
     try { decoded = verifyToken(req); } catch (e) { return res.status(401).json({ error: 'Unauthorized' }); }
     // ── SETTINGS ──
-    if (route === 'settings') {
-      if (req.method === 'GET') {
-        const { data, error } = await getSupabase().from('settings').select('*').eq('key', 'attendance').single();
-        if (error) return res.status(200).json({ settings: {} });
-        return res.status(200).json({ settings: data.value || {} });
-      }
-      if (req.method === 'POST') {
-        if (decoded.role !== 'employer') return res.status(403).json({ error: 'Forbidden' });
-        const { error } = await getSupabase().from('settings').upsert({ key: 'attendance', value: req.body, updated_at: new Date().toISOString() });
-        if (error) return res.status(400).json({ error: error.message });
-        return res.status(200).json({ success: true });
-      }
-      return res.status(405).end();
+if (route === 'settings') {
+  if (req.method === 'GET') {
+    const { key } = req.query;
+    if (key) {
+      // Fetch a specific key
+      const { data, error } = await getSupabase().from('settings').select('*').eq('key', key).single();
+      if (error) return res.status(200).json({ settings: {} });
+      return res.status(200).json({ settings: data.value || {} });
+    } else {
+      // Fetch all settings rows
+      const { data, error } = await getSupabase().from('settings').select('*');
+      if (error) return res.status(200).json({ records: [] });
+      return res.status(200).json({ records: data });
     }
+  }
+  if (req.method === 'POST') {
+    if (decoded.role !== 'employer') return res.status(403).json({ error: 'Forbidden' });
+    const { key, value, ...rest } = req.body;
+    // If a key is explicitly provided, upsert by that key
+    const upsertKey = key || 'attendance';
+    const upsertValue = key ? value : req.body;
+    const { error } = await getSupabase().from('settings').upsert(
+      { key: upsertKey, value: upsertValue, updated_at: new Date().toISOString() },
+      { onConflict: 'key' }
+    );
+    if (error) return res.status(400).json({ error: error.message });
+    return res.status(200).json({ success: true });
+  }
+  return res.status(405).end();
+}
     // ── CHANGE PASSWORD ──
     if (route === 'change-password') {
       const { currentPassword, newPassword } = req.body;
