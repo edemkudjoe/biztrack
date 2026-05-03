@@ -626,7 +626,8 @@ toast('Question added','s');
 function deleteAptQuestion(i){
   const qs=DB.g('apt_qs')||[];
   qs.splice(i,1);
-  DB.s('apt_qs',qs);
+  DB.s('apt_qs', qs);
+apiFetch('POST', '/settings', {key:'apt_qs', value:JSON.stringify(qs)}).catch(()=>{});
   closeModal();
   openAptSetup();
   toast('Question deleted','i');
@@ -634,7 +635,8 @@ function deleteAptQuestion(i){
 
 function clearAptQuestions(){
   if(!confirm('Delete all aptitude questions?')) return;
-  DB.s('apt_qs',[]);
+  DB.s('apt_qs', []);
+apiFetch('POST', '/settings', {key:'apt_qs', value:JSON.stringify([])}).catch(()=>{});
   closeModal();
   openAptSetup();
   toast('Questions cleared','i');
