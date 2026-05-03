@@ -27,18 +27,18 @@ const recordId = parts[2] || urlParts[3];
     }
 
     if (req.method === 'POST') {
-      const body = { ...req.body, created_at: new Date().toISOString() };
-      const { data, error } = await getSupabase().from(table).insert([body]).select().single();
-      return error ? res.status(400).json({ error: error.message }) : res.status(201).json({ record: data });
-    }
+  if (decoded.role !== 'employer') return res.status(403).json({ error: 'Forbidden' });
+  const body = { ...req.body, created_at: new Date().toISOString() };
+      }
 
     if (req.method === 'PUT' && recordId) {
-      const { data, error } = await getSupabase().from(table).update(req.body).eq('id', recordId).select().single();
-      return error ? res.status(400).json({ error: error.message }) : res.status(200).json({ record: data });
-    }
+  if (decoded.role !== 'employer') return res.status(403).json({ error: 'Forbidden' });
+  const { data, error } = await getSupabase().from(table).update(req.body)
+      }
+      
 if (req.method === 'DELETE' && recordId) {
-const { error } = await getSupabase().from(table).delete().eq('id', recordId);
-return error ? res.status(400).json({ error: error.message }) : res.status(200).json({ success: true });
+  if (decoded.role !== 'employer') return res.status(403).json({ error: 'Forbidden' });
+  const { error } = await getSupabase().from(table).delete()
 }
     return res.status(405).end();
   }
