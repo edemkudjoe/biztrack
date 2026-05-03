@@ -1203,9 +1203,20 @@ function pSettings(el){
       <button class="btn b-ol" onclick="clearTable('applicants')">Clear Applicants</button>
       <button class="btn b-ol" onclick="clearTable('complaints')">Clear Complaints</button>
       <button class="btn b-ol" onclick="clearTable('attendance')">Clear Attendance</button>
-      <button class="btn b-rd" onclick="if(confirm('RESET ALL DATA? This cannot be undone.')){['costs','revenue','tasks','attendance','leaves','advances','promos','complaints','applicants'].forEach(t=>DB.s(t,[]));localStorage.clear();location.reload();}">Reset All Data</button>
+      <button class="btn b-rd" onclick="resetAllData()">Reset All Data</button>
     </div>
   </div>`;
+}
+async function resetAllData(){
+  if(!confirm('RESET ALL DATA? This cannot be undone.')) return;
+  const tables=['costs','revenue','tasks','attendance','leaves','advances','promos','complaints','applicants','benefits'];
+  for(const table of tables){
+    const records=DB.g(table)||[];
+    await Promise.all(records.filter(r=>r.id).map(r=>apiFetch('DELETE',`/data/${table}/${r.id}`).catch(()=>{})));
+    DB.s(table,[]);
+  }
+  localStorage.clear();
+  location.reload();
 }
 async function clearTable(table){
   if(!confirm(`Clear all ${table}?`)) return;
