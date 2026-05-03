@@ -18,11 +18,13 @@
     "api/portal.js":         { "maxDuration": 30 }
   },
   "rewrites": [
+    { "source": "/api/portal-:path*", "destination": "/api/portal.js" },
     { "source": "/api/data/:path*", "destination": "/api/data.js" },
     { "source": "/api/users/:path*", "destination": "/api/users.js" },
+    { "source": "/api/change-password", "destination": "/api/settings.js" },
     { "source": "/careers", "destination": "/careers.html" },
     { "source": "/",        "destination": "/index.html" },
     { "source": "/app",     "destination": "/app.html" },
-    { "source": "/((?!api/).*)", "destination": "/app.html" } 
+    { "source": "/((?!api/).*)", "destination": "/app.html" }
   ]
 }
