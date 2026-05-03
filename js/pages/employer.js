@@ -612,11 +612,14 @@ function addAptQuestion(){
     const d=document.getElementById('aq-d').value.trim();
     if(!q||!a||!b||!c||!d){toast('Fill all fields','e');return;}
     const qs=DB.g('apt_qs')||[];
-    qs.push({q,opts:[a,b,c,d],ans:parseInt(document.getElementById('aq-ans').value)});
-    DB.s('apt_qs',qs);
-    closeModal();
-    openAptSetup();
-    toast('Question added','s');
+    // AFTER
+qs.push({q, opts:[a,b,c,d], ans:parseInt(document.getElementById('aq-ans').value)});
+DB.s('apt_qs', qs);
+// Sync entire questions array to Supabase settings table
+apiFetch('POST', '/settings', {key:'apt_qs', value:JSON.stringify(qs)}).catch(()=>{});
+closeModal();
+openAptSetup();
+toast('Question added','s');
   }}]);
 }
 
