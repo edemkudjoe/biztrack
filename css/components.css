@@ -275,9 +275,15 @@ footer {
   .modal { animation: slideUpModal .28s ease; }
   @keyframes slideUpModal { from { transform: translateY(100%); } to { transform: translateY(0); } }
   .mobile-toggle { display: flex !important; }
-  .sg { grid-template-columns: 1fr 1fr !important; }
-  .sc { text-align: center; }
+  .main { margin-left: 0 !important; width: 100% !important; max-width: 100vw; overflow-x: hidden; }
+  .content { width: 100%; max-width: 100%; overflow-x: hidden; }
+  .sg { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 8px !important; width: 100% !important; }
+  .sc { text-align: center; min-width: 0; }
   .sc-ico { margin: 0 auto 6px; }
+  .card { width: 100%; max-width: 100%; min-width: 0; }
+  .tw { width: 100%; max-width: 100%; }
+  .g2, .g3 { width: 100%; }
+  .pr-nm { width: 90px; }
 }
 
 .sb-close {
