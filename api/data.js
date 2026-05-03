@@ -38,11 +38,11 @@ const recordId = parts[2] || urlParts[3];
       
 if (req.method === 'DELETE' && recordId) {
   if (decoded.role !== 'employer') return res.status(403).json({ error: 'Forbidden' });
-  const { error } = await getSupabase().from(table).delete()
+  const { error } = await getSupabase().from(table).delete().eq('id', recordId);
+  return error ? res.status(400).json({ error: error.message }) : res.status(200).json({ success: true });
+}
+if (req.method === 'DELETE' && !recordId) {
+  return res.status(400).json({ error: 'Record ID is required for deletion.' });
 }
     return res.status(405).end();
-  }
-  catch (err) {
-    return res.status(500).json({ error: err.message });
-  }
 };
