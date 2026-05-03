@@ -141,6 +141,7 @@ function logout(){
   if(window._pollInterval){clearInterval(window._pollInterval);window._pollInterval=null;}
   document.getElementById('app').style.display='none';
   document.getElementById('login-screen').style.display='flex';
+  history.replaceState(null,'',window.location.pathname);
 }
 
 // ═══════════════════════════ SYNC HELPERS ═══════════════════════════
@@ -311,7 +312,7 @@ function showPage(pid,skipHistory=false,isPoll=false){
     emp_leave:pMyLeave,emp_complaints:pMyComplaints,emp_profile:pProfile,
   };
   if(R[pid]) R[pid](pg); else pg.innerHTML='<p style="color:var(--text-muted)">Page not found.</p>';
-  if(!skipHistory&&!isPoll) history.pushState({page:pid},'','#'+pid);
+  if(!skipHistory&&!isPoll) history.pushState({page:pid},'',window.location.pathname);
   if(window.innerWidth<=768&&!isPoll){
     document.querySelector('.sidebar').classList.remove('mobile-open');
     document.getElementById('mobile-overlay').classList.remove('active');
