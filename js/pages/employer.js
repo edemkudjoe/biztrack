@@ -1201,11 +1201,17 @@ function pSettings(el){
 async function clearTable(table){
   if(!confirm(`Clear all ${table}?`)) return;
   try{
+    // Delete all records from Supabase
+    const records=(DB.g(table)||[]);
+    await Promise.all(
+      records.filter(r=>r.id).map(r=>apiFetch('DELETE',`/data/${table}/${r.id}`))
+    );
+    // Clear localStorage
     if(table==='applicants') DB.s('rec_stage','collecting');
     DB.s(table,[]);
     toast('Cleared','i');
     showPage('e_settings');
-  }catch(e){toast('Clear failed','e');}
+  }catch(e){toast('Clear failed: '+e.message,'e');}
 }
 function getCurrentLocation(){
   const msg=document.getElementById('att-msg');
