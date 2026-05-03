@@ -250,7 +250,7 @@ function submitCareersApplication(){
     phone:document.getElementById('cp-phone').value,
     position:_cpSelectedJob?.title||'General Application',
     dept:_cpSelectedJob?.dept||'',
-    education:eduEl.options[eduEl.selectedIndex]?.text||'',
+    education:eduEl.selectedIndex>0?eduEl.options[eduEl.selectedIndex].text:'',
     eduScore,
     experience:expScore,
     expScore,
