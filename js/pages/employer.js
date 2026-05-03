@@ -409,8 +409,10 @@ function openEditWL(){
     <div class="f"><label>Radius (metres)</label><input type="number" id="wl-r" value="${wl.radius||500}"></div>
     <div class="al al-b">${ic('map-pin',13)} Right-click your office on Google Maps to get coordinates.</div>
   `,[{l:'Save Location',c:'b-nv',fn:()=>{
-    DB.s('work_location',{name:document.getElementById('wl-nm').value,lat:parseFloat(document.getElementById('wl-lt').value)||0,lng:parseFloat(document.getElementById('wl-lg').value)||0,radius:parseInt(document.getElementById('wl-r').value)||500});
-    closeModal();showPage('e_attendance_mgr');toast('Location updated','s');
+    const wlData={name:document.getElementById('wl-nm').value,lat:parseFloat(document.getElementById('wl-lt').value)||0,lng:parseFloat(document.getElementById('wl-lg').value)||0,radius:parseInt(document.getElementById('wl-r').value)||500};
+DB.s('work_location',wlData);
+apiFetch('POST','/settings',{key:'work_location',value:JSON.stringify(wlData)}).catch(()=>{});
+closeModal();showPage('e_attendance_mgr');toast('Location updated','s');
   }}]);
 }
 
