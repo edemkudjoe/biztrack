@@ -443,3 +443,30 @@ function submitCPNegotiation(){
   document.getElementById('cp-offer-action-btns').style.display='none';
   updNotif();
 }
+
+// ==========================================
+// CAREERS PORTAL INITIALIZATION
+// ==========================================
+document.addEventListener('DOMContentLoaded', () => {
+  // Check if we are actually on the careers page
+  if (document.getElementById('careers-portal')) {
+    
+    // 1. Set the company name from local storage
+    const co = DB.g('company') || {};
+    const nameEl = document.getElementById('cp-company-name');
+    if (nameEl) nameEl.textContent = co.name ? 'Careers at ' + co.name : 'Join Our Team';
+
+    // 2. Check if an applicant is already logged in
+    const saved = localStorage.getItem('cp_jwt');
+    const savedUser = localStorage.getItem('cp_user');
+    if (saved && savedUser) {
+      _cpUser = JSON.parse(savedUser);
+      setCPLoggedIn();
+    } else {
+      setCPLoggedOut();
+    }
+
+    // 3. Fetch and display the open positions!
+    showJobsList();
+  }
+});
