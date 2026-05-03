@@ -15,7 +15,8 @@
     "api/users.js":          { "maxDuration": 30 },
     "api/data.js":           { "maxDuration": 30 },
     "api/settings.js":       { "maxDuration": 30 },
-    "api/portal.js":         { "maxDuration": 30 }
+    "api/portal.js":         { "maxDuration": 30 },
+    "api/rank.js": { "maxDuration": 60 }
   },
   "rewrites": [
     { "source": "/api/portal-:path*", "destination": "/api/portal.js" },
@@ -25,6 +26,7 @@
     { "source": "/careers", "destination": "/careers.html" },
     { "source": "/",        "destination": "/index.html" },
     { "source": "/app",     "destination": "/app.html" },
-    { "source": "/((?!api/).*)", "destination": "/app.html" }
+    { "source": "/((?!api/).*)", "destination": "/app.html" },
+    { "source": "/api/rank", "destination": "/api/rank.js" }
   ]
 }
