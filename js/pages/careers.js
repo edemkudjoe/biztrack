@@ -347,41 +347,66 @@ function cpSelOpt(lbl,qi){
   lbl.querySelector('input').checked=true;
 }
 
-async function submitCPAptTest(){
-  if(!_cpUser) return;
-  const qs=DB.g('apt_qs')||[];
-  const msg=document.getElementById('cp-apt-msg');
-  // Check all answered
-  let allAnswered=true;
-  qs.forEach((_,i)=>{if(!document.querySelector(`input[name="cpq${i}"]:checked`)) allAnswered=false;});
-  if(!allAnswered){msg.innerHTML='<div class="al al-a">Please answer all questions before submitting.</div>';return;}
-  let correct=0;
-  qs.forEach((_,i)=>{
-    const sel=document.querySelector(`input[name="cpq${i}"]:checked`);
-    if(sel&&parseInt(sel.value)===qs[i].ans) correct++;
-  });
-  msg.innerHTML='<div class="al al-b">Submitting your test…</div>';
+async function showCPAptTest(){
+  if(!_cpUser){showCPAuth('login');return;}
   const apps=DB.g('applicants')||[];
-  const idx=apps.findIndex(a=>a.email===_cpUser.email&&a.testInvited);
-  if(idx>=0){
-    apps[idx].testScore=correct;
-    DB.s('applicants',apps);
-    // Sync to Supabase
-    if(apps[idx].id){
-      const cpToken=localStorage.getItem('cp_jwt');
-      try{
-        await fetch(`${API}/data/applicants/${apps[idx].id}`,{method:'PUT',headers:{'Content-Type':'application/json','Authorization':`Bearer ${cpToken}`},body:JSON.stringify({testScore:correct})});
-      }catch(e){console.warn('Failed to sync test score',e);}
-    }
-  }
-  msg.innerHTML=`<div class="al al-g">Test submitted! You scored <strong>${correct}/${qs.length}</strong>. We will contact you with next steps.</div>`;
-  setTimeout(()=>{
-    const tv=document.getElementById('cp-test-view');
-    if(tv) tv.style.display='none';
-    showTrackView();
-  },2500);
-}
+  const myApp=apps.find(a=>a.email===_cpUser.email&&a.testInvited);
+  if(!myApp){toast('You have not been invited to take the aptitude test yet.','e');return;}
+  if(myApp.testScore!==undefined){toast('You have already completed the aptitude test.','i');showTrackView();return;}
 
+  // Fetch questions from settings table (employer saves them there)
+  let qs=DB.g('apt_qs')||[];
+  if(qs.length===0){
+    try{
+      const cpToken=localStorage.getItem('cp_jwt');
+      const r=await fetch(`${API}/data/settings`,{
+        headers:{'Authorization':`Bearer ${cpToken}`}
+      });
+      const data=await r.json();
+      const row=(data.records||[]).find(s=>s.key==='apt_qs');
+      if(row&&row.value){
+        qs=typeof row.value==='string'?JSON.parse(row.value):row.value;
+        DB.s('apt_qs',qs);
+      }
+    }catch(e){console.warn('Failed to fetch apt questions',e);}
+  }
+
+  if(qs.length===0){toast('No test questions available yet. Please check back later.','e');return;}
+
+  // Hide all views
+  ['cp-auth-view','cp-jobs-view','cp-apply-view','cp-track-view','cp-offer-view'].forEach(id=>{
+    document.getElementById(id).style.display='none';
+  });
+
+  // Create or reuse test view — using querySelector('.cp-body') not getElementById
+  let testView=document.getElementById('cp-test-view');
+  if(!testView){
+    testView=document.createElement('div');
+    testView.id='cp-test-view';
+    document.querySelector('.cp-body').appendChild(testView);
+  }
+  testView.style.display='block';
+  testView.innerHTML=`
+    <div class="cp-back-link" onclick="showJobsList()">← Back</div>
+    <div class="cp-form-card">
+      <div style="font-size:20px;font-weight:900;color:#fff;margin-bottom:4px">Aptitude Test</div>
+      <p style="color:rgba(255,255,255,.55);font-size:13px;margin-bottom:20px">Answer all ${qs.length} questions carefully. You can only submit once.</p>
+      <div id="cp-apt-questions">
+        ${qs.map((q,i)=>`
+          <div style="background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:16px;margin-bottom:14px">
+            <div style="font-size:13.5px;font-weight:800;color:#fff;margin-bottom:12px">Q${i+1}. ${q.q}</div>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              ${q.opts.map((o,oi)=>`
+                <label style="display:flex;align-items:center;gap:10px;padding:10px 13px;border:2px solid rgba(255,255,255,.15);border-radius:8px;cursor:pointer;transition:all .18s;font-size:13px;color:#fff" onclick="cpSelOpt(this,${i})">
+                  <input type="radio" name="cpq${i}" value="${oi}" style="accent-color:var(--accent)">${String.fromCharCode(65+oi)}) ${o}
+                </label>`).join('')}
+            </div>
+          </div>`).join('')}
+      </div>
+      <div id="cp-apt-msg" style="margin-bottom:12px"></div>
+      <button class="btn-login" onclick="submitCPAptTest()">Submit Test</button>
+    </div>`;
+}
 function showTrackView(){
   document.getElementById('cp-auth-view').style.display='none';
   document.getElementById('cp-jobs-view').style.display='none';
