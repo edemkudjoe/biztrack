@@ -21,8 +21,9 @@ module.exports = async function (req, res) {
       const { data: existing } = await getSupabase().from('applicants').select('id').eq('email', email).eq('portalAccount', true).single();
       if (existing) return res.status(400).json({ error: 'An account with this email already exists.' });
       const hashed = await bcrypt.hash(password, 10);
-      const { data, error } = await getSupabase().from('applicants').insert([{
-        name, email, password: hashed, securityQuestion, securityAnswer,
+const hashedAnswer = await bcrypt.hash(securityAnswer.toLowerCase(), 10);
+const { data, error } = await getSupabase().from('applicants').insert([{
+  name, email, password: hashed, securityQuestion, securityAnswer: hashedAnswer,
         portalAccount: true, appliedDate: new Date().toISOString().split('T')[0],
         created_at: new Date().toISOString()
       }]).select().single();
@@ -53,7 +54,7 @@ module.exports = async function (req, res) {
       if (step === 'reset') {
         const { data: user, error } = await getSupabase().from('applicants').select('*').eq('email', email).eq('portalAccount', true).single();
         if (error || !user) return res.status(404).json({ error: 'Account not found.' });
-        const match = user.securityAnswer?.toLowerCase() === securityAnswer?.toLowerCase();
+        const match = await bcrypt.compare(securityAnswer.toLowerCase(), user.securityAnswer);
         if (!match) return res.status(401).json({ error: 'Incorrect security answer.' });
         const hashed = await bcrypt.hash(newPassword, 10);
         await getSupabase().from('applicants').update({ password: hashed }).eq('email', email);
