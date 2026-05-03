@@ -1036,7 +1036,7 @@ function previewOfferTemplate(){
   openModal('Preview Employment Letter',generateOfferLetterHTML({name:'Jane Doe',position:'Software Engineer'},co),[]);
 }
 function generateOfferLetterHTML(app,co){
-  const rate=co.defaultRate||20;
+  const rate=app.offeredSalary||co.defaultRate||20;
   const schedule=co.workSchedule||'Monday – Friday, 8:00 AM – 5:00 PM';
   const probation=co.probation||'3 months';
   const expiryDays=co.offerExpiry||7;
@@ -1063,9 +1063,10 @@ function generateOfferLetterHTML(app,co){
     <div style="background:var(--card);border-radius:8px;padding:14px;margin:14px 0">
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
         <div><div style="font-size:10.5px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.6px">Position</div><div style="font-size:13px;font-weight:700">${app.position}</div></div>
-        <div><div style="font-size:10.5px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.6px">Hourly Rate</div><div style="font-size:13px;font-weight:700">${GHS}${rate}/hour</div></div>
+        <div><div style="font-size:10.5px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.6px">Salary / Rate</div><div style="font-size:13px;font-weight:700">${app.offeredSalary||`${GHS}${rate}/hour`}</div></div>
         <div><div style="font-size:10.5px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.6px">Work Schedule</div><div style="font-size:13px;font-weight:700">${schedule}</div></div>
         <div><div style="font-size:10.5px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.6px">Probation Period</div><div style="font-size:13px;font-weight:700">${probation}</div></div>
+<div><div style="font-size:10.5px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.6px">Start Date</div><div style="font-size:13px;font-weight:700">${app.startDate||'To be confirmed'}</div></div>
         ${co.managerName?`<div><div style="font-size:10.5px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.6px">Reporting To</div><div style="font-size:13px;font-weight:700">${co.managerName}</div></div>`:''}
         ${co.benefitsSummary?`<div><div style="font-size:10.5px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.6px">Benefits</div><div style="font-size:13px;font-weight:700">${co.benefitsSummary}</div></div>`:''}
       </div>
