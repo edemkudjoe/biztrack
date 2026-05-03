@@ -139,9 +139,7 @@ function logout(){
   JWT=null;CU=null;ROLE=null;
   localStorage.removeItem('bt_jwt');localStorage.removeItem('bt_cu');
   if(window._pollInterval){clearInterval(window._pollInterval);window._pollInterval=null;}
-  document.getElementById('app').style.display='none';
-  document.getElementById('login-screen').style.display='flex';
-  history.replaceState(null,'','/');
+  window.location.href='/';
 }
 
 // ═══════════════════════════ SYNC HELPERS ═══════════════════════════
@@ -215,9 +213,7 @@ async function syncData(headers){
 
 // ═══════════════════════════ LAUNCH ═══════════════════════════
 async function launchApp(){
-  document.getElementById('login-screen').style.display='none';
-  ['applicant-portal','offer-portal'].forEach(id=>document.getElementById(id).classList.remove('open'));
-  document.getElementById('app').style.display='block';
+  window.location.href='/app';
 
   const headers={'Content-Type':'application/json','Authorization':`Bearer ${JWT}`};
 
@@ -386,4 +382,16 @@ window.addEventListener('popstate',(event)=>{
 function toggleMobileMenu(){
   document.querySelector('.sidebar').classList.toggle('mobile-open');
   document.getElementById('mobile-overlay').classList.toggle('active');
+}
+
+// ==========================================
+// INITIALIZATION 
+// ==========================================
+if (JWT && CU) {
+  // If the user is already logged in, set their role and launch the app
+  ROLE = CU.role;
+  launchApp(); 
+} else if (window.location.pathname === '/app') {
+  // If they are NOT logged in, but are trying to view the dashboard, kick them back to login
+  window.location.href = '/';
 }

@@ -18,14 +18,9 @@
     "api/portal.js":         { "maxDuration": 30 }
   },
   "rewrites": [
-    { "source": "/api/auth",            "destination": "/api/auth" },
-    { "source": "/api/users/:path*",    "destination": "/api/users" },
-    { "source": "/api/data/:path*",     "destination": "/api/data" },
-    { "source": "/api/settings",        "destination": "/api/settings" },
-    { "source": "/api/change-password", "destination": "/api/settings" },
-    { "source": "/api/portal-signup",   "destination": "/api/portal" },
-    { "source": "/api/portal-login",    "destination": "/api/portal" },
-    { "source": "/api/portal-reset",    "destination": "/api/portal" },
-    { "source": "/((?!api/).*)",        "destination": "/index.html" }
+    { "source": "/careers", "destination": "/careers.html" },
+    { "source": "/app",     "destination": "/app.html" },
+    { "source": "/",        "destination": "/index.html" },
+    { "source": "/((?!api/).*)", "destination": "/index.html" }
   ]
 }
