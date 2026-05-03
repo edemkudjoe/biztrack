@@ -283,27 +283,24 @@ function submitCareersApplication(){
 
 async function showCPAptTest(){
   if(!_cpUser){showCPAuth('login');return;}
+
+  let qs=[];
+  try{
+    const cpToken=localStorage.getItem('cp_jwt');
+    const r=await fetch(`${API}/data/apt_questions`,{headers:{'Authorization':`Bearer ${cpToken}`}});
+    const data=await r.json();
+    if(data.records&&data.records.length>0){
+      qs=data.records;
+      DB.s('apt_qs',qs);
+    }
+  }catch(e){console.warn('Failed to fetch apt questions',e);}
+
+  if(qs.length===0) qs=DB.g('apt_qs')||[];
+
   const apps=DB.g('applicants')||[];
   const myApp=apps.find(a=>a.email===_cpUser.email&&a.testInvited);
   if(!myApp){toast('You have not been invited to take the aptitude test yet.','e');return;}
   if(myApp.testScore!==undefined){toast('You have already completed the aptitude test.','i');showTrackView();return;}
-
-  let qs=DB.g('apt_qs')||[];
-  if(qs.length===0){
-    try{
-      const cpToken=localStorage.getItem('cp_jwt');
-      const r=await fetch(`${API}/data/settings`,{
-        headers:{'Authorization':`Bearer ${cpToken}`}
-      });
-      const data=await r.json();
-      const row=(data.records||[]).find(s=>s.key==='apt_qs');
-      if(row&&row.value){
-        qs=typeof row.value==='string'?JSON.parse(row.value):row.value;
-        DB.s('apt_qs',qs);
-      }
-    }catch(e){console.warn('Failed to fetch apt questions',e);}
-  }
-
   if(qs.length===0){toast('No test questions available yet. Please check back later.','e');return;}
 
   ['cp-auth-view','cp-jobs-view','cp-apply-view','cp-track-view','cp-offer-view'].forEach(id=>{
