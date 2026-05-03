@@ -12,18 +12,39 @@
 #careers-portal{display:none;min-height:100vh;background:linear-gradient(135deg,#1b2e4b 0%,#2d4f80 100%);
   flex-direction:column;align-items:center;padding:0}
 #careers-portal.open{display:flex}
+
+/* Header */
 .cp-header{width:100%;background:rgba(0,0,0,.25);backdrop-filter:blur(10px);
   padding:16px 32px;display:flex;align-items:center;justify-content:space-between;
-  border-bottom:1px solid rgba(255,255,255,.1);position:sticky;top:0;z-index:10}
+  border-bottom:1px solid rgba(255,255,255,.1);position:sticky;top:0;z-index:10;
+  flex-wrap:wrap;gap:10px}
 .cp-header-logo{font-size:22px;font-weight:900;color:#fff;letter-spacing:-1px}
 .cp-header-logo span{color:var(--accent)}
 .cp-header-sub{font-size:11px;color:rgba(255,255,255,.5);font-weight:600;text-transform:uppercase;letter-spacing:1px}
+.cp-header-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.cp-auth-status{font-size:12px;color:rgba(255,255,255,.8);font-weight:700}
+
+/* Override outline buttons inside careers portal to be white */
+#careers-portal .btn.b-ol{
+  border-color:rgba(255,255,255,.4);
+  color:#fff;
+  background:transparent;
+}
+#careers-portal .btn.b-ol:hover{
+  border-color:#fff;
+  background:rgba(255,255,255,.1);
+  color:#fff;
+}
+
+/* Body */
 .cp-body{width:100%;max-width:900px;padding:40px 20px 60px}
 .cp-hero{text-align:center;margin-bottom:44px;animation:slideUp .5s ease}
 .cp-hero h1{font-size:36px;font-weight:900;color:#fff;margin-bottom:8px;letter-spacing:-1.5px}
 .cp-hero p{font-size:15px;color:rgba(255,255,255,.6);max-width:480px;margin:0 auto}
 .cp-section-title{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;
   color:rgba(255,255,255,.4);margin-bottom:16px}
+
+/* Job cards */
 .job-card{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);
   border-radius:14px;padding:22px 26px;margin-bottom:14px;cursor:pointer;
   transition:all .22s;animation:slideUp .4s ease}
@@ -36,10 +57,13 @@
   padding:4px 10px;border-radius:20px;border:1px solid rgba(255,255,255,.1)}
 .job-card-desc{font-size:13px;color:rgba(255,255,255,.55);margin-top:10px;line-height:1.6}
 .job-apply-btn{background:var(--accent);color:#fff;border-radius:8px;padding:9px 18px;
-  font-weight:800;font-size:13px;white-space:nowrap;transition:all .2s;flex-shrink:0}
+  font-weight:800;font-size:13px;white-space:nowrap;transition:all .2s;flex-shrink:0;
+  min-height:44px;display:inline-flex;align-items:center;justify-content:center}
 .job-apply-btn:hover{background:#27ae60;transform:translateY(-1px)}
 .cp-empty{text-align:center;padding:60px 20px;color:rgba(255,255,255,.35)}
 .cp-empty-ico{font-size:48px;margin-bottom:14px;opacity:.4}
+
+/* Form card */
 .cp-form-card{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);
   border-radius:16px;padding:32px;animation:slideUp .4s ease}
 .cp-form-card .fg label{color:rgba(255,255,255,.6)}
@@ -47,10 +71,14 @@
 .cp-form-card select.fi option{background:#1b2e4b;color:#fff}
 .cp-form-card .fi:focus{border-color:var(--accent);background:rgba(255,255,255,.12)}
 .cp-form-card .fi::placeholder{color:rgba(255,255,255,.3)}
+
+/* Nav */
 .cp-back-link{color:rgba(255,255,255,.55);font-size:13px;font-weight:600;cursor:pointer;
   display:inline-flex;align-items:center;gap:6px;transition:color .2s;margin-bottom:20px;
   min-height:44px}
 .cp-back-link:hover{color:#fff}
+
+/* Progress tracker */
 .cp-progress{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);
   border-radius:12px;padding:18px 22px;margin-bottom:20px}
 .cp-progress-title{font-size:12px;font-weight:700;color:rgba(255,255,255,.5);text-transform:uppercase;
@@ -73,11 +101,11 @@
   #applicant-portal,#offer-portal { padding: 20px 16px; align-items: flex-start; }
   .portal-box { padding: 24px 20px; border-radius: 12px; }
 
-  .cp-header { flex-wrap: wrap; padding: 12px 16px; gap: 8px; }
+  .cp-header { padding: 12px 16px; gap: 8px; }
   .cp-header-logo { font-size: 18px; }
   .cp-header-sub { font-size: 10px; }
-  .cp-header > div:last-child { flex-wrap: wrap; gap: 6px; }
-  .cp-header .btn-sm { min-height: 44px; padding: 8px 12px; }
+  .cp-header-actions { gap: 6px; }
+  .cp-header-actions .btn-sm { min-height: 44px; padding: 8px 12px; font-size: 11px; }
 
   .cp-body { padding: 24px 14px 40px; }
   .cp-hero { margin-bottom: 28px; }
@@ -87,7 +115,7 @@
   .job-card { padding: 16px 18px; }
   .job-card-title { font-size: 15px; }
   .job-card-top { flex-direction: column; }
-  .job-apply-btn { width: 100%; text-align: center; margin-top: 10px; min-height: 44px; }
+  .job-apply-btn { width: 100%; margin-top: 10px; }
 
   .cp-form-card { padding: 20px 16px; }
   .cp-progress { padding: 14px 16px; }
@@ -99,13 +127,13 @@
 
   .cp-hero h1 { font-size: 22px; letter-spacing: -0.5px; }
   .cp-hero p { font-size: 12px; }
+  .cp-header-sub { display: none; }
 
   .job-card { padding: 14px; }
   .job-meta-pill { font-size: 10.5px; padding: 3px 8px; }
 
   .cp-form-card { padding: 16px 14px; }
   .cp-stage-label { font-size: 12px; }
-  .cp-header-sub { display: none; }
 }
 
 @media (max-width: 360px) {
