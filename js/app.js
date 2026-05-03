@@ -218,7 +218,11 @@ async function syncData(headers){
 
 // ═══════════════════════════ LAUNCH ═══════════════════════════
 async function launchApp(){
-  window.location.href='/app';
+  // FIX 1: Prevent the infinite loop! Only redirect if we are on the login page.
+  if (window.location.pathname === '/' || window.location.pathname === '/index.html') {
+    window.location.href = '/app';
+    return; 
+  }
 
   const headers={'Content-Type':'application/json','Authorization':`Bearer ${JWT}`};
 
@@ -237,27 +241,18 @@ async function launchApp(){
   document.getElementById('yr').textContent=new Date().getFullYear();
   const p=document.getElementById('dk-pill');if(p) p.classList.toggle('on',DARK);
   buildNav();
-  showPage(ROLE==='employer'?'e_dash':'emp_dash');
+  
+  // FIX 2: If the user refreshes on a specific page (like /e_finance), keep them there!
+  const currentPath = window.location.pathname.substring(1);
+  if (PT[currentPath]) {
+    showPage(currentPath, true); // The 'true' stops it from pushing to history again
+  } else {
+    showPage(ROLE==='employer'?'e_dash':'emp_dash');
+  }
+  
   updNotif();
 
-  // Start polling
-  if(window._pollInterval) clearInterval(window._pollInterval);
-  window._pollInterval=setInterval(async()=>{
-    if(!JWT) return;
-    const h={'Authorization':`Bearer ${JWT}`};
-    try{
-      await syncData(h);
-      // Update sidebar name/avatar in case profile changed
-      document.getElementById('sb-nm').textContent=CU.name;
-      document.getElementById('sb-av').textContent=CU.initials||CU.name.slice(0,2).toUpperCase();
-      // Silently refresh current page if user isn't typing
-      const cur=document.querySelector('.nav-item.active');
-      if(cur&&cur.dataset.page){
-        const tag=document.activeElement?document.activeElement.tagName:'';
-        const typing=tag==='INPUT'||tag==='TEXTAREA'||tag==='SELECT';
-        if(!typing) showPage(cur.dataset.page,true,true);
-      }
-      updNotif();
+  // ... [Keep the rest of your setInterval polling code exactly as is] ...
     }catch(e){console.warn('Poll failed',e);}
   },5000);
 }
@@ -393,10 +388,9 @@ function toggleMobileMenu(){
 // INITIALIZATION 
 // ==========================================
 if (JWT && CU) {
-  // If the user is already logged in, set their role and launch the app
   ROLE = CU.role;
   launchApp(); 
-} else if (window.location.pathname === '/app') {
-  // If they are NOT logged in, but are trying to view the dashboard, kick them back to login
+} else if (window.location.pathname !== '/' && window.location.pathname !== '/careers') {
+  // If NOT logged in, and trying to access an app page, redirect to login
   window.location.href = '/';
 }
