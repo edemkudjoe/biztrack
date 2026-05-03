@@ -48,7 +48,8 @@
 .cp-form-card .fi:focus{border-color:var(--accent);background:rgba(255,255,255,.12)}
 .cp-form-card .fi::placeholder{color:rgba(255,255,255,.3)}
 .cp-back-link{color:rgba(255,255,255,.55);font-size:13px;font-weight:600;cursor:pointer;
-  display:inline-flex;align-items:center;gap:6px;transition:color .2s;margin-bottom:20px}
+  display:inline-flex;align-items:center;gap:6px;transition:color .2s;margin-bottom:20px;
+  min-height:44px}
 .cp-back-link:hover{color:#fff}
 .cp-progress{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);
   border-radius:12px;padding:18px 22px;margin-bottom:20px}
@@ -69,12 +70,14 @@
 
 /* ══════════════════ MOBILE RESPONSIVENESS ══════════════════ */
 @media (max-width: 768px) {
-  #applicant-portal,#offer-portal { padding: 20px 16px; }
-  .portal-box { padding: 24px 20px; }
+  #applicant-portal,#offer-portal { padding: 20px 16px; align-items: flex-start; }
+  .portal-box { padding: 24px 20px; border-radius: 12px; }
 
   .cp-header { flex-wrap: wrap; padding: 12px 16px; gap: 8px; }
   .cp-header-logo { font-size: 18px; }
   .cp-header-sub { font-size: 10px; }
+  .cp-header > div:last-child { flex-wrap: wrap; gap: 6px; }
+  .cp-header .btn-sm { min-height: 44px; padding: 8px 12px; }
 
   .cp-body { padding: 24px 14px 40px; }
   .cp-hero { margin-bottom: 28px; }
@@ -83,16 +86,18 @@
 
   .job-card { padding: 16px 18px; }
   .job-card-title { font-size: 15px; }
-  .job-apply-btn { width: 100%; text-align: center; justify-content: center; margin-top: 10px; }
+  .job-card-top { flex-direction: column; }
+  .job-apply-btn { width: 100%; text-align: center; margin-top: 10px; min-height: 44px; }
 
   .cp-form-card { padding: 20px 16px; }
   .cp-progress { padding: 14px 16px; }
 }
 
 @media (max-width: 480px) {
-  .portal-box { padding: 20px 16px; border-radius: 10px; }
+  #applicant-portal,#offer-portal { padding: 12px; }
+  .portal-box { padding: 20px 14px; border-radius: 10px; }
 
-  .cp-hero h1 { font-size: 22px; }
+  .cp-hero h1 { font-size: 22px; letter-spacing: -0.5px; }
   .cp-hero p { font-size: 12px; }
 
   .job-card { padding: 14px; }
@@ -100,4 +105,20 @@
 
   .cp-form-card { padding: 16px 14px; }
   .cp-stage-label { font-size: 12px; }
+  .cp-header-sub { display: none; }
+}
+
+@media (max-width: 360px) {
+  .cp-hero h1 { font-size: 19px; }
+  .cp-header-logo { font-size: 16px; }
+  .portal-box { padding: 16px 12px; }
+  .cp-form-card { padding: 14px 12px; }
+}
+
+@media (orientation: landscape) and (max-height: 500px) {
+  .cp-hero { margin-bottom: 16px; }
+  .cp-hero h1 { font-size: 22px; }
+  .cp-body { padding: 16px 14px 32px; }
+  #applicant-portal,#offer-portal { padding: 12px 16px; }
+  .portal-box { padding: 16px 20px; }
 }
