@@ -393,7 +393,10 @@ function showCPOffer(app){
   document.getElementById('cp-offer-neg-wrap').style.display='none';
   const alreadyResponded=myApp.offerStatus==='accepted'||myApp.offerStatus==='rejected';
   document.getElementById('cp-offer-action-btns').style.display=alreadyResponded?'none':'flex';
-  document.getElementById('cp-offer-msg').innerHTML=alreadyResponded?`<div class="al ${myApp.offerStatus==='accepted'?'al-g':'al-r'}">You have already <strong>${myApp.offerStatus}</strong> this offer.</div>`:'';
+  document.getElementById('cp-offer-msg').innerHTML=alreadyResponded?`<div class="al ${myApp.offerStatus==='accepted'?'al-g':'al-r'}">
+  You have already <strong>${myApp.offerStatus}</strong> this offer.
+  ${myApp.negotiationResponse?`<br><span style="font-size:12px;margin-top:4px;display:block"><strong>Employer response:</strong> ${myApp.negotiationResponse}</span>`:''}
+</div>`:'';
 }
 
 async function respondCPOffer(decision){
