@@ -1388,18 +1388,21 @@ async function resetAllData(){
   localStorage.clear();
   location.reload();
 }
+
 async function clearTable(table){
-  if(!confirm(`Clear all ${table}?`)) return;
+  if(!confirm(`Clear all ${table} data? This cannot be undone.`)) return;
   try{
-    // Delete all records from Supabase
-    const records=(DB.g(table)||[]);
-    await Promise.all(
-      records.filter(r=>r.id).map(r=>apiFetch('DELETE',`/data/${table}/${r.id}`))
-    );
-    // Clear localStorage
+    const records=(DB.g(table)||[]).filter(r=>r.id);
+    if(records.length>0){
+      const results=await Promise.allSettled(
+        records.map(r=>apiFetch('DELETE',`/data/${table}/${r.id}`))
+      );
+      const failed=results.filter(r=>r.status==='rejected').length;
+      if(failed>0) toast(`${failed} record(s) could not be deleted from server.`,'w');
+    }
     if(table==='applicants') DB.s('rec_stage','collecting');
     DB.s(table,[]);
-    toast('Cleared','i');
+    toast(`${table} cleared successfully`,'s');
     showPage('e_settings');
   }catch(e){toast('Clear failed: '+e.message,'e');}
 }
