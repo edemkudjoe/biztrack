@@ -320,8 +320,6 @@ function toast(msg,type='i'){
 seed();
 document.getElementById('yr').textContent=new Date().getFullYear();
 
-if(JWT&&CU){ROLE=CU.role;launchApp();}
-
 const params=new URLSearchParams(window.location.search);
 if(params.get('offer')){
   const email=params.get('offer');
