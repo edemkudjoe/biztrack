@@ -682,16 +682,62 @@ function selectTop10(){
   toast('Top 10 moved to Interview stage','s');
 }
 
+// AFTER
 function sendOffers(){
   const apps=DB.g('applicants')||[];
-  const invited=apps.filter(a=>a.invited);
-  if(invited.length===0){toast('No candidates in interview stage yet.','e');return;}
-  if(!confirm(`Send employment offer letters to ${invited.length} candidates?`)) return;
-  const updated=apps.map(a=>a.invited?{...a,offerSent:true}:a);
+  const invited=apps.filter(a=>a.invited&&!a.offerSent);
+  if(invited.length===0){toast('No candidates pending an offer.','e');return;}
+
+  openModal(
+    'Customise & Send Offer Letters',
+    `<p style="font-size:13px;color:var(--text-muted);margin-bottom:12px">
+      Set the offer details for each candidate. These will appear in their offer letter.
+    </p>
+    <div style="display:flex;flex-direction:column;gap:12px">
+      ${invited.map((a,i)=>`
+        <div style="background:var(--bg);border-radius:8px;padding:12px;border:1px solid var(--border)">
+          <div style="font-size:13px;font-weight:500;margin-bottom:8px">${a.name} — <span style="color:var(--text-muted);font-weight:400">${a.position||'General Application'}</span></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <div>
+              <label style="font-size:12px;color:var(--text-muted);display:block;margin-bottom:3px">Offered Salary</label>
+              <input id="offer-salary-${i}" type="text" placeholder="e.g. GHS 3,500/month"
+              value="${a.offeredSalary||''}"
+              style="width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:6px;background:var(--card);color:var(--text);font-size:13px">
+            </div>
+            <div>
+              <label style="font-size:12px;color:var(--text-muted);display:block;margin-bottom:3px">Start Date</label>
+              <input id="offer-date-${i}" type="date"
+              value="${a.startDate||''}"
+              style="width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:6px;background:var(--card);color:var(--text);font-size:13px">
+            </div>
+          </div>
+        </div>`).join('')}
+    </div>`,
+    [
+      {l:'Send All Offers',c:'b-pr',fn:()=>confirmSendOffers(invited)},
+      {l:'Cancel',c:'b-def',fn:()=>closeModal()}
+    ]
+  );
+}
+
+function confirmSendOffers(invited){
+  const apps=DB.g('applicants')||[];
+  const updated=apps.map(a=>{
+    const idx=invited.findIndex(x=>x.email===a.email);
+    if(idx<0) return a;
+    const salary=document.getElementById(`offer-salary-${idx}`)?.value||'';
+    const date=document.getElementById(`offer-date-${idx}`)?.value||'';
+    return {...a,offerSent:true,offeredSalary:salary,startDate:date};
+  });
   DB.s('applicants',updated);
   updated.forEach(a=>{
-    if(a.offerSent&&a.id) apiFetch('PUT',`/data/applicants/${a.id}`,{offerSent:true}).catch(()=>{});
+    if(a.offerSent&&a.id) apiFetch('PUT',`/data/applicants/${a.id}`,{
+      offerSent:true,
+      offeredSalary:a.offeredSalary,
+      startDate:a.startDate
+    }).catch(()=>{});
   });
+  closeModal();
   showPage('e_recruitment');
   toast(`Offer letters sent to ${invited.length} candidates`,'s');
 }
