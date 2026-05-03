@@ -144,71 +144,76 @@ function logout(){
 
 // ═══════════════════════════ SYNC HELPERS ═══════════════════════════
 async function syncData(headers){
-  const [uRes,tRes,aRes,cRes,rRes,lRes,adRes,prRes,cmRes,apRes,jpRes,stRes]=await Promise.all([
-    fetch(`${API}/users`,            {headers}),
-    fetch(`${API}/data/tasks`,       {headers}),
-    fetch(`${API}/data/attendance`,  {headers}),
-    fetch(`${API}/data/costs`,       {headers}),
-    fetch(`${API}/data/revenue`,     {headers}),
-    fetch(`${API}/data/leaves`,      {headers}),
-    fetch(`${API}/data/advances`,    {headers}),
-    fetch(`${API}/data/promos`,      {headers}),
-    fetch(`${API}/data/complaints`,  {headers}),
-    fetch(`${API}/data/applicants`,  {headers}),
-    fetch(`${API}/data/job_postings`,{headers}),
-    fetch(`${API}/settings`,         {headers}),
-  ]);
+  try {
+    const [uRes,tRes,aRes,cRes,rRes,lRes,adRes,prRes,cmRes,apRes,jpRes,stRes]=await Promise.all([
+      fetch(`${API}/users`,          {headers}),
+      fetch(`${API}/data/tasks`,     {headers}),
+      fetch(`${API}/data/attendance`,{headers}),
+      fetch(`${API}/data/costs`,     {headers}),
+      fetch(`${API}/data/revenue`,   {headers}),
+      fetch(`${API}/data/leaves`,    {headers}),
+      fetch(`${API}/data/advances`,  {headers}),
+      fetch(`${API}/data/promos`,    {headers}),
+      fetch(`${API}/data/complaints`,{headers}),
+      fetch(`${API}/data/applicants`,{headers}),
+      fetch(`${API}/data/job_postings`,{headers}),
+      fetch(`${API}/settings`,       {headers}),
+    ]);
 
-  // Users — employer gets all, employee gets own record
-  if(uRes.ok){
-    const d=await safeJson(uRes);
-    const freshUsers=d.users||[];
-    DB.s('employees',freshUsers);
-    const me=freshUsers.find(e=>e.id===CU?.id);
-    if(me){CU={...CU,...me};localStorage.setItem('bt_cu',JSON.stringify(CU));}
-  } else if(uRes.status===403){
-    try{
-      const meRes=await fetch(`${API}/users/me`,{headers});
-      if(meRes.ok){
-        const d=await safeJson(meRes);
-        const me=d.user;
-        if(me){
-          const emps=DB.g('employees')||[];
-          const idx=emps.findIndex(e=>e.id===me.id);
-          if(idx>=0) emps[idx]=me; else emps.push(me);
-          DB.s('employees',emps);
-          CU={...CU,...me};
-          localStorage.setItem('bt_cu',JSON.stringify(CU));
+    // Users — employer gets all, employee gets own record
+    if(uRes.ok){
+      const d=await safeJson(uRes);
+      const freshUsers=d.users||[];
+      DB.s('employees',freshUsers);
+      const me=freshUsers.find(e=>e.id===CU?.id);
+      if(me){CU={...CU,...me};localStorage.setItem('bt_cu',JSON.stringify(CU));}
+    } else if(uRes.status===403){
+      try{
+        const meRes=await fetch(`${API}/users/me`,{headers});
+        if(meRes.ok){
+          const d=await safeJson(meRes);
+          const me=d.user;
+          if(me){
+            const emps=DB.g('employees')||[];
+            const idx=emps.findIndex(e=>e.id===me.id);
+            if(idx>=0) emps[idx]=me; else emps.push(me);
+            DB.s('employees',emps);
+            CU={...CU,...me};
+            localStorage.setItem('bt_cu',JSON.stringify(CU));
+          }
         }
-      }
-    }catch(e){console.warn('Could not fetch own profile',e);}
-  }
+      }catch(e){console.warn('Could not fetch own profile',e);}
+    }
 
-  if(tRes.ok)   DB.s('tasks',       (await safeJson(tRes)).records  ||[]);
-  if(aRes.ok)   DB.s('attendance',  (await safeJson(aRes)).records  ||[]);
-  if(cRes.ok)   DB.s('costs',       (await safeJson(cRes)).records  ||[]);
-  if(rRes.ok)   DB.s('revenue',     (await safeJson(rRes)).records  ||[]);
-  if(lRes.ok)   DB.s('leaves',      (await safeJson(lRes)).records  ||[]);
-  if(adRes.ok)  DB.s('advances',    (await safeJson(adRes)).records ||[]);
-  if(prRes.ok)  DB.s('promos',      (await safeJson(prRes)).records ||[]);
-  if(cmRes.ok)  DB.s('complaints',  (await safeJson(cmRes)).records ||[]);
-  if(apRes.ok)  DB.s('applicants',  (await safeJson(apRes)).records ||[]);
-  if(jpRes.ok)  DB.s('job_postings',(await safeJson(jpRes)).records ||[]);
-  if(stRes.ok){
-  const stData=await safeJson(stRes);
-  const records=stData.records||[];
-  // att_settings (flat keys)
-  const attFields=['shift_start','shift_end','work_lat','work_lng','work_radius','work_address'];
-  const attObj={};
-  records.filter(r=>attFields.includes(r.key)).forEach(r=>attObj[r.key]=r.value);
-  if(Object.keys(attObj).length) DB.s('att_settings',attObj);
-  // company
-  const co=records.find(r=>r.key==='company');
-  if(co) DB.s('company',typeof co.value==='string'?JSON.parse(co.value):co.value);
-  // work_location
-  const wl=records.find(r=>r.key==='work_location');
-  if(wl) DB.s('work_location',typeof wl.value==='string'?JSON.parse(wl.value):wl.value);
-}
+    if(tRes.ok)   DB.s('tasks',       (await safeJson(tRes)).records  ||[]);
+    if(aRes.ok)   DB.s('attendance',  (await safeJson(aRes)).records  ||[]);
+    if(cRes.ok)   DB.s('costs',       (await safeJson(cRes)).records  ||[]);
+    if(rRes.ok)   DB.s('revenue',     (await safeJson(rRes)).records  ||[]);
+    if(lRes.ok)   DB.s('leaves',      (await safeJson(lRes)).records  ||[]);
+    if(adRes.ok)  DB.s('advances',    (await safeJson(adRes)).records ||[]);
+    if(prRes.ok)  DB.s('promos',      (await safeJson(prRes)).records ||[]);
+    if(cmRes.ok)  DB.s('complaints',  (await safeJson(cmRes)).records ||[]);
+    if(apRes.ok)  DB.s('applicants',  (await safeJson(apRes)).records ||[]);
+    if(jpRes.ok)  DB.s('job_postings',(await safeJson(jpRes)).records ||[]);
+    
+    if(stRes.ok){
+      const stData=await safeJson(stRes);
+      const records=stData.records||[];
+      // att_settings (flat keys)
+      const attFields=['shift_start','shift_end','work_lat','work_lng','work_radius','work_address'];
+      const attObj={};
+      records.filter(r=>attFields.includes(r.key)).forEach(r=>attObj[r.key]=r.value);
+      if(Object.keys(attObj).length) DB.s('att_settings',attObj);
+      // company
+      const co=records.find(r=>r.key==='company');
+      if(co) DB.s('company',typeof co.value==='string'?JSON.parse(co.value):co.value);
+      // work_location
+      const wl=records.find(r=>r.key==='work_location');
+      if(wl) DB.s('work_location',typeof wl.value==='string'?JSON.parse(wl.value):wl.value);
+    }
+  } catch (error) {
+    console.error("Critical error during initial sync:", error);
+  }
 }
 
 // ═══════════════════════════ LAUNCH ═══════════════════════════
