@@ -5,9 +5,9 @@ module.exports = async function (req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
 
   const parts = (req.query['...route'] || []).filter(Boolean);
-const urlParts = (req.url || '').split('?')[0].split('/').filter(Boolean);
-const table = parts[1] || urlParts[2];
-const recordId = parts[2] || urlParts[3];
+  const urlParts = (req.url || '').split('?')[0].split('/').filter(Boolean);
+  const table = parts[1] || urlParts[2];
+  const recordId = parts[2] || urlParts[3];
 
   if (!ALLOWED_TABLES.includes(table)) return res.status(404).end();
 
@@ -27,22 +27,31 @@ const recordId = parts[2] || urlParts[3];
     }
 
     if (req.method === 'POST') {
-  if (decoded.role !== 'employer') return res.status(403).json({ error: 'Forbidden' });
-  const body = { ...req.body, created_at: new Date().toISOString() };
-      }
+      if (decoded.role !== 'employer') return res.status(403).json({ error: 'Forbidden' });
+      const body = { ...req.body, created_at: new Date().toISOString() };
+      const { data, error } = await getSupabase().from(table).insert([body]).select().single();
+      return error ? res.status(400).json({ error: error.message }) : res.status(201).json({ record: data });
+    }
 
     if (req.method === 'PUT' && recordId) {
-  if (decoded.role !== 'employer') return res.status(403).json({ error: 'Forbidden' });
-  const { data, error } = await getSupabase().from(table).update(req.body)
-      }
-      
-if (req.method === 'DELETE' && recordId) {
-  if (decoded.role !== 'employer') return res.status(403).json({ error: 'Forbidden' });
-  const { error } = await getSupabase().from(table).delete().eq('id', recordId);
-  return error ? res.status(400).json({ error: error.message }) : res.status(200).json({ success: true });
-}
-if (req.method === 'DELETE' && !recordId) {
-  return res.status(400).json({ error: 'Record ID is required for deletion.' });
-}
+      if (decoded.role !== 'employer') return res.status(403).json({ error: 'Forbidden' });
+      const { data, error } = await getSupabase().from(table).update(req.body).eq('id', recordId).select().single();
+      return error ? res.status(400).json({ error: error.message }) : res.status(200).json({ record: data });
+    }
+
+    if (req.method === 'DELETE' && recordId) {
+      if (decoded.role !== 'employer') return res.status(403).json({ error: 'Forbidden' });
+      const { error } = await getSupabase().from(table).delete().eq('id', recordId);
+      return error ? res.status(400).json({ error: error.message }) : res.status(200).json({ success: true });
+    }
+
+    if (req.method === 'DELETE' && !recordId) {
+      return res.status(400).json({ error: 'Record ID is required for deletion.' });
+    }
+
     return res.status(405).end();
+  }
+  catch (err) {
+    return res.status(500).json({ error: 'Internal server error.' });
+  }
 };
