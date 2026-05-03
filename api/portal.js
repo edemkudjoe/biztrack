@@ -27,7 +27,7 @@ module.exports = async function (req, res) {
         created_at: new Date().toISOString()
       }]).select().single();
       if (error) return res.status(400).json({ error: error.message });
-      const token = jwt.sign({ id: data.id, email: data.email }, JWT_SECRET);
+      const token = jwt.sign({ id: data.id, email: data.email }, , { expiresIn: '8h' });
       return res.status(201).json({ token, applicant: data });
     }
 
@@ -38,7 +38,7 @@ module.exports = async function (req, res) {
       if (error || !user) return res.status(401).json({ error: 'Invalid email or password.' });
       const match = await bcrypt.compare(password, user.password);
       if (!match) return res.status(401).json({ error: 'Invalid email or password.' });
-      const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET);
+      const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, { expiresIn: '8h' });
       return res.status(200).json({ token, applicant: user });
     }
 
