@@ -288,8 +288,15 @@ function showCPAptTest(){
   const myApp=apps.find(a=>a.email===_cpUser.email&&a.testInvited);
   if(!myApp){toast('You have not been invited to take the aptitude test yet.','e');return;}
   if(myApp.testScore!==undefined){toast('You have already completed the aptitude test.','i');showTrackView();return;}
-  const qs=DB.g('apt_qs')||[];
-  if(qs.length===0){toast('No test questions available yet.','e');return;}
+  let qs = DB.g('apt_qs') || [];
+if(qs.length === 0) {
+  // Try fetching from a public endpoint
+  try {
+    const r = await fetch(`${API}/data/job_postings`); // we'll use settings instead
+  } catch(e) {}
+  qs = DB.g('apt_qs') || [];
+}
+if(qs.length === 0){toast('No test questions available yet. Please check back later.','e');return;}
 
   // Hide all views
   ['cp-auth-view','cp-jobs-view','cp-apply-view','cp-track-view','cp-offer-view'].forEach(id=>{
