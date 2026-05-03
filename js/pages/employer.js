@@ -854,8 +854,10 @@ function openLetterSetup(){
       <div class="f"><label>Signatory Title</label><input type="text" id="ol-sigt" value="${co.sigTitle||'Managing Director'}"></div>
     </div>
   `,[{l:'Save Configuration',c:'b-nv',fn:()=>{
-    DB.s('company',{...DB.g('company')||{},letterhead:document.getElementById('ol-head').value,tagline:document.getElementById('ol-tag').value,regNumber:document.getElementById('ol-reg').value,defaultRate:parseFloat(document.getElementById('ol-rate').value)||20,workSchedule:document.getElementById('ol-sched').value,probation:document.getElementById('ol-prob').value,offerExpiry:parseInt(document.getElementById('ol-exp').value)||7,managerName:document.getElementById('ol-mgr').value,benefitsSummary:document.getElementById('ol-ben').value,offerIntro:document.getElementById('ol-intro').value,offerTerms:document.getElementById('ol-terms').value,signatory:document.getElementById('ol-sign').value,sigTitle:document.getElementById('ol-sigt').value});
-    closeModal();showPage('e_recruitment');toast('Offer configuration saved','s');
+    const co2={...DB.g('company')||{},letterhead:document.getElementById('ol-head').value,tagline:document.getElementById('ol-tag').value,regNumber:document.getElementById('ol-reg').value,defaultRate:parseFloat(document.getElementById('ol-rate').value)||20,workSchedule:document.getElementById('ol-sched').value,probation:document.getElementById('ol-prob').value,offerExpiry:parseInt(document.getElementById('ol-exp').value)||7,managerName:document.getElementById('ol-mgr').value,benefitsSummary:document.getElementById('ol-ben').value,offerIntro:document.getElementById('ol-intro').value,offerTerms:document.getElementById('ol-terms').value,signatory:document.getElementById('ol-sign').value,sigTitle:document.getElementById('ol-sigt').value};
+DB.s('company',co2);
+apiFetch('POST','/settings',{key:'company',value:JSON.stringify(co2)}).catch(()=>{});
+closeModal();showPage('e_recruitment');toast('Offer configuration saved','s');
   }}]);
 }
 function previewOfferTemplate(){
@@ -1249,8 +1251,10 @@ await Promise.all(
 }
 function saveBizInfo(){
   const co=DB.g('company')||{};
-  DB.s('company',{...co,name:document.getElementById('s-nm').value,email:document.getElementById('s-em').value,phone:document.getElementById('s-ph').value,address:document.getElementById('s-ad').value});
-  toast('Business info saved','s');
+  const updated={...co,name:document.getElementById('s-nm').value,email:document.getElementById('s-em').value,phone:document.getElementById('s-ph').value,address:document.getElementById('s-ad').value};
+DB.s('company',updated);
+apiFetch('POST','/settings',{key:'company',value:JSON.stringify(updated)}).catch(()=>{});
+toast('Business info saved','s');
 }
 async function changeAdminPw(){
   const cp=document.getElementById('s-cp').value;
