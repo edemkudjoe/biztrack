@@ -195,7 +195,21 @@ async function syncData(headers){
   if(cmRes.ok)  DB.s('complaints',  (await safeJson(cmRes)).records ||[]);
   if(apRes.ok)  DB.s('applicants',  (await safeJson(apRes)).records ||[]);
   if(jpRes.ok)  DB.s('job_postings',(await safeJson(jpRes)).records ||[]);
-  if(stRes.ok)  DB.s('att_settings',(await safeJson(stRes)).settings||{});
+  if(stRes.ok){
+  const stData=await safeJson(stRes);
+  const records=stData.records||[];
+  // att_settings (flat keys)
+  const attFields=['shift_start','shift_end','work_lat','work_lng','work_radius','work_address'];
+  const attObj={};
+  records.filter(r=>attFields.includes(r.key)).forEach(r=>attObj[r.key]=r.value);
+  if(Object.keys(attObj).length) DB.s('att_settings',attObj);
+  // company
+  const co=records.find(r=>r.key==='company');
+  if(co) DB.s('company',typeof co.value==='string'?JSON.parse(co.value):co.value);
+  // work_location
+  const wl=records.find(r=>r.key==='work_location');
+  if(wl) DB.s('work_location',typeof wl.value==='string'?JSON.parse(wl.value):wl.value);
+}
 }
 
 // ═══════════════════════════ LAUNCH ═══════════════════════════
