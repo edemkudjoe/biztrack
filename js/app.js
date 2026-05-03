@@ -141,7 +141,7 @@ function logout(){
   if(window._pollInterval){clearInterval(window._pollInterval);window._pollInterval=null;}
   document.getElementById('app').style.display='none';
   document.getElementById('login-screen').style.display='flex';
-  history.replaceState(null,'',window.location.pathname);
+  history.replaceState(null,'','/');
 }
 
 // ═══════════════════════════ SYNC HELPERS ═══════════════════════════
