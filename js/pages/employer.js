@@ -1224,7 +1224,12 @@ async function saveAttSettings(){
   const addr=document.getElementById('att-addr').value;
   if(!start||!end){msg.innerHTML='<div class="al al-r">Please set shift times.</div>';return;}
   try{
-    await apiFetch('POST','/settings',{work_lat:lat,work_lng:lng,work_radius:rad,shift_start:start,shift_end:end,work_address:addr});
+    const attFields = {work_lat:String(lat), work_lng:String(lng), work_radius:String(rad), shift_start:start, shift_end:end, work_address:addr};
+await Promise.all(
+  Object.entries(attFields).map(([key, value]) =>
+    apiFetch('POST', '/settings', {key, value})
+  )
+);
     DB.s('att_settings',{...DB.g('att_settings')||{},work_lat:String(lat),work_lng:String(lng),work_radius:String(rad),shift_start:start,shift_end:end,work_address:addr});
     msg.innerHTML='<div class="al al-g">Attendance settings saved.</div>';
   }catch(e){msg.innerHTML=`<div class="al al-r">Failed to save: ${e.message}</div>`;}
