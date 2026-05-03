@@ -509,18 +509,138 @@ function calcMeritScore(app){
   return Math.min(100,eduScore+expScore+contentScore);
 }
 
-function rankApplicants(){
-  if(!confirm('Rank all applicants by merit score? This will move the pipeline to Shortlisting stage.')) return;
+function openInterviewNotes(email){
   const apps=DB.g('applicants')||[];
-  const ranked=apps.map(a=>({...a,score:calcMeritScore(a)}));
+  const a=apps.find(x=>x.email===email);
+  if(!a) return;
+  openModal(
+    `Interview Notes — ${a.name}`,
+    `<div style="margin-bottom:8px;font-size:13px;color:var(--text-muted)">
+      Score: <strong>${a.score!==undefined?a.score+'/100':'Not ranked yet'}</strong>
+      ${a.justification?`<br><em>${a.justification}</em>`:''}
+     </div>
+     <textarea id="interview-notes-input" rows="6" style="width:100%;padding:8px;
+     border:1px solid var(--border);border-radius:8px;background:var(--bg);
+     color:var(--text);font-size:13px;resize:vertical"
+     placeholder="Record interview observations, impressions, follow-up questions…"
+     >${a.interviewNotes||''}</textarea>`,
+    [
+      {l:'Save Notes',c:'b-nv',fn:()=>saveInterviewNotes(email)},
+      {l:'Cancel',c:'b-def',fn:()=>closeModal()}
+    ]
+  );
+}
+
+function saveInterviewNotes(email){
+  const notes=document.getElementById('interview-notes-input')?.value||'';
+  const apps=DB.g('applicants')||[];
+  const i=apps.findIndex(x=>x.email===email);
+  if(i<0) return;
+  apps[i].interviewNotes=notes;
+  DB.s('applicants',apps);
+  if(apps[i].id) apiFetch('PUT',`/data/applicants/${apps[i].id}`,{interviewNotes:notes}).catch(()=>{});
+  closeModal();
+  showPage('e_recruitment');
+  toast('Interview notes saved','s');
+}
+
+function openNegotiationResponse(email){
+  const apps=DB.g('applicants')||[];
+  const a=apps.find(x=>x.email===email);
+  if(!a) return;
+  const neg=a.negotiation||{};
+  openModal(
+    `Counter-offer from ${a.name}`,
+    `<div style="background:var(--bg);border-radius:8px;padding:12px;margin-bottom:12px;font-size:13px">
+      <div style="margin-bottom:6px"><span style="color:var(--text-muted)">Desired Rate:</span> <strong>${neg.rate||'Not specified'}</strong></div>
+      <div style="margin-bottom:6px"><span style="color:var(--text-muted)">Desired Hours:</span> <strong>${neg.hours||'Not specified'}</strong></div>
+      <div style="margin-bottom:6px"><span style="color:var(--text-muted)">Desired Benefits:</span> <strong>${neg.benefits||'Not specified'}</strong></div>
+      <div><span style="color:var(--text-muted)">Note:</span> <em>${neg.note||'No note provided'}</em></div>
+    </div>
+    <label style="font-size:13px;font-weight:500;display:block;margin-bottom:6px">Your Response</label>
+    <textarea id="neg-response-input" rows="4" style="width:100%;padding:8px;
+    border:1px solid var(--border);border-radius:8px;background:var(--bg);
+    color:var(--text);font-size:13px;resize:vertical;margin-bottom:10px"
+    placeholder="Write your response to the candidate's counter-offer…"></textarea>`,
+    [
+      {l:'Accept Counter-offer',c:'b-gr',fn:()=>resolveNegotiation(email,'accepted')},
+      {l:'Decline Counter-offer',c:'b-rd',fn:()=>resolveNegotiation(email,'rejected')},
+      {l:'Cancel',c:'b-def',fn:()=>closeModal()}
+    ]
+  );
+}
+
+function resolveNegotiation(email, decision){
+  const response=document.getElementById('neg-response-input')?.value||'';
+  if(!response.trim()){toast('Please write a response before deciding.','e');return;}
+  const apps=DB.g('applicants')||[];
+  const i=apps.findIndex(x=>x.email===email);
+  if(i<0) return;
+  apps[i].offerStatus=decision;
+  apps[i].negotiationResponse=response;
+  DB.s('applicants',apps);
+  if(apps[i].id) apiFetch('PUT',`/data/applicants/${apps[i].id}`,{
+    offerStatus:decision,
+    negotiationResponse:response
+  }).catch(()=>{});
+  closeModal();
+  showPage('e_recruitment');
+  toast(`Counter-offer ${decision} and response saved`,'s');
+}
+
+async function rankApplicants(){
+  const apps=DB.g('applicants')||[];
+  if(apps.length===0){toast('No applicants to rank.','e');return;}
+  if(!confirm(`Rank ${apps.length} applicants using AI? This may take a moment.`)) return;
+
+  // Find the job posting requirements to give Gemini context
+  const jobs=DB.g('job_postings')||[];
+  const jobRequirements=jobs.map(j=>`${j.title}: ${j.requirements||''}`).join('\n')||'General position.';
+
+  // Show progress in the page
+  const btn=document.querySelector('[onclick="rankApplicants()"]');
+  if(btn){btn.disabled=true;btn.textContent='Ranking…';}
+  toast('AI ranking started — please wait…','i');
+
+  // Split applicants into batches of 10
+  const BATCH=10;
+  const batches=[];
+  for(let i=0;i<apps.length;i+=BATCH) batches.push(apps.slice(i,i+BATCH));
+
+  const allResults=[];
+  for(let i=0;i<batches.length;i++){
+    toast(`Scoring batch ${i+1} of ${batches.length}…`,'i');
+    try{
+      const res=await apiFetch('POST','/api/rank',{
+        applicants:batches[i],
+        jobRequirements
+      });
+      if(res.results) allResults.push(...res.results);
+    }catch(e){
+      toast(`Batch ${i+1} failed: ${e.message}`,'e');
+    }
+  }
+
+  // Merge scores and justifications back into applicants
+  const ranked=apps.map(a=>{
+    const r=allResults.find(x=>x.email===a.email);
+    return r?{...a,score:r.score,justification:r.justification}:a;
+  });
+
   DB.s('applicants',ranked);
   DB.s('rec_stage','shortlisted');
-  // Sync scores to Supabase
+
+  // Sync to Supabase
   ranked.forEach(a=>{
-    if(a.id) apiFetch('PUT',`/data/applicants/${a.id}`,{score:a.score}).catch(()=>{});
+    if(a.id) apiFetch('PUT',`/data/applicants/${a.id}`,{
+      score:a.score,
+      justification:a.justification
+    }).catch(()=>{});
   });
+
+  if(btn){btn.disabled=false;btn.textContent='Rank by Merit';}
   showPage('e_recruitment');
-  toast(`Ranked ${ranked.length} applicants by merit`,'s');
+  toast(`Ranked ${ranked.length} applicants by AI merit score`,'s');
 }
 
 function inviteTop50(){
@@ -731,40 +851,43 @@ function pRecruitment(el){
       </div>
     </div>
   </div>
-
-  <div class="card mb">
-    <div class="ch">
-      <span class="ct">${ic('list',15)} All Applicants (${apps.length})</span>
-      <div style="display:flex;gap:8px;flex-wrap:wrap">
-        ${stage==='collecting'&&apps.length>0?`<button class="btn b-am btn-sm" onclick="rankApplicants()">${ic('award',13)} Rank by Merit</button>`:''}
-        ${stage==='shortlisted'?`<button class="btn b-bl btn-sm" onclick="inviteTop50()">${ic('send',13)} Invite Top 50 to Test</button>`:''}
-        ${stage==='testing'?`<button class="btn b-gr btn-sm" onclick="selectTop10()">${ic('check-circle',13)} Select Top 10</button>`:''}
-        ${stage==='interviewing'?`<button class="btn b-pr btn-sm" onclick="sendOffers()">${ic('file-text',13)} Send Offer Letters</button>`:''}
-        <button class="btn b-ol btn-sm" onclick="resetRecruitment()">${ic('refresh-cw',13)} Reset Pipeline</button>
-      </div>
+<div class="card mb">
+  <div class="ch">
+    <span class="ct">${ic('list',15)} All Applicants (${apps.length})</span>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      ${stage==='collecting'&&apps.length>0?`<button class="btn b-am btn-sm" onclick="rankApplicants()">${ic('award',13)} Rank by Merit</button>`:''}
+      ${stage==='shortlisted'?`<button class="btn b-bl btn-sm" onclick="inviteTop50()">${ic('send',13)} Invite Top 50 to Test</button>`:''}
+      ${stage==='testing'?`<button class="btn b-gr btn-sm" onclick="selectTop10()">${ic('check-circle',13)} Select Top 10</button>`:''}
+      ${stage==='interviewing'?`<button class="btn b-pr btn-sm" onclick="sendOffers()">${ic('file-text',13)} Send Offer Letters</button>`:''}
+      <button class="btn b-ol btn-sm" onclick="resetRecruitment()">${ic('refresh-cw',13)} Reset Pipeline</button>
     </div>
-    <div class="cb">
-      ${apps.length===0?`<div class="es"><div class="es-ico">${ic('search',44)}</div><h3>No applications yet</h3><p>Applicants from the careers portal will appear here.</p></div>`:`
-      <div class="tw"><table><thead><tr><th>#</th><th>Applicant</th><th>Education</th><th>Exp</th><th>Merit</th><th>Test</th><th>Offer</th><th>Status</th><th>Action</th></tr></thead><tbody>
-        ${apps.slice().sort((a,b)=>((b.testScore??b.score??0)-(a.testScore??a.score??0))).map((a,i)=>`<tr style="${i<10&&top10.some(t=>t.email===a.email)?'background:rgba(46,204,113,.05)':''}">
-          <td><div class="mn ${i===0?'g':i===1?'s':i===2?'bz':''}">${i+1}</div></td>
-          <td><strong>${a.name}</strong><br><small style="color:var(--text-muted)">${a.email}</small></td>
-          <td style="font-size:11px">${a.education||'—'}</td>
-          <td>${a.experience||0}y</td>
-          <td>${a.score!==undefined?`<strong>${a.score}</strong>/100`:'<span style="color:var(--text-muted)">—</span>'}</td>
-          <td>${a.testScore!==undefined?`<strong>${a.testScore}/${qs.length}</strong>`:'<span style="color:var(--text-muted)">—</span>'}</td>
-          <td>${a.offerStatus?`<span class="b ${a.offerStatus==='accepted'?'bg':a.offerStatus==='rejected'?'br':a.offerStatus==='negotiated'?'ba':'bb'}">${a.offerStatus}</span>`:'—'}</td>
-          <td>${a.invited?`<span class="b bg">Interview</span>`:a.offerSent?`<span class="b bb">Offer Sent</span>`:a.testInvited?`<span class="b bl">Test Invited</span>`:a.score!==undefined?`<span class="b bn">Ranked</span>`:`<span class="b ba">Applied</span>`}</td>
-          <td>
-            ${(DB.g('employees')||[]).some(e=>e.email===a.email)
-              ?`<span style="color:var(--accent);font-weight:700;font-size:11px">Hired</span>`
-              :a.testScore!==undefined
-                ?`<button class="btn b-nv btn-sm" onclick="manualCreateEmployee('${a.email}')">Generate User</button>`
-                :`<span style="color:var(--text-muted);font-size:11px">${a.testInvited?'Awaiting Test':'Pending'}</span>`}
-          </td>
-        </tr>`).join('')}
-      </tbody></table></div>`}
-    </div>
+  </div>
+  <div class="cb">
+    ${apps.length===0?`<div class="es"><div class="es-ico">${ic('search',44)}</div><h3>No applications yet</h3><p>Applicants from the careers portal will appear here.</p></div>`:`
+    <div class="tw"><table><thead><tr><th>#</th><th>Applicant</th><th>Education</th><th>Exp</th><th>Merit</th><th>Test</th><th>Offer</th><th>Status</th><th>Notes</th><th>Action</th></tr></thead><tbody>
+      ${apps.slice().sort((a,b)=>((b.testScore??b.score??0)-(a.testScore??a.score??0))).map((a,i)=>`<tr style="${i<10&&top10.some(t=>t.email===a.email)?'background:rgba(46,204,113,.05)':''}">
+        <td><div class="mn ${i===0?'g':i===1?'s':i===2?'bz':''}">${i+1}</div></td>
+        <td><strong>${a.name}</strong><br><small style="color:var(--text-muted)">${a.email}</small></td>
+        <td style="font-size:11px">${a.education||'—'}</td>
+        <td>${a.experience||0}y</td>
+        <td>${a.score!==undefined?`<strong>${a.score}</strong>/100${a.justification?`<br><span style="font-size:11px;color:var(--text-muted)">${a.justification}</span>`:''}`:
+          `<span style="color:var(--text-muted)">—</span>`}</td>
+        <td>${a.testScore!==undefined?`<strong>${a.testScore}/${qs.length}</strong>`:`<span style="color:var(--text-muted)">—</span>`}</td>
+        <td>${a.offerStatus?`<span class="b ${a.offerStatus==='accepted'?'bg':a.offerStatus==='rejected'?'br':a.offerStatus==='negotiated'?'ba':'bb'}">${a.offerStatus}</span>
+  ${a.offerStatus==='negotiated'?`<br><button class="btn btn-sm b-am" style="margin-top:4px" onclick="openNegotiationResponse('${a.email}')">${ic('message-square',11)} Respond</button>`:''}
+`:'—'}</td>
+        <td>${a.invited?`<span class="b bg">Interview</span>`:a.offerSent?`<span class="b bb">Offer Sent</span>`:a.testInvited?`<span class="b bl">Test Invited</span>`:a.score!==undefined?`<span class="b bn">Ranked</span>`:`<span class="b ba">Applied</span>`}</td>
+        <td>${a.invited?`<button class="btn btn-sm b-nv" onclick="openInterviewNotes('${a.email}')">${ic('edit',12)} Notes${a.interviewNotes?' ✓':''}</button>`:'—'}</td>
+        <td>
+          ${(DB.g('employees')||[]).some(e=>e.email===a.email)
+            ?`<span style="color:var(--accent);font-weight:700;font-size:11px">Hired</span>`
+            :a.testScore!==undefined
+              ?`<button class="btn b-nv btn-sm" onclick="manualCreateEmployee('${a.email}')">Generate User</button>`
+              :`<span style="color:var(--text-muted);font-size:11px">${a.testInvited?'Awaiting Test':'Pending'}</span>`}
+        </td>
+      </tr>`).join('')}
+    </tbody></table></div>`}
+  </div>
   </div>`;
 }
 
