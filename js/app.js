@@ -216,6 +216,7 @@ async function syncData(headers){
   }
 }
 
+
 // ═══════════════════════════ LAUNCH ═══════════════════════════
 async function launchApp(){
   // FIX 1: Prevent the infinite loop! Only redirect if we are on the login page.
@@ -252,11 +253,27 @@ async function launchApp(){
   
   updNotif();
 
-  // ... [Keep the rest of your setInterval polling code exactly as is] ...
+  // Start polling
+  if(window._pollInterval) clearInterval(window._pollInterval);
+  window._pollInterval=setInterval(async()=>{
+    if(!JWT) return;
+    const h={'Authorization':`Bearer ${JWT}`};
+    try{
+      await syncData(h);
+      // Update sidebar name/avatar in case profile changed
+      document.getElementById('sb-nm').textContent=CU.name;
+      document.getElementById('sb-av').textContent=CU.initials||CU.name.slice(0,2).toUpperCase();
+      // Silently refresh current page if user isn't typing
+      const cur=document.querySelector('.nav-item.active');
+      if(cur&&cur.dataset.page){
+        const tag=document.activeElement?document.activeElement.tagName:'';
+        const typing=tag==='INPUT'||tag==='TEXTAREA'||tag==='SELECT';
+        if(!typing) showPage(cur.dataset.page,true,true);
+      }
+      updNotif();
     }catch(e){console.warn('Poll failed',e);}
   },5000);
 }
-
 // ═══════════════════════════ NAV ═══════════════════════════
 const EMP_NAV=[
   {s:'MAIN',items:[{id:'e_dash',ic:'grid',l:'Dashboard'},{id:'notifications',ic:'bell',l:'Notifications'}]},
