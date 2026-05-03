@@ -28,7 +28,7 @@
   border-radius:14px;padding:22px 26px;margin-bottom:14px;cursor:pointer;
   transition:all .22s;animation:slideUp .4s ease}
 .job-card:hover{background:rgba(255,255,255,.13);border-color:rgba(46,204,113,.4);transform:translateY(-2px)}
-.job-card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.job-card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap}
 .job-card-title{font-size:17px;font-weight:800;color:#fff;margin-bottom:4px}
 .job-card-dept{font-size:12px;color:var(--accent);font-weight:700;text-transform:uppercase;letter-spacing:.8px}
 .job-card-meta{display:flex;gap:12px;margin-top:10px;flex-wrap:wrap}
@@ -66,7 +66,38 @@
   color:rgba(255,255,255,.7);font-weight:600;cursor:pointer;transition:color .2s}
 .login-careers-link:hover{color:#fff}
 .login-careers-link span{color:var(--accent);text-decoration:underline}
-@media (max-width: 600px) {
+
+/* ══════════════════ MOBILE RESPONSIVENESS ══════════════════ */
+@media (max-width: 768px) {
+  #applicant-portal,#offer-portal { padding: 20px 16px; }
+  .portal-box { padding: 24px 20px; }
+
   .cp-header { flex-wrap: wrap; padding: 12px 16px; gap: 8px; }
   .cp-header-logo { font-size: 18px; }
+  .cp-header-sub { font-size: 10px; }
+
+  .cp-body { padding: 24px 14px 40px; }
+  .cp-hero { margin-bottom: 28px; }
+  .cp-hero h1 { font-size: 28px; letter-spacing: -1px; }
+  .cp-hero p { font-size: 13px; }
+
+  .job-card { padding: 16px 18px; }
+  .job-card-title { font-size: 15px; }
+  .job-apply-btn { width: 100%; text-align: center; justify-content: center; margin-top: 10px; }
+
+  .cp-form-card { padding: 20px 16px; }
+  .cp-progress { padding: 14px 16px; }
+}
+
+@media (max-width: 480px) {
+  .portal-box { padding: 20px 16px; border-radius: 10px; }
+
+  .cp-hero h1 { font-size: 22px; }
+  .cp-hero p { font-size: 12px; }
+
+  .job-card { padding: 14px; }
+  .job-meta-pill { font-size: 10.5px; padding: 3px 8px; }
+
+  .cp-form-card { padding: 16px 14px; }
+  .cp-stage-label { font-size: 12px; }
 }
