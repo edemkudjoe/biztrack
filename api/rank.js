@@ -28,8 +28,8 @@ ${jobRequirements || 'No specific requirements listed.'}
 
 Applicant Profile:
 - Name: ${app.name || 'Unknown'}
-- Education: ${app.education || 'Not specified'}
-- Years of Experience: ${app.experience || 0}
+- Education: ${app.education || 'Not specified'} (score: ${app.eduScore || 0}/40)
+- Experience score: ${app.expScore || app.experience || 0}/30
 - Skills: ${app.skills || 'Not specified'}
 - Cover Letter: ${app.coverLetter || 'Not provided'}
 
