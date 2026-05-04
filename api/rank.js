@@ -54,9 +54,9 @@ Respond in this exact JSON format with no extra text:
         return {
           id: app.id,
           email: app.email,
-          score: Math.min(100, Math.max(0, Math.round(parsed.score))),
-          justification: parsed.justification || 'No justification provided.'
-        };
+          score: null,
+          justification: null   // so it doesn't overwrite with the error message
+};
       } catch (e) {
         return {
           id: app.id,
