@@ -591,11 +591,13 @@ async function rankApplicants(){
   if(apps.length===0){toast('No applicants to rank.','e');return;}
   if(!confirm(`Rank ${apps.length} applicants using AI? This may take a moment.`)) return;
 
-  // Find the job posting requirements to give Gemini context
+  // Use only the active/most-recent job posting's requirements, not all postings
   const jobs=DB.g('job_postings')||[];
-  const jobRequirements=jobs.map(j=>`${j.title}: ${j.requirements||''}`).join('\n')||'General position.';
+  const activeJob=jobs.find(j=>j.status==='active')||jobs[jobs.length-1]||null;
+  const jobRequirements=activeJob
+    ? `${activeJob.title}: ${activeJob.requirements||''}`.trim()
+    : 'General position — score based on overall candidate quality.';
 
-  // Show progress in the page
   const btn=document.querySelector('[onclick="rankApplicants()"]');
   const preMerited=apps.map(a=>({...a, merit:a.merit??calcMeritScore(a)}));
   DB.s('applicants', preMerited);
@@ -608,6 +610,7 @@ async function rankApplicants(){
   for(let i=0;i<apps.length;i+=BATCH) batches.push(apps.slice(i,i+BATCH));
 
   const allResults=[];
+  let totalFailed=0;
   for(let i=0;i<batches.length;i++){
     toast(`Scoring batch ${i+1} of ${batches.length}…`,'i');
     try{
@@ -616,32 +619,46 @@ async function rankApplicants(){
         jobRequirements
       });
       if(res.results) allResults.push(...res.results);
+      if(res.failed) totalFailed+=res.failed;
     }catch(e){
+      totalFailed+=batches[i].length;
       toast(`Batch ${i+1} failed: ${e.message}`,'e');
     }
   }
 
-  // Merge scores and justifications back into applicants
+  // Merge scores back using id (not email) to avoid collisions
   const ranked=preMerited.map(a=>{
-  const r=allResults.find(x=>x.email===a.email);
-  return r?{...a,score:r.score,justification:r.justification}:a;
-});
+    const r=allResults.find(x=>x.id===a.id);
+    if(!r || r.score===null || r.score===undefined) return a; // leave unscored as-is
+    return {...a, score:r.score, justification:r.justification};
+  });
   DB.s('applicants',ranked);
-  const anyScored=ranked.some(a=>a.score!==null&&a.score!==undefined);
-  if(anyScored) DB.s('rec_stage','shortlisted');
 
-  // Sync to Supabase
-  ranked.forEach(a => {
-  if (a.id && a.score !== null && a.score !== undefined) {   // ← only sync if actually scored
-    apiFetch('PUT', `/data/applicants/${a.id}`, {
-      score: a.score,
-      justification: a.justification
-    }).catch(() => {});
+  // Only advance stage if ALL applicants were scored successfully
+  const scoredCount=ranked.filter(a=>a.score!==null&&a.score!==undefined).length;
+  if(scoredCount===apps.length){
+    DB.s('rec_stage','shortlisted');
+  } else if(scoredCount>0){
+    toast(`Warning: ${totalFailed} applicant(s) could not be scored and were skipped.`,'e');
+  } else {
+    toast('AI ranking failed — no applicants were scored. Please try again.','e');
+    if(btn){btn.disabled=false;btn.textContent='Rank by Merit';}
+    return;
   }
-});
+
+  // Sync only validated scores to Supabase
+  ranked.forEach(a=>{
+    if(a.id && typeof a.score==='number' && a.score>=0 && a.score<=100){
+      apiFetch('PUT',`/data/applicants/${a.id}`,{
+        score:a.score,
+        justification:a.justification
+      }).catch(()=>{});
+    }
+  });
+
   if(btn){btn.disabled=false;btn.textContent='Rank by Merit';}
   showPage('e_recruitment');
-  toast(`Ranked ${ranked.length} applicants by AI merit score`,'s');
+  toast(`Ranked ${scoredCount} of ${apps.length} applicants by AI merit score`,'s');
 }
 
 function inviteTop50(){
