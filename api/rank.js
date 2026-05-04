@@ -47,24 +47,24 @@ Respond in this exact JSON format with no extra text:
 }`;
 
       try {
-  const result = await model.generateContent(prompt);
-  const text = result.response.text().trim();
-  const clean = text.replace(/```json|```/g, '').trim();
-  const parsed = JSON.parse(clean);
-  return {
-    id: app.id,
-    email: app.email,
-    score: Math.min(100, Math.max(0, Math.round(parsed.score))),
-    justification: parsed.justification || 'No justification provided.'
-  };
-} catch (e) {
-  return {
-    id: app.id,
-    email: app.email,
-    score: null,
-    justification: null
-  };
-}
+        const result = await model.generateContent(prompt);
+        const text = result.response.text().trim();
+        const clean = text.replace(/```json|```/g, '').trim();
+        const parsed = JSON.parse(clean);
+        return {
+          id: app.id,
+          email: app.email,
+          score: Math.min(100, Math.max(0, Math.round(parsed.score))),
+          justification: parsed.justification || 'No justification provided.'
+        };
+      } catch (e) {
+        return {
+          id: app.id,
+          email: app.email,
+          score: null,
+          justification: null
+        };
+      }
     }));
 
     return res.status(200).json({ results });
