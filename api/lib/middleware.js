@@ -25,6 +25,6 @@ function verifyToken(req) {
 }
 
 const EMPLOYEE_FILTERED = ['attendance', 'leaves', 'advances', 'promos', 'complaints'];
-const ALLOWED_TABLES = ['attendance','costs','revenue','inventory','tasks','leaves','advances','promos','complaints','applicants','job_postings','settings','apt_questions','benefits'];
+const ALLOWED_TABLES = ['attendance','costs','revenue','tasks','leaves','advances','promos','complaints','applicants','job_postings','settings','apt_questions','benefits'];
 
 module.exports = { getSupabase, cors, verifyToken, JWT_SECRET, EMPLOYEE_FILTERED, ALLOWED_TABLES };
