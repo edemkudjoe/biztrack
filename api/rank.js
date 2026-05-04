@@ -22,30 +22,25 @@ module.exports = async function (req, res) {
     const results = await Promise.all(applicants.map(async (app) => {
       const prompt = `
 You are an expert HR recruiter scoring a job applicant. Be fair, critical, and consistent.
-
 Job Requirements:
 ${jobRequirements || 'No specific requirements listed.'}
-
 Applicant Profile:
 - Name: ${app.name || 'Unknown'}
 - Education: ${app.education || 'Not specified'} (score: ${app.eduScore || 0}/40)
 - Experience score: ${app.expScore || app.experience || 0}/30
 - Skills: ${app.skills || 'Not specified'}
 - Cover Letter: ${app.coverLetter || 'Not provided'}
-
 Score this applicant out of 100 based on how well they match the job requirements.
 Scoring breakdown:
 - Education relevance: up to 40 points
 - Experience: up to 30 points
 - Skills match: up to 20 points
 - Cover letter quality and relevance: up to 10 points
-
 Respond in this exact JSON format with no extra text:
 {
   "score": <number 0-100>,
   "justification": "<2-3 sentences explaining the score>"
 }`;
-
       try {
         const result = await model.generateContent(prompt);
         const text = result.response.text().trim();
@@ -66,7 +61,6 @@ Respond in this exact JSON format with no extra text:
         };
       }
     }));
-
     return res.status(200).json({ results });
   } catch (err) {
     return res.status(500).json({ error: 'Internal server error.' });
