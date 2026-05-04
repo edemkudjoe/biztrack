@@ -631,13 +631,14 @@ async function rankApplicants(){
   DB.s('rec_stage','shortlisted');
 
   // Sync to Supabase
-  ranked.forEach(a=>{
-    if(a.id) apiFetch('PUT',`/data/applicants/${a.id}`,{
-      score:a.score,
-      justification:a.justification
-    }).catch(()=>{});
-  });
-
+  ranked.forEach(a => {
+  if (a.id && a.score !== null && a.score !== undefined) {   // ← only sync if actually scored
+    apiFetch('PUT', `/data/applicants/${a.id}`, {
+      score: a.score,
+      justification: a.justification
+    }).catch(() => {});
+  }
+});
   if(btn){btn.disabled=false;btn.textContent='Rank by Merit';}
   showPage('e_recruitment');
   toast(`Ranked ${ranked.length} applicants by AI merit score`,'s');
