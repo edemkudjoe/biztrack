@@ -284,9 +284,36 @@ function submitCareersApplication(){
 async function showCPAptTest(){
   if(!_cpUser){showCPAuth('login');return;}
 
+  const cpToken=localStorage.getItem('cp_jwt');
+
+  // Always fetch fresh applicant data from Supabase so testInvited is current
+  let myApp=null;
+  try{
+    const ra=await fetch(`${API}/data/applicants`,{headers:{'Authorization':`Bearer ${cpToken}`}});
+    const da=await ra.json();
+    if(da.records){
+      const fresh=da.records.filter(a=>a.email===_cpUser.email);
+      const allApps=DB.g('applicants')||[];
+      fresh.forEach(fa=>{
+        const idx=allApps.findIndex(a=>a.email===fa.email&&a.jobId===fa.jobId);
+        if(idx>=0) allApps[idx]={...allApps[idx],...fa};
+        else allApps.push(fa);
+      });
+      DB.s('applicants',allApps);
+      myApp=fresh.find(a=>a.testInvited);
+    }
+  }catch(e){console.warn('Failed to fetch fresh applicant data',e);}
+
+  if(!myApp){
+    const apps=DB.g('applicants')||[];
+    myApp=apps.find(a=>a.email===_cpUser.email&&a.testInvited);
+  }
+
+  if(!myApp){toast('You have not been invited to take the aptitude test yet.','e');return;}
+  if(myApp.testScore!==undefined){toast('You have already completed the aptitude test.','i');showTrackView();return;}
+
   let qs=[];
   try{
-    const cpToken=localStorage.getItem('cp_jwt');
     const r=await fetch(`${API}/data/apt_questions`,{headers:{'Authorization':`Bearer ${cpToken}`}});
     const data=await r.json();
     if(data.records&&data.records.length>0){
@@ -296,11 +323,6 @@ async function showCPAptTest(){
   }catch(e){console.warn('Failed to fetch apt questions',e);}
 
   if(qs.length===0) qs=DB.g('apt_qs')||[];
-
-  const apps=DB.g('applicants')||[];
-  const myApp=apps.find(a=>a.email===_cpUser.email&&a.testInvited);
-  if(!myApp){toast('You have not been invited to take the aptitude test yet.','e');return;}
-  if(myApp.testScore!==undefined){toast('You have already completed the aptitude test.','i');showTrackView();return;}
   if(qs.length===0){toast('No test questions available yet. Please check back later.','e');return;}
 
   ['cp-auth-view','cp-jobs-view','cp-apply-view','cp-track-view','cp-offer-view'].forEach(id=>{
@@ -335,6 +357,77 @@ async function showCPAptTest(){
       <button class="btn-login" onclick="submitCPAptTest()">Submit Test</button>
     </div>`;
 }
+
+function cpSelOpt(labelEl, qIdx){
+  // Highlight selected option, deselect others in same question
+  const container=labelEl.closest('[id]')||labelEl.parentElement.parentElement.parentElement;
+  const allLabels=container.querySelectorAll(`label[onclick*="cpSelOpt(this,${qIdx})"]`);
+  allLabels.forEach(l=>{
+    l.style.border='2px solid rgba(255,255,255,.15)';
+    l.style.background='transparent';
+  });
+  labelEl.style.border='2px solid var(--accent)';
+  labelEl.style.background='rgba(var(--accent-rgb,99,102,241),.15)';
+  // Check the radio input inside
+  const radio=labelEl.querySelector('input[type="radio"]');
+  if(radio) radio.checked=true;
+}
+
+async function submitCPAptTest(){
+  if(!_cpUser) return;
+  const qs=DB.g('apt_qs')||[];
+  if(qs.length===0){toast('No questions found.','e');return;}
+
+  // Collect answers
+  const answers=[];
+  let unanswered=0;
+  qs.forEach((q,i)=>{
+    const sel=document.querySelector(`input[name="cpq${i}"]:checked`);
+    if(sel) answers.push(parseInt(sel.value));
+    else{answers.push(-1);unanswered++;}
+  });
+
+  if(unanswered>0){
+    const msg=document.getElementById('cp-apt-msg');
+    if(msg) msg.innerHTML=`<div class="al al-r">Please answer all questions. ${unanswered} unanswered.</div>`;
+    return;
+  }
+
+  // Score the test
+  let correct=0;
+  qs.forEach((q,i)=>{if(answers[i]===q.ans) correct++;});
+  const testScore=correct;
+
+  // Save to local DB
+  const apps=DB.g('applicants')||[];
+  const appIdx=apps.findIndex(a=>a.email===_cpUser.email&&a.testInvited);
+  if(appIdx<0){toast('Could not find your application.','e');return;}
+  apps[appIdx].testScore=testScore;
+  DB.s('applicants',apps);
+
+  // Sync to Supabase
+  const cpToken=localStorage.getItem('cp_jwt');
+  if(apps[appIdx].id){
+    try{
+      await fetch(`${API}/data/applicants/${apps[appIdx].id}`,{
+        method:'PUT',
+        headers:{'Content-Type':'application/json','Authorization':`Bearer ${cpToken}`},
+        body:JSON.stringify({testScore})
+      });
+    }catch(e){console.warn('Failed to sync test score',e);}
+  }
+
+  // Show result
+  const msg=document.getElementById('cp-apt-msg');
+  if(msg) msg.innerHTML=`<div class="al al-g" style="font-size:15px">
+    ✅ Test submitted! You scored <strong>${testScore}/${qs.length}</strong>.
+    <br><span style="font-size:12px;opacity:.8">The employer will review results and contact you.</span>
+  </div>`;
+  document.querySelector('.btn-login[onclick="submitCPAptTest()"]').disabled=true;
+  document.querySelector('.btn-login[onclick="submitCPAptTest()"]').textContent='Submitted';
+  toast(`Test submitted — ${testScore}/${qs.length} correct`,'s');
+}
+
 function showTrackView(){
   document.getElementById('cp-auth-view').style.display='none';
   document.getElementById('cp-jobs-view').style.display='none';
