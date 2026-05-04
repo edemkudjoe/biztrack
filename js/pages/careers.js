@@ -237,14 +237,16 @@ function submitCareersApplication(){
   const name=document.getElementById('cp-name').value.trim();
   const email=document.getElementById('cp-email').value.trim();
   const eduEl=document.getElementById('cp-edu');
-  const edu=eduEl.value;
-  const exp=document.getElementById('cp-exp').value;
-  const msg=document.getElementById('cp-apply-msg');
-  if(!name||!email||!edu||!exp){msg.innerHTML='<div class="al al-r">Please fill all required fields.</div>';return;}
-  const apps=DB.g('applicants')||[];
-  if(apps.find(a=>a.email===email&&a.position===(_cpSelectedJob?.title||''))){msg.innerHTML='<div class="al al-a">You have already applied for this position.</div>';return;}
-  const eduScore=parseInt(edu)||50;
-  const expScore=Math.min(parseInt(exp)||0,30);
+const edu=eduEl.value;
+const exp=document.getElementById('cp-exp').value;
+const coverLetter=document.getElementById('cp-cover').value;
+const skills=document.getElementById('cp-skills').value;
+
+const eduScore=Math.min(parseInt(edu)||0, 40);
+const expScore=Math.min(parseInt(exp)||0, 30);
+const coverWords=(coverLetter||'').trim().split(/\s+/).filter(Boolean).length;
+const coverScore=Math.min(Math.floor(coverWords/5), 30);
+const merit=Math.min(100, eduScore+expScore+coverScore);
   const newApp={
     name,email,
     phone:document.getElementById('cp-phone').value,
@@ -252,8 +254,10 @@ function submitCareersApplication(){
     dept:_cpSelectedJob?.dept||'',
     education:eduEl.selectedIndex>0?eduEl.options[eduEl.selectedIndex].text:'',
     eduScore,
-    experience:expScore,
-    expScore,
+experience:expScore,
+expScore,
+coverScore,
+merit,
     field:document.getElementById('cp-field').value,
     previousEmployers:document.getElementById('cp-emp').value,
     skills:document.getElementById('cp-skills').value,
