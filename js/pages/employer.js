@@ -604,8 +604,8 @@ async function rankApplicants(){
   if(btn){btn.disabled=true;btn.textContent='Ranking…';}
   toast('AI ranking started — please wait…','i');
 
-  // Split applicants into batches of 10
-  const BATCH=10;
+  // Keep batches small (3) to avoid Vercel function timeouts given the per-call delay
+  const BATCH=3;
   const batches=[];
   for(let i=0;i<apps.length;i+=BATCH) batches.push(apps.slice(i,i+BATCH));
 
