@@ -631,8 +631,8 @@ async function rankApplicants(){
   DB.s('rec_stage','shortlisted');
 
   // Sync to Supabase
-  ranked.forEach(a => {
-  if (a.id && a.score !== null && a.score !== undefined) {   // ← only sync if actually scored
+ ranked.forEach(a => {
+  if (a.id && a.score !== null && a.score !== undefined) {
     apiFetch('PUT', `/data/applicants/${a.id}`, {
       score: a.score,
       justification: a.justification
