@@ -498,15 +498,13 @@ function resolvePromo(i,dec){
 }
 
 // ─── RECRUITMENT ───
-// Merit score: education (max 40) + experience (max 30) + skills/cover (max 30)
+// Merit score: education (max 40) + experience (max 30) + cover letter (max 30)
 function calcMeritScore(app){
-  const eduScore=parseInt(app.eduScore)||0;  // stored as numeric from dropdown value
-  const expScore=Math.min(parseInt(app.expScore)||0,30);
-  // Skills & cover letter quality: count words up to 30 pts
-  const skillWords=(app.skills||'').split(/\s+/).filter(Boolean).length;
-  const coverWords=(app.coverLetter||'').split(/\s+/).filter(Boolean).length;
-  const contentScore=Math.min(Math.floor((skillWords+coverWords)/10),30);
-  return Math.min(100,eduScore+expScore+contentScore);
+  const eduScore=Math.min(parseInt(app.eduScore)||0, 40);
+  const expScore=Math.min(parseInt(app.expScore)||0, 30);
+  const coverWords=(app.coverLetter||'').trim().split(/\s+/).filter(Boolean).length;
+  const coverScore=Math.min(Math.floor(coverWords/5), 30);
+  return Math.min(100, eduScore+expScore+coverScore);
 }
 
 function openInterviewNotes(email){
@@ -599,6 +597,8 @@ async function rankApplicants(){
 
   // Show progress in the page
   const btn=document.querySelector('[onclick="rankApplicants()"]');
+  const preMerited=apps.map(a=>({...a, merit:a.merit??calcMeritScore(a)}));
+  DB.s('applicants', preMerited);
   if(btn){btn.disabled=true;btn.textContent='Ranking…';}
   toast('AI ranking started — please wait…','i');
 
@@ -622,11 +622,10 @@ async function rankApplicants(){
   }
 
   // Merge scores and justifications back into applicants
-  const ranked=apps.map(a=>{
-    const r=allResults.find(x=>x.email===a.email);
-    return r?{...a,score:r.score,justification:r.justification}:a;
-  });
-
+  const ranked=preMerited.map(a=>{
+  const r=allResults.find(x=>x.email===a.email);
+  return r?{...a,score:r.score,justification:r.justification}:a;
+});
   DB.s('applicants',ranked);
   const anyScored=ranked.some(a=>a.score!==null&&a.score!==undefined);
   if(anyScored) DB.s('rec_stage','shortlisted');
@@ -918,8 +917,9 @@ function pRecruitment(el){
         <td><strong>${a.name}</strong><br><small style="color:var(--text-muted)">${a.email}</small></td>
         <td style="font-size:11px">${a.education||'—'}</td>
         <td>${a.experience||0}y</td>
-        <td>${a.score!==undefined?`<strong>${a.score}</strong>/100${a.justification?`<br><span style="font-size:11px;color:var(--text-muted)">${a.justification}</span>`:''}`:
-          `<span style="color:var(--text-muted)">—</span>`}</td>
+        <td>${a.score!==undefined?`<strong>${a.score}</strong>/100${a.justification?`<br><span style="font-size:11px;color:var(--text-muted)">${a.justification}</span>`:''}`
+  :a.merit!==undefined?`<span style="color:var(--text-muted);font-size:12px">${a.merit}/100 (local)</span>`
+  :`<span style="color:var(--text-muted)">—</span>`}</td>
         <td>${a.testScore!==undefined?`<strong>${a.testScore}/${qs.length}</strong>`:`<span style="color:var(--text-muted)">—</span>`}</td>
         <td>${a.offerStatus?`<span class="b ${a.offerStatus==='accepted'?'bg':a.offerStatus==='rejected'?'br':a.offerStatus==='negotiated'?'ba':'bb'}">${a.offerStatus}</span>
   ${a.offerStatus==='negotiated'?`<br><button class="btn btn-sm b-am" style="margin-top:4px" onclick="openNegotiationResponse('${a.email}')">${ic('message-square',11)} Respond</button>`:''}
