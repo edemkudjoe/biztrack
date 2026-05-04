@@ -82,18 +82,26 @@ module.exports = async function (req, res) {
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
     const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
 
-    const results = await Promise.all(applicants.map(async (app) => {
+    // Score sequentially with a delay to respect Gemini free tier rate limits (15 RPM).
+    // Promise.all was causing 429 TooManyRequests by firing all calls simultaneously.
+    const DELAY_MS = 4500; // ~13 req/min, safely under the 15 RPM free tier ceiling
+    const results = [];
+    for (let i = 0; i < applicants.length; i++) {
+      const app = applicants[i];
       try {
-        return await scoreApplicant(model, app, jobRequirements.slice(0, 1000));
+        results.push(await scoreApplicant(model, app, jobRequirements.slice(0, 1000)));
       } catch (e) {
-        return {
+        results.push({
           id: app.id,
           score: null,
           justification: null,
           error: e.message || 'Scoring failed'
-        };
+        });
       }
-    }));
+      if (i < applicants.length - 1) {
+        await new Promise(resolve => setTimeout(resolve, DELAY_MS));
+      }
+    }
 
     const succeeded = results.filter(r => r.score !== null).length;
     const failed = results.length - succeeded;
