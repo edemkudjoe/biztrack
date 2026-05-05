@@ -661,6 +661,19 @@ async function rankApplicants(){
   toast(`Ranked ${scoredCount} of ${apps.length} applicants by AI merit score`,'s');
 }
 
+function promoteToShortlist(){
+  const apps=DB.g('applicants')||[];
+  if(apps.length===0){toast('No applications yet.','e');return;}
+  const scored=apps.filter(a=>typeof a.score==='number').length;
+  const msg=scored>0
+    ?`${scored} of ${apps.length} applicants have AI scores. Move to Shortlisting stage?`
+    :`No applicants have been AI-scored yet (scores are assigned on submission). Move to Shortlisting anyway?`;
+  if(!confirm(msg)) return;
+  DB.s('rec_stage','shortlisted');
+  showPage('e_recruitment');
+  toast('Pipeline moved to Shortlisting stage','s');
+}
+
 function inviteTop50(){
   const apps=DB.g('applicants')||[];
   const qs=DB.g('apt_qs')||[];
@@ -668,11 +681,15 @@ function inviteTop50(){
     toast('Please set up aptitude test questions first (click Manage)','e');
     return;
   }
-  if(!confirm('Invite the top 50 ranked applicants to take the aptitude test?')) return;
-  const sorted=apps.slice().sort((a,b)=>(b.score||0)-(a.score||0));
+  const scored=apps.filter(a=>typeof a.score==='number');
+  const unscored=apps.length-scored.length;
+  if(scored.length===0){toast('No AI-scored applicants yet. Scores are assigned automatically when applications are submitted.','e');return;}
+  if(unscored>0&&!confirm(`${unscored} applicant(s) have not been AI-scored and will be excluded. Continue?`)) return;
+  if(!confirm('Invite the top 50 AI-scored applicants to take the aptitude test?')) return;
+  const sorted=scored.slice().sort((a,b)=>b.score-a.score);
   const top50=sorted.slice(0,50);
   const updated=apps.map(a=>{
-    const isTop=top50.some(t=>t.email===a.email);
+    const isTop=top50.some(t=>t.id?t.id===a.id:t.email===a.email);
     return isTop?{...a,testInvited:true}:a;
   });
   DB.s('applicants',updated);
@@ -688,16 +705,20 @@ function selectTop10(){
   const apps=DB.g('applicants')||[];
   const tested=apps.filter(a=>a.testScore!==undefined).sort((a,b)=>b.testScore-a.testScore);
   if(tested.length===0){toast('No test scores yet. Wait for applicants to complete the test.','e');return;}
-  if(!confirm('Move the top 10 test scorers to the Interview stage?')) return;
-  const top10emails=tested.slice(0,10).map(a=>a.email);
-  const updated=apps.map(a=>top10emails.includes(a.email)?{...a,invited:true}:a);
+  if(!confirm('Send employment offers to the top 10 test scorers?')) return;
+  const top10=tested.slice(0,10);
+  const top10ids=top10.map(a=>a.id||a.email);
+  const updated=apps.map(a=>{
+    const inTop=top10.some(t=>t.id?t.id===a.id:t.email===a.email);
+    return inTop?{...a,invited:true,offerSent:true}:a;
+  });
   DB.s('applicants',updated);
   DB.s('rec_stage','interviewing');
   updated.forEach(a=>{
-    if(a.invited&&a.id) apiFetch('PUT',`/data/applicants/${a.id}`,{invited:true}).catch(()=>{});
+    if(a.invited&&a.id) apiFetch('PUT',`/data/applicants/${a.id}`,{invited:true,offerSent:true}).catch(()=>{});
   });
   showPage('e_recruitment');
-  toast('Top 10 moved to Interview stage','s');
+  toast(`Offer letters sent to top ${top10.length} candidates`,'s');
 }
 
 // AFTER
@@ -776,43 +797,78 @@ function _renderAptSetupModal(){
       <button class="btn b-rd btn-sm" style="margin-left:8px" onclick="clearAptQuestions()">Clear All</button>
     </div>
     <div id="apt-q-list">
-      ${qs.length===0?'<p style="color:var(--text-muted);font-size:13px">No questions yet. Add some above.</p>':qs.map((q,i)=>`
-        <div style="background:var(--bg);border-radius:8px;padding:12px;margin-bottom:10px">
+      ${qs.length===0?'<p style="color:var(--text-muted);font-size:13px">No questions yet. Add some above.</p>':qs.map((q,i)=>{
+        const isSubj=q.type==='subjective';
+        const pts=typeof q.points==='number'?q.points:1;
+        return`<div style="background:var(--bg);border-radius:8px;padding:12px;margin-bottom:10px">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+            <span class="b ${isSubj?'ba':'bb'}" style="font-size:10px">${isSubj?'Subjective':'Objective'}</span>
+            <span style="font-size:11px;color:var(--text-muted)">${pts} pt${pts!==1?'s':''}</span>
+          </div>
           <div style="font-size:12.5px;font-weight:700;margin-bottom:6px">Q${i+1}: ${q.q}</div>
-          <div style="font-size:11.5px;color:var(--text-muted)">${q.opts.map((o,oi)=>`${String.fromCharCode(65+oi)}) ${o}${oi===q.ans?' ✓':''}`).join(' | ')}</div>
+          ${isSubj
+            ?'<div style="font-size:11.5px;color:var(--text-muted);font-style:italic">AI-graded written response</div>'
+            :`<div style="font-size:11.5px;color:var(--text-muted)">${(q.opts||[]).map((o,oi)=>`${String.fromCharCode(65+oi)}) ${o}${oi===q.ans?' ✓':''}`).join(' | ')}</div>`}
           <button class="btn b-rd btn-sm" style="margin-top:8px" onclick="deleteAptQuestion(${i})">Delete</button>
-        </div>`).join('')}
+        </div>`;}).join('')}
     </div>
   `,[{l:'Done',c:'b-nv',fn:()=>{closeModal();showPage('e_recruitment');}}]);
 }
 function addAptQuestion(){
   closeModal();
   openModal('Add Aptitude Question',`
+    <div class="f">
+      <label>Question Type</label>
+      <select id="aq-type" onchange="toggleAptQType(this.value)">
+        <option value="objective">Objective (Multiple Choice)</option>
+        <option value="subjective">Subjective (Written Answer)</option>
+      </select>
+    </div>
     <div class="f"><label>Question</label><input type="text" id="aq-q" placeholder="e.g. What is 15% of 200?"></div>
-    <div class="f"><label>Option A</label><input type="text" id="aq-a"></div>
-    <div class="f"><label>Option B</label><input type="text" id="aq-b"></div>
-    <div class="f"><label>Option C</label><input type="text" id="aq-c"></div>
-    <div class="f"><label>Option D</label><input type="text" id="aq-d"></div>
-    <div class="f"><label>Correct Answer</label>
-      <select id="aq-ans"><option value="0">A</option><option value="1">B</option><option value="2">C</option><option value="3">D</option></select>
+    <div class="f"><label>Points</label><input type="number" id="aq-pts" value="1" min="1" max="10"></div>
+    <div id="aq-obj-fields">
+      <div class="f"><label>Option A</label><input type="text" id="aq-a"></div>
+      <div class="f"><label>Option B</label><input type="text" id="aq-b"></div>
+      <div class="f"><label>Option C</label><input type="text" id="aq-c"></div>
+      <div class="f"><label>Option D</label><input type="text" id="aq-d"></div>
+      <div class="f"><label>Correct Answer</label>
+        <select id="aq-ans"><option value="0">A</option><option value="1">B</option><option value="2">C</option><option value="3">D</option></select>
+      </div>
+    </div>
+    <div id="aq-subj-fields" style="display:none">
+      <div class="al al-b" style="font-size:12px">The AI will grade written answers automatically when candidates submit the test.</div>
     </div>
   `,[{l:'Save Question',c:'b-gr',fn:()=>{
+    const qType=document.getElementById('aq-type').value;
     const q=document.getElementById('aq-q').value.trim();
-    const a=document.getElementById('aq-a').value.trim();
-    const b=document.getElementById('aq-b').value.trim();
-    const c=document.getElementById('aq-c').value.trim();
-    const d=document.getElementById('aq-d').value.trim();
-    if(!q||!a||!b||!c||!d){toast('Fill all fields','e');return;}
-    const ans=parseInt(document.getElementById('aq-ans').value);
-const newQ={q,opts:[a,b,c,d],ans};
-apiFetch('POST','/data/apt_questions',newQ).then(r=>{
-  const qs=DB.g('apt_qs')||[];
-  qs.push(r.record||newQ);
-  DB.s('apt_qs',qs);
-  closeModal();
-  openAptSetup();
-  toast('Question added','s');
-}).catch(()=>toast('Failed to save question','e'));  }}]);
+    const pts=Math.min(10,Math.max(1,parseInt(document.getElementById('aq-pts').value)||1));
+    if(!q){toast('Question text is required','e');return;}
+    let newQ;
+    if(qType==='subjective'){
+      newQ={q,type:'subjective',points:pts};
+    } else {
+      const a=document.getElementById('aq-a').value.trim();
+      const b=document.getElementById('aq-b').value.trim();
+      const c=document.getElementById('aq-c').value.trim();
+      const d=document.getElementById('aq-d').value.trim();
+      if(!a||!b||!c||!d){toast('Fill all four answer options','e');return;}
+      const ans=parseInt(document.getElementById('aq-ans').value);
+      newQ={q,type:'objective',opts:[a,b,c,d],ans,points:pts};
+    }
+    apiFetch('POST','/data/apt_questions',newQ).then(r=>{
+      const qs=DB.g('apt_qs')||[];
+      qs.push(r.record||newQ);
+      DB.s('apt_qs',qs);
+      closeModal();
+      openAptSetup();
+      toast('Question added','s');
+    }).catch(()=>toast('Failed to save question','e'));
+  }}]);
+}
+
+function toggleAptQType(type){
+  document.getElementById('aq-obj-fields').style.display=type==='objective'?'block':'none';
+  document.getElementById('aq-subj-fields').style.display=type==='subjective'?'block':'none';
 }
 
 function deleteAptQuestion(i){
@@ -903,7 +959,7 @@ function pRecruitment(el){
     <div class="card mb">
       <div class="ch"><span class="ct">${ic('settings',15)} Aptitude Test</span><button class="btn b-nv btn-sm" onclick="openAptSetup()">Manage (${qs.length} Qs)</button></div>
       <div class="cb">
-        <p style="font-size:12.5px;color:var(--text-muted);margin-bottom:8px">Set MCQ questions for shortlisted candidates. Top 50 ranked applicants get invited automatically.</p>
+        <p style="font-size:12.5px;color:var(--text-muted);margin-bottom:8px">Set objective (MCQ) and subjective questions. Top 50 AI-scored applicants get invited to test automatically.</p>
         ${qs.length===0?`<div class="al al-a">${ic('alert-triangle',13)} No questions set yet. Add questions before inviting candidates.</div>`:`<div class="al al-g">${ic('check-circle',13)} ${qs.length} question${qs.length!==1?'s':''} ready.</div>`}
       </div>
     </div>
@@ -919,10 +975,9 @@ function pRecruitment(el){
   <div class="ch">
     <span class="ct">${ic('list',15)} All Applicants (${apps.length})</span>
     <div style="display:flex;gap:8px;flex-wrap:wrap">
-      ${stage==='collecting'&&apps.length>0?`<button class="btn b-am btn-sm" onclick="rankApplicants()">${ic('award',13)} Rank by Merit</button>`:''}
+      ${stage==='collecting'&&apps.length>0?`<button class="btn b-am btn-sm" onclick="promoteToShortlist()">${ic('award',13)} Move to Shortlisting</button>`:''}
       ${stage==='shortlisted'?`<button class="btn b-bl btn-sm" onclick="inviteTop50()">${ic('send',13)} Invite Top 50 to Test</button>`:''}
-      ${stage==='testing'?`<button class="btn b-gr btn-sm" onclick="selectTop10()">${ic('check-circle',13)} Select Top 10</button>`:''}
-      ${stage==='interviewing'?`<button class="btn b-pr btn-sm" onclick="sendOffers()">${ic('file-text',13)} Send Offer Letters</button>`:''}
+      ${stage==='testing'?`<button class="btn b-gr btn-sm" onclick="selectTop10()">${ic('check-circle',13)} Send Offers to Top 10</button>`:''}
       <button class="btn b-ol btn-sm" onclick="resetRecruitment()">${ic('refresh-cw',13)} Reset Pipeline</button>
     </div>
   </div>
@@ -937,7 +992,7 @@ function pRecruitment(el){
         <td>${a.score!==undefined?`<strong>${a.score}</strong>/100${a.justification?`<br><span style="font-size:11px;color:var(--text-muted)">${a.justification}</span>`:''}`
   :a.merit!==undefined?`<span style="color:var(--text-muted);font-size:12px">${a.merit}/100 (local)</span>`
   :`<span style="color:var(--text-muted)">—</span>`}</td>
-        <td>${a.testScore!==undefined?`<strong>${a.testScore}/${qs.length}</strong>`:`<span style="color:var(--text-muted)">—</span>`}</td>
+        <td>${a.testScore!==undefined?`<strong>${a.testScore}/${a.testMax||qs.length}</strong>`:`<span style="color:var(--text-muted)">—</span>`}</td>
         <td>${a.offerStatus?`<span class="b ${a.offerStatus==='accepted'?'bg':a.offerStatus==='rejected'?'br':a.offerStatus==='negotiated'?'ba':'bb'}">${a.offerStatus}</span>
   ${a.offerStatus==='negotiated'?`<br><button class="btn btn-sm b-am" style="margin-top:4px" onclick="openNegotiationResponse('${a.email}')">${ic('message-square',11)} Respond</button>`:''}
 `:'—'}</td>
