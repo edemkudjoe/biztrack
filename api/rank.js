@@ -1,7 +1,11 @@
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const { cors, verifyToken } = require('./lib/middleware');
 
-const CALL_TIMEOUT_MS = 15000;
+const CALL_TIMEOUT_MS = 25000;
+
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
 
 function sanitizeField(value, maxLength = 500) {
   if (!value) return 'Not provided';
@@ -12,13 +16,30 @@ function sanitizeField(value, maxLength = 500) {
     .slice(0, maxLength);
 }
 
-async function scoreWithTimeout(model, prompt) {
-  return Promise.race([
-    model.generateContent(prompt),
-    new Promise((_, reject) =>
-      setTimeout(() => reject(new Error('Gemini timeout')), CALL_TIMEOUT_MS)
-    )
-  ]);
+async function callGeminiWithRetry(model, prompt, maxRetries = 4) {
+  let delay = 8000;
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      return await Promise.race([
+        model.generateContent(prompt),
+        new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('Gemini timeout')), CALL_TIMEOUT_MS)
+        )
+      ]);
+    } catch (e) {
+      const is429 =
+        e?.status === 429 ||
+        String(e?.message).includes('429') ||
+        String(e?.message).toLowerCase().includes('resource has been exhausted') ||
+        String(e?.message).toLowerCase().includes('toomanyrequests');
+      if (is429 && attempt < maxRetries) {
+        await sleep(delay);
+        delay *= 2;
+        continue;
+      }
+      throw e;
+    }
+  }
 }
 
 async function scoreApplicant(model, app, jobRequirements) {
@@ -41,10 +62,10 @@ Scoring breakdown:
 - Skills match: up to 20 points
 - Cover letter quality and relevance: up to 10 points
 
-Respond in this exact JSON format with no extra text, markdown, or code fences:
+Respond ONLY in this exact JSON format with no extra text or markdown:
 {"score":<integer 0-100>,"justification":"<2-3 sentences explaining the score>"}`;
 
-  const result = await scoreWithTimeout(model, prompt);
+  const result = await callGeminiWithRetry(model, prompt);
   const text = result.response.text().trim().replace(/```json|```/g, '').trim();
   const parsed = JSON.parse(text);
 
@@ -66,48 +87,51 @@ module.exports = async function (req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).end();
 
-  try {
-    let decoded;
-    try { decoded = verifyToken(req); } catch (e) { return res.status(401).json({ error: 'Unauthorized' }); }
-    if (decoded.role !== 'employer') return res.status(403).json({ error: 'Forbidden' });
+  let decoded;
+  try { decoded = verifyToken(req); } catch (e) { return res.status(401).json({ error: 'Unauthorized' }); }
 
-    const { applicants, jobRequirements } = req.body;
-    if (!applicants || !Array.isArray(applicants) || applicants.length === 0) {
-      return res.status(400).json({ error: 'No applicants provided.' });
-    }
-    if (!jobRequirements || typeof jobRequirements !== 'string' || !jobRequirements.trim()) {
-      return res.status(400).json({ error: 'jobRequirements must be provided for accurate scoring.' });
-    }
+  const { applicants, jobRequirements, single } = req.body;
 
-    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
-
-    // Score sequentially with a delay to respect Gemini free tier rate limits (15 RPM).
-    // Promise.all was causing 429 TooManyRequests by firing all calls simultaneously.
-    const DELAY_MS = 4500; // ~13 req/min, safely under the 15 RPM free tier ceiling
-    const results = [];
-    for (let i = 0; i < applicants.length; i++) {
-      const app = applicants[i];
-      try {
-        results.push(await scoreApplicant(model, app, jobRequirements.slice(0, 1000)));
-      } catch (e) {
-        results.push({
-          id: app.id,
-          score: null,
-          justification: null,
-          error: e.message || 'Scoring failed'
-        });
-      }
-      if (i < applicants.length - 1) {
-        await new Promise(resolve => setTimeout(resolve, DELAY_MS));
-      }
-    }
-
-    const succeeded = results.filter(r => r.score !== null).length;
-    const failed = results.length - succeeded;
-
-    return res.status(200).json({ results, succeeded, failed });
-  } catch (err) {
-    return res.status(500).json({ error: 'Internal server error.' });
+  if (!applicants || !Array.isArray(applicants) || applicants.length === 0) {
+    return res.status(400).json({ error: 'No applicants provided.' });
   }
+  if (!jobRequirements || typeof jobRequirements !== 'string' || !jobRequirements.trim()) {
+    return res.status(400).json({ error: 'jobRequirements must be provided for accurate scoring.' });
+  }
+
+  const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+  const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+
+  // Single mode: score one applicant immediately (called at application submission time)
+  if (single) {
+    try {
+      const result = await scoreApplicant(model, applicants[0], jobRequirements.slice(0, 1000));
+      return res.status(200).json({ results: [result], succeeded: 1, failed: 0 });
+    } catch (e) {
+      return res.status(200).json({
+        results: [{ id: applicants[0].id, score: null, justification: null, error: e.message }],
+        succeeded: 0,
+        failed: 1
+      });
+    }
+  }
+
+  // Batch mode: score sequentially with delay (employer re-score or bulk)
+  const INTER_CALL_DELAY_MS = 5000;
+  const results = [];
+
+  for (let i = 0; i < applicants.length; i++) {
+    const app = applicants[i];
+    try {
+      results.push(await scoreApplicant(model, app, jobRequirements.slice(0, 1000)));
+    } catch (e) {
+      results.push({ id: app.id, score: null, justification: null, error: e.message || 'Scoring failed' });
+    }
+    if (i < applicants.length - 1) await sleep(INTER_CALL_DELAY_MS);
+  }
+
+  const succeeded = results.filter(r => r.score !== null).length;
+  const failed = results.length - succeeded;
+
+  return res.status(200).json({ results, succeeded, failed });
 };
