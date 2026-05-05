@@ -264,7 +264,7 @@ async function submitCareersApplication(){
     field:document.getElementById('cp-field').value,
     previousEmployers:document.getElementById('cp-emp').value,
     skills,coverLetter,
-    date:today(),
+    appliedDate:today(),
     status:'pending',
     source:'careers_portal',
     testInvited:false,
@@ -565,7 +565,7 @@ function loadCPTrackForLoggedIn(){
     const testMax=a.testMax||qs.length;
     return`<div class="cp-progress">
       <div class="cp-progress-title">${ic('file-text',13)} ${a.position||'Application'}</div>
-      <div style="font-size:12px;color:rgba(255,255,255,.4);margin-bottom:12px">Applied: ${a.date||'—'}</div>
+      <div style="font-size:12px;color:rgba(255,255,255,.4);margin-bottom:12px">Applied: ${a.appliedDate||a.date||'—'}</div>
       ${stages.map((s,i)=>`<div class="cp-stage">
         <div class="cp-stage-dot ${i<si?'done':i===si?'current':''}"></div>
         <div class="cp-stage-label ${i<si?'done':i===si?'current':''}">${stageMap[s]||s}</div>
