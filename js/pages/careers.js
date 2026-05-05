@@ -66,7 +66,6 @@ async function doCPLogin(){
     localStorage.setItem('cp_user',JSON.stringify(d.applicant));
     setCPLoggedIn();
     msg.innerHTML='';
-    // Check if they have an offer or are invited to test
     const apps=DB.g('applicants')||[];
     const myApp=apps.find(a=>a.email===_cpUser.email);
     if(myApp?.offerSent){showCPOffer(myApp);}
@@ -147,7 +146,6 @@ function showJobsList(){
   document.getElementById('cp-apply-view').style.display='none';
   document.getElementById('cp-track-view').style.display='none';
   document.getElementById('cp-offer-view').style.display='none';
-  // Hide test view if it exists
   const tv=document.getElementById('cp-test-view');
   if(tv) tv.style.display='none';
 
@@ -233,35 +231,39 @@ function openJobApply(idx){
   ['cp-edu','cp-exp'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
 }
 
-function submitCareersApplication(){
+// ─── APPLICATION SUBMISSION WITH IMMEDIATE AI SCORING ───
+async function submitCareersApplication(){
   const name=document.getElementById('cp-name').value.trim();
   const email=document.getElementById('cp-email').value.trim();
   const eduEl=document.getElementById('cp-edu');
-const edu=eduEl.value;
-const exp=document.getElementById('cp-exp').value;
-const coverLetter=document.getElementById('cp-cover').value;
-const skills=document.getElementById('cp-skills').value;
+  const edu=eduEl.value;
+  const exp=document.getElementById('cp-exp').value;
+  const coverLetter=document.getElementById('cp-cover').value.trim();
+  const skills=document.getElementById('cp-skills').value.trim();
+  const msgEl=document.getElementById('cp-apply-msg');
 
-const eduScore=Math.min(parseInt(edu)||0, 40);
-const expScore=Math.min(parseInt(exp)||0, 30);
-const coverWords=(coverLetter||'').trim().split(/\s+/).filter(Boolean).length;
-const coverScore=Math.min(Math.floor(coverWords/5), 30);
-const merit=Math.min(100, eduScore+expScore+coverScore);
+  if(!name||!email){msgEl.innerHTML='<div class="al al-r">Name and email are required.</div>';return;}
+  if(!edu){msgEl.innerHTML='<div class="al al-r">Please select your highest education level.</div>';return;}
+  if(!exp){msgEl.innerHTML='<div class="al al-r">Please select your years of experience.</div>';return;}
+
+  const eduScore=Math.min(parseInt(edu)||0,40);
+  const expScore=Math.min(parseInt(exp)||0,30);
+  // Local merit used as fallback only — AI score is the real one
+  const coverWords=(coverLetter||'').trim().split(/\s+/).filter(Boolean).length;
+  const coverScore=Math.min(Math.floor(coverWords/5),30);
+  const merit=Math.min(100,eduScore+expScore+coverScore);
+
   const newApp={
     name,email,
     phone:document.getElementById('cp-phone').value,
     position:_cpSelectedJob?.title||'General Application',
+    jobId:_cpSelectedJob?.id||null,
     dept:_cpSelectedJob?.dept||'',
     education:eduEl.selectedIndex>0?eduEl.options[eduEl.selectedIndex].text:'',
-    eduScore,
-experience:expScore,
-expScore,
-coverScore,
-merit,
+    eduScore,expScore,coverScore,merit,
     field:document.getElementById('cp-field').value,
     previousEmployers:document.getElementById('cp-emp').value,
-    skills:document.getElementById('cp-skills').value,
-    coverLetter:document.getElementById('cp-cover').value,
+    skills,coverLetter,
     date:today(),
     status:'pending',
     source:'careers_portal',
@@ -269,12 +271,60 @@ merit,
     offerSent:false,
     invited:false
   };
-  apps.push(newApp);DB.s('applicants',apps);
+
+  // Disable submit button while we work
+  const submitBtn=document.querySelector('[onclick="submitCareersApplication()"]');
+  if(submitBtn){submitBtn.disabled=true;submitBtn.textContent='Submitting…';}
+  msgEl.innerHTML='<div class="al al-b">Saving your application…</div>';
+
+  // 1. Save to Supabase first
   const cpToken=localStorage.getItem('cp_jwt');
-  fetch(`${API}/data/applicants`,{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${cpToken}`},body:JSON.stringify(newApp)})
-    .then(r=>r.json()).then(r=>{
-      if(r.record){const a2=DB.g('applicants')||[];const i=a2.findIndex(x=>x.email===newApp.email&&x.position===newApp.position);if(i>=0){a2[i].id=r.record.id;DB.s('applicants',a2);}}
-    }).catch(()=>{});
+  let savedId=null;
+  try{
+    const saveRes=await fetch(`${API}/data/applicants`,{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${cpToken}`},body:JSON.stringify(newApp)});
+    const saveData=await saveRes.json();
+    if(saveData.record){
+      savedId=saveData.record.id;
+      newApp.id=savedId;
+    }
+  }catch(e){console.warn('Failed to save application to server:',e);}
+
+  // Also save to local DB immediately
+  const apps=DB.g('applicants')||[];
+  apps.push(newApp);
+  DB.s('applicants',apps);
+
+  // 2. Score with AI immediately
+  msgEl.innerHTML='<div class="al al-b">Scoring your application with AI… this may take a moment.</div>';
+  const jobs=DB.g('job_postings')||[];
+  const jobReqs=_cpSelectedJob
+    ? `${_cpSelectedJob.title}: ${_cpSelectedJob.requirements||_cpSelectedJob.description||''}`.trim()
+    : 'General position — score based on overall candidate quality.';
+
+  try{
+    const rankRes=await fetch(`${API}/rank`,{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':`Bearer ${cpToken}`},
+      body:JSON.stringify({applicants:[newApp],jobRequirements:jobReqs,single:true})
+    });
+    const rankData=await rankRes.json();
+    if(rankData.results&&rankData.results[0]&&rankData.results[0].score!==null){
+      const scored=rankData.results[0];
+      newApp.score=scored.score;
+      newApp.justification=scored.justification;
+      // Update local DB with score
+      const a2=DB.g('applicants')||[];
+      const idx=a2.findIndex(x=>x.email===newApp.email&&x.position===newApp.position);
+      if(idx>=0){a2[idx]={...a2[idx],score:scored.score,justification:scored.justification};DB.s('applicants',a2);}
+      // Sync score to Supabase
+      if(savedId){
+        fetch(`${API}/data/applicants/${savedId}`,{method:'PUT',headers:{'Content-Type':'application/json','Authorization':`Bearer ${cpToken}`},body:JSON.stringify({score:scored.score,justification:scored.justification})}).catch(()=>{});
+      }
+    }
+  }catch(e){console.warn('AI scoring failed, application saved without score:',e);}
+
+  // 3. Show success
+  if(submitBtn){submitBtn.disabled=false;submitBtn.textContent='Submit Application';}
   document.getElementById('cp-apply-form').style.display='none';
   document.getElementById('cp-apply-done').innerHTML=`
     <div style="margin-bottom:12px;color:var(--accent)">${ic('check-circle',52)}</div>
@@ -283,14 +333,16 @@ merit,
     <div class="al al-g" style="text-align:left"><strong>Track anytime</strong> by clicking "Track Applications" from the portal home.</div>
     <button class="btn b-ol" style="margin-top:16px" onclick="showJobsList()">← Back to Jobs</button>`;
   document.getElementById('cp-apply-done').style.display='block';
+  msgEl.innerHTML='';
 }
 
+// ─── APTITUDE TEST ───
 async function showCPAptTest(){
   if(!_cpUser){showCPAuth('login');return;}
 
   const cpToken=localStorage.getItem('cp_jwt');
 
-  // Always fetch fresh applicant data from Supabase so testInvited is current
+  // Fetch fresh applicant data so testInvited is current
   let myApp=null;
   try{
     const ra=await fetch(`${API}/data/applicants`,{headers:{'Authorization':`Bearer ${cpToken}`}});
@@ -316,18 +368,20 @@ async function showCPAptTest(){
   if(!myApp){toast('You have not been invited to take the aptitude test yet.','e');return;}
   if(myApp.testScore!==undefined){toast('You have already completed the aptitude test.','i');showTrackView();return;}
 
+  // Fetch questions
   let qs=[];
   try{
     const r=await fetch(`${API}/data/apt_questions`,{headers:{'Authorization':`Bearer ${cpToken}`}});
     const data=await r.json();
-    if(data.records&&data.records.length>0){
-      qs=data.records;
-      DB.s('apt_qs',qs);
-    }
+    if(data.records&&data.records.length>0){qs=data.records;DB.s('apt_qs',qs);}
   }catch(e){console.warn('Failed to fetch apt questions',e);}
 
   if(qs.length===0) qs=DB.g('apt_qs')||[];
   if(qs.length===0){toast('No test questions available yet. Please check back later.','e');return;}
+
+  // Separate objective and subjective questions
+  const objectives=qs.filter(q=>q.type!=='subjective');
+  const subjectives=qs.filter(q=>q.type==='subjective');
 
   ['cp-auth-view','cp-jobs-view','cp-apply-view','cp-track-view','cp-offer-view'].forEach(id=>{
     document.getElementById(id).style.display='none';
@@ -340,39 +394,51 @@ async function showCPAptTest(){
     document.querySelector('.cp-body').appendChild(testView);
   }
   testView.style.display='block';
+
   testView.innerHTML=`
     <div class="cp-back-link" onclick="showJobsList()">← Back</div>
     <div class="cp-form-card">
       <div style="font-size:20px;font-weight:900;color:#fff;margin-bottom:4px">Aptitude Test</div>
-      <p style="color:rgba(255,255,255,.55);font-size:13px;margin-bottom:20px">Answer all ${qs.length} questions carefully. You can only submit once.</p>
+      <p style="color:rgba(255,255,255,.55);font-size:13px;margin-bottom:6px">Answer all ${qs.length} questions carefully. You can only submit once.</p>
+      ${objectives.length>0?`<div style="font-size:12px;color:rgba(255,255,255,.4);margin-bottom:20px">${objectives.length} multiple-choice question${objectives.length!==1?'s':''}${subjectives.length>0?` · ${subjectives.length} written question${subjectives.length!==1?'s':''}`:''}</div>`:''}
+
       <div id="cp-apt-questions">
-        ${qs.map((q,i)=>`
-          <div style="background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:16px;margin-bottom:14px">
-            <div style="font-size:13.5px;font-weight:800;color:#fff;margin-bottom:12px">Q${i+1}. ${q.q}</div>
-            <div style="display:flex;flex-direction:column;gap:8px">
-              ${q.opts.map((o,oi)=>`
-                <label style="display:flex;align-items:center;gap:10px;padding:10px 13px;border:2px solid rgba(255,255,255,.15);border-radius:8px;cursor:pointer;transition:all .18s;font-size:13px;color:#fff" onclick="cpSelOpt(this,${i})">
-                  <input type="radio" name="cpq${i}" value="${oi}" style="accent-color:var(--accent)">${String.fromCharCode(65+oi)}) ${o}
-                </label>`).join('')}
+        ${qs.map((q,i)=>{
+          const pts=typeof q.points==='number'?q.points:1;
+          const isSubjective=q.type==='subjective';
+          return `<div style="background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:16px;margin-bottom:14px">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">
+              <div style="font-size:13.5px;font-weight:800;color:#fff">Q${i+1}. ${q.q}</div>
+              <span style="font-size:11px;color:rgba(255,255,255,.4);white-space:nowrap;margin-left:10px">[${pts} pt${pts!==1?'s':''}]</span>
             </div>
-          </div>`).join('')}
+            ${isSubjective
+              ? `<textarea id="cp-ans-${i}" rows="4" placeholder="Write your answer here…"
+                  style="width:100%;padding:10px;background:rgba(255,255,255,.06);border:2px solid rgba(255,255,255,.15);
+                  border-radius:8px;color:#fff;font-size:13px;resize:vertical;box-sizing:border-box;font-family:inherit"></textarea>`
+              : `<div style="display:flex;flex-direction:column;gap:8px">
+                  ${(q.opts||[]).map((o,oi)=>`
+                    <label style="display:flex;align-items:center;gap:10px;padding:10px 13px;border:2px solid rgba(255,255,255,.15);border-radius:8px;cursor:pointer;transition:all .18s;font-size:13px;color:#fff" onclick="cpSelOpt(this,${i})">
+                      <input type="radio" name="cpq${i}" value="${oi}" style="accent-color:var(--accent)">${String.fromCharCode(65+oi)}) ${o}
+                    </label>`).join('')}
+                </div>`
+            }
+          </div>`;
+        }).join('')}
       </div>
+
       <div id="cp-apt-msg" style="margin-bottom:12px"></div>
-      <button class="btn-login" onclick="submitCPAptTest()">Submit Test</button>
+      <button id="cp-apt-submit-btn" class="btn-login" onclick="submitCPAptTest()">Submit Test</button>
     </div>`;
 }
 
-function cpSelOpt(labelEl, qIdx){
-  // Highlight selected option, deselect others in same question
-  const container=labelEl.closest('[id]')||labelEl.parentElement.parentElement.parentElement;
-  const allLabels=container.querySelectorAll(`label[onclick*="cpSelOpt(this,${qIdx})"]`);
+function cpSelOpt(labelEl,qIdx){
+  const allLabels=document.querySelectorAll(`label[onclick*="cpSelOpt(this,${qIdx})"]`);
   allLabels.forEach(l=>{
     l.style.border='2px solid rgba(255,255,255,.15)';
     l.style.background='transparent';
   });
   labelEl.style.border='2px solid var(--accent)';
-  labelEl.style.background='rgba(var(--accent-rgb,99,102,241),.15)';
-  // Check the radio input inside
+  labelEl.style.background='rgba(99,102,241,.15)';
   const radio=labelEl.querySelector('input[type="radio"]');
   if(radio) radio.checked=true;
 }
@@ -386,9 +452,16 @@ async function submitCPAptTest(){
   const answers=[];
   let unanswered=0;
   qs.forEach((q,i)=>{
-    const sel=document.querySelector(`input[name="cpq${i}"]:checked`);
-    if(sel) answers.push(parseInt(sel.value));
-    else{answers.push(-1);unanswered++;}
+    if(q.type==='subjective'){
+      const ta=document.getElementById(`cp-ans-${i}`);
+      const val=ta?ta.value.trim():'';
+      if(!val) unanswered++;
+      answers.push(val);
+    } else {
+      const sel=document.querySelector(`input[name="cpq${i}"]:checked`);
+      if(!sel) unanswered++;
+      answers.push(sel?parseInt(sel.value):-1);
+    }
   });
 
   if(unanswered>0){
@@ -397,41 +470,70 @@ async function submitCPAptTest(){
     return;
   }
 
-  // Score the test
-  let correct=0;
-  qs.forEach((q,i)=>{if(answers[i]===q.ans) correct++;});
-  const testScore=correct;
+  const submitBtn=document.getElementById('cp-apt-submit-btn');
+  if(submitBtn){submitBtn.disabled=true;submitBtn.textContent='Grading…';}
+  const msg=document.getElementById('cp-apt-msg');
+  if(msg) msg.innerHTML='<div class="al al-b">Grading your test… AI is reviewing written answers. Please wait.</div>';
+
+  const cpToken=localStorage.getItem('cp_jwt');
+  let testScore=0;
+  let totalMax=qs.length;
+  let breakdown=[];
+
+  try{
+    const gradeRes=await fetch(`${API}/grade-test`,{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':`Bearer ${cpToken}`},
+      body:JSON.stringify({questions:qs,answers})
+    });
+    const gradeData=await gradeRes.json();
+    if(gradeData.testScore!==undefined){
+      testScore=gradeData.testScore;
+      totalMax=gradeData.totalMax||qs.length;
+      breakdown=gradeData.breakdown||[];
+    }
+  }catch(e){
+    // Fallback: score only objectives locally if API fails
+    console.warn('Grade-test API failed, falling back to objectives only:',e);
+    qs.forEach((q,i)=>{
+      if(q.type!=='subjective'){
+        if(parseInt(answers[i])===parseInt(q.ans)) testScore++;
+      }
+    });
+    totalMax=qs.length;
+  }
 
   // Save to local DB
   const apps=DB.g('applicants')||[];
   const appIdx=apps.findIndex(a=>a.email===_cpUser.email&&a.testInvited);
   if(appIdx<0){toast('Could not find your application.','e');return;}
   apps[appIdx].testScore=testScore;
+  apps[appIdx].testMax=totalMax;
+  apps[appIdx].testBreakdown=breakdown;
   DB.s('applicants',apps);
 
   // Sync to Supabase
-  const cpToken=localStorage.getItem('cp_jwt');
   if(apps[appIdx].id){
     try{
       await fetch(`${API}/data/applicants/${apps[appIdx].id}`,{
         method:'PUT',
         headers:{'Content-Type':'application/json','Authorization':`Bearer ${cpToken}`},
-        body:JSON.stringify({testScore})
+        body:JSON.stringify({testScore,testMax:totalMax})
       });
     }catch(e){console.warn('Failed to sync test score',e);}
   }
 
   // Show result
-  const msg=document.getElementById('cp-apt-msg');
+  const pct=totalMax>0?Math.round((testScore/totalMax)*100):0;
   if(msg) msg.innerHTML=`<div class="al al-g" style="font-size:15px">
-    ✅ Test submitted! You scored <strong>${testScore}/${qs.length}</strong>.
-    <br><span style="font-size:12px;opacity:.8">The employer will review results and contact you.</span>
+    ✅ Test submitted! You scored <strong>${testScore}/${totalMax}</strong> (${pct}%).
+    <br><span style="font-size:12px;opacity:.8">The employer will review results and contact top candidates.</span>
   </div>`;
-  document.querySelector('.btn-login[onclick="submitCPAptTest()"]').disabled=true;
-  document.querySelector('.btn-login[onclick="submitCPAptTest()"]').textContent='Submitted';
-  toast(`Test submitted — ${testScore}/${qs.length} correct`,'s');
+  if(submitBtn){submitBtn.disabled=true;submitBtn.textContent='Submitted';}
+  toast(`Test submitted — ${testScore}/${totalMax} (${pct}%)`,'s');
 }
 
+// ─── TRACK VIEW ───
 function showTrackView(){
   document.getElementById('cp-auth-view').style.display='none';
   document.getElementById('cp-jobs-view').style.display='none';
@@ -454,11 +556,13 @@ function loadCPTrackForLoggedIn(){
   const apps=(DB.g('applicants')||[]).filter(a=>a.email===email);
   const res=document.getElementById('cp-track-result');
   if(apps.length===0){res.innerHTML=`<div class="al al-a">No applications found for <strong>${email}</strong>. Browse open positions to apply.</div>`;return;}
-  const stageMap={pending:'Under Review',shortlisted:'Shortlisted',testing:'Aptitude Test',interviewing:'Interview Stage',accepted:'Offer Extended',rejected:'Not Selected'};
+  const stageMap={pending:'Under Review',shortlisted:'Shortlisted',testing:'Aptitude Test',offer:'Offer Extended',accepted:'Offer Accepted',rejected:'Not Selected'};
   res.innerHTML=apps.map(a=>{
-    const stage=a.offerStatus==='accepted'?'accepted':a.offerStatus==='rejected'?'rejected':a.invited?'interviewing':a.testInvited?'testing':a.score!==undefined?'shortlisted':'pending';
-    const stages=['pending','shortlisted','testing','interviewing','accepted'];
+    const stage=a.offerStatus==='accepted'?'accepted':a.offerStatus==='rejected'?'rejected':a.invited||a.offerSent?'offer':a.testInvited?'testing':a.score!==undefined?'shortlisted':'pending';
+    const stages=['pending','shortlisted','testing','offer','accepted'];
     const si=stages.indexOf(stage);
+    const qs=DB.g('apt_qs')||[];
+    const testMax=a.testMax||qs.length;
     return`<div class="cp-progress">
       <div class="cp-progress-title">${ic('file-text',13)} ${a.position||'Application'}</div>
       <div style="font-size:12px;color:rgba(255,255,255,.4);margin-bottom:12px">Applied: ${a.date||'—'}</div>
@@ -468,13 +572,14 @@ function loadCPTrackForLoggedIn(){
         ${i===si?`<span style="font-size:11px;color:rgba(255,255,255,.35);margin-left:auto">● Current</span>`:''}
       </div>`).join('')}
       ${stage==='testing'&&a.testScore===undefined?`<button class="btn b-am" style="width:100%;margin-top:12px;justify-content:center" onclick="showCPAptTest()">${ic('check-square',14)} Take Aptitude Test Now</button>`:''}
-      ${a.testScore!==undefined?`<div class="al al-g" style="margin-top:10px">Test completed — Score: <strong>${a.testScore}/${(DB.g('apt_qs')||[]).length}</strong></div>`:''}
+      ${a.testScore!==undefined?`<div class="al al-g" style="margin-top:10px">Test completed — Score: <strong>${a.testScore}/${testMax}</strong></div>`:''}
       ${a.offerSent?`<button class="btn b-gr" style="width:100%;margin-top:12px;justify-content:center" onclick="showCPOffer(null)">${ic('file-text',14)} View My Offer Letter</button>`:''}
       ${stage==='rejected'?`<div class="al al-r" style="margin-top:12px;margin-bottom:0">Thank you for applying. We have moved forward with other candidates.</div>`:''}
     </div>`;
   }).join('');
 }
 
+// ─── OFFER VIEW ───
 function showCPOffer(app){
   if(!_cpUser){showCPAuth('login');return;}
   const apps=DB.g('applicants')||[];
@@ -544,29 +649,16 @@ function submitCPNegotiation(){
   updNotif();
 }
 
-// ==========================================
-// CAREERS PORTAL INITIALIZATION
-// ==========================================
-document.addEventListener('DOMContentLoaded', () => {
-  // Check if we are actually on the careers page
-  if (document.getElementById('careers-portal')) {
-    
-    // 1. Set the company name from local storage
-    const co = DB.g('company') || {};
-    const nameEl = document.getElementById('cp-company-name');
-    if (nameEl) nameEl.textContent = co.name ? 'Careers at ' + co.name : 'Join Our Team';
-
-    // 2. Check if an applicant is already logged in
-    const saved = localStorage.getItem('cp_jwt');
-    const savedUser = localStorage.getItem('cp_user');
-    if (saved && savedUser) {
-      _cpUser = JSON.parse(savedUser);
-      setCPLoggedIn();
-    } else {
-      setCPLoggedOut();
-    }
-
-    // 3. Fetch and display the open positions!
+// ─── INIT ───
+document.addEventListener('DOMContentLoaded',()=>{
+  if(document.getElementById('careers-portal')){
+    const co=DB.g('company')||{};
+    const nameEl=document.getElementById('cp-company-name');
+    if(nameEl) nameEl.textContent=co.name?'Careers at '+co.name:'Join Our Team';
+    const saved=localStorage.getItem('cp_jwt');
+    const savedUser=localStorage.getItem('cp_user');
+    if(saved&&savedUser){_cpUser=JSON.parse(savedUser);setCPLoggedIn();}
+    else{setCPLoggedOut();}
     showJobsList();
   }
 });
