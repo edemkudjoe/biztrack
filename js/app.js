@@ -156,9 +156,9 @@ async function syncData(headers){
 
 // ═══════════════════════════ LAUNCH ═══════════════════════════
 async function launchApp(){
-  // FIX 1: Prevent the infinite loop! Only redirect if we are on the login page.
+  // FIX: Redirect while maintaining query strings!
   if (window.location.pathname === '/' || window.location.pathname === '/index.html') {
-    window.location.href = '/app';
+    window.location.href = '/app' + window.location.search;
     return; 
   }
 
@@ -180,10 +180,9 @@ async function launchApp(){
   const p=document.getElementById('dk-pill');if(p) p.classList.toggle('on',DARK);
   buildNav();
   
-  // FIX 2: If the user refreshes on a specific page (like /e_finance), keep them there!
   const currentPath = window.location.pathname.substring(1);
   if (PT[currentPath]) {
-    showPage(currentPath, true); // The 'true' stops it from pushing to history again
+    showPage(currentPath, true); 
   } else {
     showPage(ROLE==='employer'?'e_dash':'emp_dash');
   }
@@ -197,10 +196,8 @@ async function launchApp(){
     const h={'Authorization':`Bearer ${JWT}`};
     try{
       await syncData(h);
-      // Update sidebar name/avatar in case profile changed
       document.getElementById('sb-nm').textContent=CU.name;
       document.getElementById('sb-av').textContent=CU.initials||CU.name.slice(0,2).toUpperCase();
-      // Silently refresh current page if user isn't typing
       const cur=document.querySelector('.nav-item.active');
       if(cur&&cur.dataset.page){
         const tag=document.activeElement?document.activeElement.tagName:'';
@@ -323,8 +320,12 @@ document.getElementById('yr').textContent=new Date().getFullYear();
 const params=new URLSearchParams(window.location.search);
 if(params.get('offer')){
   const email=params.get('offer');
-  loadOfferPortal(email);
-  document.getElementById('offer-portal').classList.add('open');
+  // Safe check to ensure we are not crashing on index.html
+  if (typeof loadOfferPortal === 'function') {
+    loadOfferPortal(email);
+    const op = document.getElementById('offer-portal');
+    if (op) op.classList.add('open');
+  }
 }
 
 window.addEventListener('popstate',(event)=>{
