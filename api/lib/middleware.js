@@ -1,30 +1,71 @@
 const { createClient } = require('@supabase/supabase-js');
 const jwt = require('jsonwebtoken');
 
-const JWT_SECRET = process.env.JWT_SECRET;
+// FIX: Prevent multiple client initializations in serverless environment
+let supabaseInstance = null;
 
-let _supabase;
 function getSupabase() {
-  if (!_supabase) {
-    _supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
+  if (supabaseInstance) return supabaseInstance;
+  
+  const url = process.env.SUPABASE_URL;
+  const key = process.env.SUPABASE_ANON_KEY;
+  if (!url || !key) {
+    throw new Error('Supabase environment variables missing');
   }
-  return _supabase;
+  supabaseInstance = createClient(url, key);
+  return supabaseInstance;
 }
 
 function cors(res) {
-  res.setHeader('Access-Control-Allow-Origin', 'https://biztrackv1.vercel.app');
-  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type,Authorization');
+  res.setHeader('Access-Control-Allow-Credentials', true);
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
+  res.setHeader(
+    'Access-Control-Allow-Headers',
+    'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization'
+  );
 }
 
 function verifyToken(req) {
-  const auth = req.headers.authorization || '';
-  const token = auth.replace('Bearer ', '').trim();
-  if (!token) throw new Error('No token');
-  return jwt.verify(token, JWT_SECRET);
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    throw new Error('No token provided');
+  }
+  const token = authHeader.split(' ')[1];
+  const secret = process.env.JWT_SECRET;
+  if (!secret) throw new Error('JWT_SECRET missing');
+  return jwt.verify(token, secret);
 }
 
-const EMPLOYEE_FILTERED = ['attendance', 'leaves', 'advances', 'promos', 'complaints'];
-const ALLOWED_TABLES = ['attendance','costs','revenue','tasks','leaves','advances','promos','complaints','applicants','job_postings','settings','apt_questions','benefits'];
+const ALLOWED_TABLES = [
+  'users',
+  'attendance',
+  'tasks',
+  'costs',
+  'revenue',
+  'leaves',
+  'advances',
+  'promos',
+  'complaints',
+  'applicants',
+  'job_postings',
+  'apt_questions'
+];
 
-module.exports = { getSupabase, cors, verifyToken, JWT_SECRET, EMPLOYEE_FILTERED, ALLOWED_TABLES };
+// Tables that employees can only read/write their own records
+const EMPLOYEE_FILTERED = [
+  'tasks',
+  'attendance',
+  'leaves',
+  'advances',
+  'promos',
+  'complaints'
+];
+
+module.exports = {
+  getSupabase,
+  cors,
+  verifyToken,
+  ALLOWED_TABLES,
+  EMPLOYEE_FILTERED
+};
