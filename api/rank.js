@@ -1,137 +1,82 @@
 const { GoogleGenerativeAI } = require('@google/generative-ai');
-const { cors, verifyToken } = require('./lib/middleware');
-
-const CALL_TIMEOUT_MS = 25000;
-
-function sleep(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
-
-function sanitizeField(value, maxLength = 500) {
-  if (!value) return 'Not provided';
-  return String(value)
-    .replace(/[<>]/g, '')
-    .replace(/ignore\s+previous/gi, '[redacted]')
-    .replace(/system\s*:/gi, '[redacted]')
-    .slice(0, maxLength);
-}
-
-async function callGeminiWithRetry(model, prompt, maxRetries = 4) {
-  let delay = 8000;
-  for (let attempt = 0; attempt <= maxRetries; attempt++) {
-    try {
-      return await Promise.race([
-        model.generateContent(prompt),
-        new Promise((_, reject) =>
-          setTimeout(() => reject(new Error('Gemini timeout')), CALL_TIMEOUT_MS)
-        )
-      ]);
-    } catch (e) {
-      const is429 =
-        e?.status === 429 ||
-        String(e?.message).includes('429') ||
-        String(e?.message).toLowerCase().includes('resource has been exhausted') ||
-        String(e?.message).toLowerCase().includes('toomanyrequests');
-      if (is429 && attempt < maxRetries) {
-        await sleep(delay);
-        delay *= 2;
-        continue;
-      }
-      throw e;
-    }
-  }
-}
-
-async function scoreApplicant(model, app, jobRequirements) {
-  const prompt = `You are an expert HR recruiter scoring a job applicant. Be fair, critical, and consistent.
-
-Job Requirements:
-${jobRequirements}
-
-Applicant Profile:
-- Name: ${sanitizeField(app.name, 100)}
-- Education: ${sanitizeField(app.education, 200)} (pre-score: ${Math.min(parseInt(app.eduScore) || 0, 40)}/40)
-- Experience pre-score: ${Math.min(parseInt(app.expScore || app.experience) || 0, 30)}/30
-- Skills: ${sanitizeField(app.skills, 300)}
-- Cover Letter: ${sanitizeField(app.coverLetter, 800)}
-
-Score this applicant out of 100 based on how well they match the job requirements.
-Scoring breakdown:
-- Education relevance: up to 40 points
-- Experience: up to 30 points
-- Skills match: up to 20 points
-- Cover letter quality and relevance: up to 10 points
-
-Respond ONLY in this exact JSON format with no extra text or markdown:
-{"score":<integer 0-100>,"justification":"<2-3 sentences explaining the score>"}`;
-
-  const result = await callGeminiWithRetry(model, prompt);
-  const text = result.response.text().trim().replace(/```json|```/g, '').trim();
-  const parsed = JSON.parse(text);
-
-  if (typeof parsed.score !== 'number' || parsed.score < 0 || parsed.score > 100) {
-    throw new Error('Invalid score value from AI');
-  }
-
-  return {
-    id: app.id,
-    score: Math.round(parsed.score),
-    justification: typeof parsed.justification === 'string'
-      ? parsed.justification.slice(0, 500)
-      : 'No justification provided.'
-  };
-}
+const { cors } = require('./lib/middleware');
 
 module.exports = async function (req, res) {
   cors(res);
   if (req.method === 'OPTIONS') return res.status(200).end();
-  if (req.method !== 'POST') return res.status(405).end();
 
-  let decoded;
-  try { decoded = verifyToken(req); } catch (e) { return res.status(401).json({ error: 'Unauthorized' }); }
-
-  const { applicants, jobRequirements, single } = req.body;
-
-  if (!applicants || !Array.isArray(applicants) || applicants.length === 0) {
-    return res.status(400).json({ error: 'No applicants provided.' });
-  }
-  if (!jobRequirements || typeof jobRequirements !== 'string' || !jobRequirements.trim()) {
-    return res.status(400).json({ error: 'jobRequirements must be provided for accurate scoring.' });
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-  const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+  const { applicants, jobRequirements } = req.body;
+  if (!applicants || !Array.isArray(applicants)) {
+    return res.status(400).json({ error: 'Applicants array required' });
+  }
 
-  // Single mode: score one applicant immediately (called at application submission time)
-  if (single) {
-    try {
-      const result = await scoreApplicant(model, applicants[0], jobRequirements.slice(0, 1000));
-      return res.status(200).json({ results: [result], succeeded: 1, failed: 0 });
-    } catch (e) {
-      return res.status(200).json({
-        results: [{ id: applicants[0].id, score: null, justification: null, error: e.message }],
-        succeeded: 0,
-        failed: 1
-      });
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) {
+    return res.status(500).json({ error: 'GEMINI_API_KEY not configured on server' });
+  }
+
+  try {
+    const genAI = new GoogleGenerativeAI(apiKey);
+    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+
+    // Sanitize applicants to only send necessary data to AI
+    const sanitizedApplicants = applicants.map(a => ({
+      id: a.id || a.email,
+      name: a.name,
+      education: a.education || 'Not provided',
+      experience: a.experience || 0,
+      skills: a.skills || 'Not provided',
+      coverLetter: a.coverLetter || 'Not provided'
+    }));
+
+    const prompt = `
+    You are an expert HR recruitment AI. Your task is to rank a list of applicants based on how well they match the job requirements.
+    
+    Job Requirements:
+    "${jobRequirements || 'General suitability for a professional role.'}"
+    
+    Applicants Data:
+    ${JSON.stringify(sanitizedApplicants, null, 2)}
+    
+    For each applicant, assign a "score" from 0 to 100 representing their fit for the role.
+    Also provide a short "justification" (max 2 sentences) for the score.
+    
+    Return the result STRICTLY as a JSON array of objects. Do not include any markdown formatting, backticks, or extra text.
+    Format MUST be exactly like this:
+    [
+      { "id": "applicant-id", "score": 85, "justification": "Strong experience and relevant skills." }
+    ]
+    `;
+
+    const result = await model.generateContent(prompt);
+    let responseText = result.response.text().trim();
+    
+    // Clean up potential markdown formatting from Gemini response
+    if (responseText.startsWith('```json')) {
+      responseText = responseText.replace(/^```json\n/, '').replace(/\n```$/, '');
+    } else if (responseText.startsWith('```')) {
+       responseText = responseText.replace(/^```\n/, '').replace(/\n```$/, '');
     }
-  }
 
-  // Batch mode: score sequentially with delay (employer re-score or bulk)
-  const INTER_CALL_DELAY_MS = 5000;
-  const results = [];
+    // FIX: Correct variable name from 'text' to 'responseText'
+    console.log('AI Raw Response:', responseText);
 
-  for (let i = 0; i < applicants.length; i++) {
-    const app = applicants[i];
+    let parsedScores;
     try {
-      results.push(await scoreApplicant(model, app, jobRequirements.slice(0, 1000)));
-    } catch (e) {
-      results.push({ id: app.id, score: null, justification: null, error: e.message || 'Scoring failed' });
+      parsedScores = JSON.parse(responseText);
+    } catch (parseError) {
+      console.error('Failed to parse AI response as JSON:', responseText);
+      return res.status(500).json({ error: 'AI returned invalid format', details: responseText });
     }
-    if (i < applicants.length - 1) await sleep(INTER_CALL_DELAY_MS);
+
+    return res.status(200).json({ results: parsedScores });
+
+  } catch (error) {
+    console.error('AI Ranking Error:', error);
+    return res.status(500).json({ error: 'Failed to generate ranking', details: error.message });
   }
-
-  const succeeded = results.filter(r => r.score !== null).length;
-  const failed = results.length - succeeded;
-
-  return res.status(200).json({ results, succeeded, failed });
 };
