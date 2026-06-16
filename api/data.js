@@ -25,9 +25,20 @@ module.exports = async function (req, res) {
 
     if (req.method === 'GET') {
       let query = getSupabase().from(table).select('*').order('created_at', { ascending: false });
-      if (decoded && decoded.role === 'employee' && EMPLOYEE_FILTERED.includes(table)) {
-        query = query.eq('empId', decoded.id);
+      
+      if (decoded && decoded.role === 'employee') {
+        if (EMPLOYEE_FILTERED.includes(table)) {
+          query = query.eq('empId', decoded.id);
+        }
+      } else if (decoded && decoded.role === 'applicant') {
+        // STRICT SECURITY: Restrict applicant read access entirely except for safe tables
+        if (table === 'applicants') {
+          query = query.eq('email', decoded.email); // Can only read their own application
+        } else if (table !== 'job_postings' && table !== 'apt_questions') {
+          return res.status(403).json({ error: 'Forbidden. Applicant access restricted.' });
+        }
       }
+
       const { data, error } = await query;
       return error ? res.status(500).json({ error: error.message }) : res.status(200).json({ records: data });
     }
