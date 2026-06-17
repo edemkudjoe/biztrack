@@ -1,7 +1,6 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
-const { getSupabase, cors, JWT_SECRET } = require('./lib/middleware');
-
+const { getSupabase, cors } = require('./lib/middleware');
 module.exports = async function (req, res) {
   cors(res);
   if (req.method === 'OPTIONS') return res.status(200).end();
@@ -28,7 +27,7 @@ const { data, error } = await getSupabase().from('applicants').insert([{
         created_at: new Date().toISOString()
       }]).select().single();
       if (error) return res.status(400).json({ error: error.message });
-      const token = jwt.sign({ id: data.id, email: data.email, role: 'applicant' }, JWT_SECRET, { expiresIn: '8h' });
+      const token = jwt.sign({ id: data.id, email: data.email, role: 'applicant' }, process.env.JWT_SECRET, { expiresIn: '8h' });
       return res.status(201).json({ token, applicant: data });
     }
 
@@ -39,10 +38,9 @@ const { data, error } = await getSupabase().from('applicants').insert([{
       if (error || !user) return res.status(401).json({ error: 'Invalid email or password.' });
       const match = await bcrypt.compare(password, user.password);
       if (!match) return res.status(401).json({ error: 'Invalid email or password.' });
-      const token = jwt.sign({ id: user.id, email: user.email, role: 'applicant' }, JWT_SECRET, { expiresIn: '8h' });
+      const token = jwt.sign({ id: user.id, email: user.email, role: 'applicant' }, process.env.JWT_SECRET, { expiresIn: '8h' });
       return res.status(200).json({ token, applicant: user });
     }
-
     // ── PORTAL RESET ──
     if (route === 'portal-reset') {
       const { email, step, securityAnswer, newPassword } = req.body;
