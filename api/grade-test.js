@@ -9,12 +9,12 @@ module.exports = async function (req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { answers, questions, applicantId } = req.body;
-  if (!answers || !questions || !applicantId) {
+  // Security: Ignore questions array from frontend, we fetch from DB
+  const { answers, applicantId } = req.body;
+  if (!answers || !applicantId) {
     return res.status(400).json({ error: 'Missing required grading data' });
   }
 
-  // Secure the endpoint: Ensure the applicant grading this test is the applicant logged in
   let decoded;
   try {
     decoded = verifyToken(req);
@@ -23,6 +23,17 @@ module.exports = async function (req, res) {
     }
   } catch (e) {
     return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  // Fetch the master questions directly from the Database (Source of Truth)
+  const { data: realQuestions, error: qErr } = await getSupabase()
+    .from('apt_questions')
+    .select('*')
+    .order('created_at', { ascending: true }); // Must match frontend order
+
+  if (qErr || !realQuestions) {
+    console.error("Failed to fetch questions for grading:", qErr);
+    return res.status(500).json({ error: 'Failed to retrieve grading rubric.' });
   }
 
   const apiKey = process.env.GEMINI_API_KEY;
@@ -38,9 +49,9 @@ module.exports = async function (req, res) {
     let maxScore = 0;
     const breakdown = [];
 
-    // Grade each question
-    for (let i = 0; i < questions.length; i++) {
-      const q = questions[i];
+    // Grade each against the REAL questions
+    for (let i = 0; i < realQuestions.length; i++) {
+      const q = realQuestions[i];
       const ans = answers[i];
       const pts = typeof q.points === 'number' ? q.points : 1;
       maxScore += pts;
@@ -78,9 +89,6 @@ module.exports = async function (req, res) {
           const result = await model.generateContent(prompt);
           let responseText = result.response.text().trim();
           
-          // Fixed ReferenceError: using responseText instead of text
-          console.log(`Grading Q${i+1} Raw Response:`, responseText);
-
           if (responseText.startsWith('```json')) {
             responseText = responseText.replace(/^```json\n/, '').replace(/\n```$/, '');
           } else if (responseText.startsWith('```')) {
@@ -100,7 +108,6 @@ module.exports = async function (req, res) {
           });
         } catch (aiErr) {
           console.error('AI Grading failed for a question:', aiErr);
-          // Graceful fallback if AI fails parsing or times out
           breakdown.push({
             q: q.q, type: 'subjective', awarded: 0, max: pts, feedback: 'Pending manual review (AI grading error).'
           });
@@ -122,8 +129,8 @@ module.exports = async function (req, res) {
 
     return res.status(200).json({ 
       success: true, 
-      score: totalScore, 
-      max: maxScore, 
+      testScore: totalScore, 
+      totalMax: maxScore, 
       breakdown 
     });
 
