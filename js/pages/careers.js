@@ -475,32 +475,35 @@ async function submitCPAptTest(){
   const msg=document.getElementById('cp-apt-msg');
   if(msg) msg.innerHTML='<div class="al al-b">Grading your test… AI is reviewing written answers. Please wait.</div>';
 
-  const cpToken=localStorage.getItem('cp_jwt');
-  let testScore=0;
+  const cpToken=localStorage.getItem('cp_portal_jwt') || localStorage.getItem('cp_jwt');
+  let testScore=null; // Default to null (pending) instead of 0
   let totalMax=qs.length;
   let breakdown=[];
+  let isPending = false;
 
   try{
     const gradeRes=await fetch(`${API}/grade-test`,{
       method:'POST',
       headers:{'Content-Type':'application/json','Authorization':`Bearer ${cpToken}`},
-      body:JSON.stringify({questions:qs,answers})
+      body:JSON.stringify({answers, applicantId: _cpUser.id})
     });
     const gradeData=await gradeRes.json();
+    
     if(gradeData.testScore!==undefined){
       testScore=gradeData.testScore;
       totalMax=gradeData.totalMax||qs.length;
       breakdown=gradeData.breakdown||[];
+    } else {
+      throw new Error("Invalid response from grading server");
     }
   }catch(e){
-    // Fallback: score only objectives locally if API fails
-    console.warn('Grade-test API failed, falling back to objectives only:',e);
-    qs.forEach((q,i)=>{
-      if(q.type!=='subjective'){
-        if(parseInt(answers[i])===parseInt(q.ans)) testScore++;
-      }
-    });
-    totalMax=qs.length;
+    // CRITICAL FIX: Do NOT try to grade locally. The answers are hidden by the security patch.
+    // If we grade locally, the user will automatically score 0.
+    console.warn('Grade-test API failed, test saved for manual review:',e);
+    isPending = true;
+    testScore = null; 
+    totalMax = qs.length;
+    breakdown = [{ q: "All", type: "system", awarded: 0, max: totalMax, feedback: "API Timeout/Error. Test saved for manual grading by Employer." }];
   }
 
   // Save to local DB
@@ -518,21 +521,28 @@ async function submitCPAptTest(){
       await fetch(`${API}/data/applicants/${apps[appIdx].id}`,{
         method:'PUT',
         headers:{'Content-Type':'application/json','Authorization':`Bearer ${cpToken}`},
-        body:JSON.stringify({testScore,testMax:totalMax})
+        body:JSON.stringify({testScore,testMax:totalMax,testBreakdown:JSON.stringify(breakdown)})
       });
     }catch(e){console.warn('Failed to sync test score',e);}
   }
 
   // Show result
-  const pct=totalMax>0?Math.round((testScore/totalMax)*100):0;
-  if(msg) msg.innerHTML=`<div class="al al-g" style="font-size:15px">
-    ✅ Test submitted! You scored <strong>${testScore}/${totalMax}</strong> (${pct}%).
-    <br><span style="font-size:12px;opacity:.8">The employer will review results and contact top candidates.</span>
-  </div>`;
+  if(isPending){
+    if(msg) msg.innerHTML=`<div class="al al-a" style="font-size:15px">
+      ✅ Test submitted! <br><strong>Grading Delayed:</strong> The system is experiencing high traffic. Your test has been saved and will be manually graded by the HR team.
+    </div>`;
+    toast(`Test submitted for manual review.`,'i');
+  } else {
+    const pct=totalMax>0?Math.round((testScore/totalMax)*100):0;
+    if(msg) msg.innerHTML=`<div class="al al-g" style="font-size:15px">
+      ✅ Test submitted! You scored <strong>${testScore}/${totalMax}</strong> (${pct}%).
+      <br><span style="font-size:12px;opacity:.8">The employer will review results and contact top candidates.</span>
+    </div>`;
+    toast(`Test submitted — ${testScore}/${totalMax} (${pct}%)`,'s');
+  }
+  
   if(submitBtn){submitBtn.disabled=true;submitBtn.textContent='Submitted';}
-  toast(`Test submitted — ${testScore}/${totalMax} (${pct}%)`,'s');
 }
-
 // ─── TRACK VIEW ───
 function showTrackView(){
   document.getElementById('cp-auth-view').style.display='none';
