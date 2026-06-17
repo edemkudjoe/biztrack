@@ -1,15 +1,31 @@
 {
   "version": 2,
-  "rewrites": [
-    { "source": "/app", "destination": "/app.html" },
-    { "source": "/careers", "destination": "/careers.html" }
+  "headers": [
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        { "key": "Access-Control-Allow-Origin", "value": "https://biztrackv1.vercel.app" },
+        { "key": "Access-Control-Allow-Methods", "value": "GET, POST, PUT, DELETE, OPTIONS" },
+        { "key": "Access-Control-Allow-Headers", "value": "Content-Type, Authorization" }
+      ]
+    }
   ],
   "functions": {
-    "api/rank.js": {
-      "maxDuration": 60
-    },
-    "api/grade-test.js": {
-      "maxDuration": 60
-    }
-  }
+    "api/auth.js":       { "maxDuration": 30 },
+    "api/users.js":      { "maxDuration": 30 },
+    "api/data.js":       { "maxDuration": 30 },
+    "api/settings.js":   { "maxDuration": 30 },
+    "api/portal.js":     { "maxDuration": 30 },
+    "api/rank.js":       { "maxDuration": 60 },
+    "api/grade-test.js": { "maxDuration": 60 }
+  },
+  "rewrites": [
+    { "source": "/api/portal-:path*", "destination": "/api/portal" },
+    { "source": "/api/data/:path*",   "destination": "/api/data" },
+    { "source": "/api/users/:path*",  "destination": "/api/users" },
+    { "source": "/api/change-password", "destination": "/api/settings" },
+    { "source": "/careers",           "destination": "/careers.html" },
+    { "source": "/app",               "destination": "/app.html" },
+    { "source": "/((?!api/).*)",      "destination": "/app.html" }
+  ]
 }
