@@ -1,5 +1,5 @@
 const { GoogleGenerativeAI } = require('@google/generative-ai');
-const { cors } = require('./lib/middleware');
+const { cors, verifyToken } = require('./lib/middleware'); // Added verifyToken
 
 module.exports = async function (req, res) {
   cors(res);
@@ -7,6 +7,13 @@ module.exports = async function (req, res) {
 
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
+  }
+
+  // SECURITY: Protect AI Quota from unauthorized bots
+  try {
+    verifyToken(req);
+  } catch (e) {
+    return res.status(401).json({ error: 'Unauthorized to use AI services.' });
   }
 
   const { applicants, jobRequirements } = req.body;
@@ -23,7 +30,6 @@ module.exports = async function (req, res) {
     const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
-    // Sanitize applicants to only send necessary data to AI
     const sanitizedApplicants = applicants.map(a => ({
       id: a.id || a.email,
       name: a.name,
@@ -55,15 +61,11 @@ module.exports = async function (req, res) {
     const result = await model.generateContent(prompt);
     let responseText = result.response.text().trim();
     
-    // Clean up potential markdown formatting from Gemini response
     if (responseText.startsWith('```json')) {
       responseText = responseText.replace(/^```json\n/, '').replace(/\n```$/, '');
     } else if (responseText.startsWith('```')) {
        responseText = responseText.replace(/^```\n/, '').replace(/\n```$/, '');
     }
-
-    // FIX: Correct variable name from 'text' to 'responseText'
-    console.log('AI Raw Response:', responseText);
 
     let parsedScores;
     try {
