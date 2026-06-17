@@ -1,9 +1,7 @@
 const { createClient } = require('@supabase/supabase-js');
 const jwt = require('jsonwebtoken');
 
-// FIX: Prevent multiple client initializations in serverless environment
-let supabaseInstance = null;
-
+let _supabase;
 function getSupabase() {
   if (supabaseInstance) return supabaseInstance;
   
@@ -27,45 +25,13 @@ function cors(res) {
 }
 
 function verifyToken(req) {
-  const authHeader = req.headers.authorization;
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    throw new Error('No token provided');
-  }
-  const token = authHeader.split(' ')[1];
-  const secret = process.env.JWT_SECRET;
-  if (!secret) throw new Error('JWT_SECRET missing');
-  return jwt.verify(token, secret);
+  const auth = req.headers.authorization || '';
+  const token = auth.replace('Bearer ', '').trim();
+  if (!token) throw new Error('No token');
+  return jwt.verify(token, process.env.JWT_SECRET);
 }
 
-const ALLOWED_TABLES = [
-  'users',
-  'attendance',
-  'tasks',
-  'costs',
-  'revenue',
-  'leaves',
-  'advances',
-  'promos',
-  'complaints',
-  'applicants',
-  'job_postings',
-  'apt_questions'
-];
+const EMPLOYEE_FILTERED = ['attendance', 'leaves', 'advances', 'promos', 'complaints'];
+const ALLOWED_TABLES = ['attendance','costs','revenue','tasks','leaves','advances','promos','complaints','applicants','job_postings','settings','apt_questions','benefits'];
 
-// Tables that employees can only read/write their own records
-const EMPLOYEE_FILTERED = [
-  'tasks',
-  'attendance',
-  'leaves',
-  'advances',
-  'promos',
-  'complaints'
-];
-
-module.exports = {
-  getSupabase,
-  cors,
-  verifyToken,
-  ALLOWED_TABLES,
-  EMPLOYEE_FILTERED
-};
+module.exports = { getSupabase, cors, verifyToken, EMPLOYEE_FILTERED, ALLOWED_TABLES };
