@@ -895,8 +895,10 @@ function pRecruitment(el){
   const apps=DB.g('applicants')||[];
   const stage=DB.g('rec_stage')||'collecting';
   const qs=DB.g('apt_qs')||[];
-  const ranked=apps.filter(a=>a.score!==undefined).sort((a,b)=>b.score-a.score);
-  const tested=apps.filter(a=>a.testScore!==undefined).sort((a,b)=>b.testScore-a.testScore);
+  
+  // Safe filtering: only include applicants whose score is actually a number
+  const ranked=apps.filter(a=>typeof a.score === 'number').sort((a,b)=>b.score-a.score);
+  const tested=apps.filter(a=>typeof a.testScore === 'number').sort((a,b)=>b.testScore-a.testScore);
   const top10=tested.slice(0,10);
 
   el.innerHTML=`
@@ -986,23 +988,28 @@ function pRecruitment(el){
     <div class="tw"><table><thead><tr><th>#</th><th>Applicant</th><th>Education</th><th>Exp</th><th>Merit</th><th>Test</th><th>Offer</th><th>Status</th><th>Notes</th><th>Action</th></tr></thead><tbody>
       ${apps.slice().sort((a,b)=>((b.testScore??b.score??0)-(a.testScore??a.score??0))).map((a,i)=>`<tr style="${i<10&&top10.some(t=>t.email===a.email)?'background:rgba(46,204,113,.05)':''}">
         <td><div class="mn ${i===0?'g':i===1?'s':i===2?'bz':''}">${i+1}</div></td>
-        <td><strong>${a.name}</strong><br><small style="color:var(--text-muted)">${a.email}</small></td>
-        <td style="font-size:11px">${a.education||'—'}</td>
+        <td><strong>${escapeHTML(a.name)}</strong><br><small style="color:var(--text-muted)">${escapeHTML(a.email)}</small></td>
+        <td style="font-size:11px">${escapeHTML(a.education)||'—'}</td>
         <td>${a.experience||0}y</td>
-        <td>${a.score!==undefined?`<strong>${a.score}</strong>/100${a.justification?`<br><span style="font-size:11px;color:var(--text-muted)">${a.justification}</span>`:''}`
-  :a.merit!==undefined?`<span style="color:var(--text-muted);font-size:12px">${a.merit}/100 (local)</span>`
-  :`<span style="color:var(--text-muted)">—</span>`}</td>
-        <td>${a.testScore!==undefined?`<strong>${a.testScore}/${a.testMax||qs.length}</strong>`:`<span style="color:var(--text-muted)">—</span>`}</td>
+        
+        <!-- SAFE RENDER: Check strictly if score is a number, not just undefined/null -->
+        <td>${typeof a.score === 'number' ? `<strong>${a.score}</strong>/100${a.justification?`<br><span style="font-size:11px;color:var(--text-muted)">${escapeHTML(a.justification)}</span>`:''}`
+          : typeof a.merit === 'number' ? `<span style="color:var(--text-muted);font-size:12px">${a.merit}/100 (local)</span>`
+          : `<span style="color:var(--text-muted)">—</span>`}</td>
+          
+        <!-- SAFE RENDER: Check strictly if testScore is a number -->
+        <td>${typeof a.testScore === 'number' ? `<strong>${a.testScore}/${a.testMax||qs.length}</strong>`:`<span style="color:var(--text-muted)">—</span>`}</td>
+        
         <td>${a.offerStatus?`<span class="b ${a.offerStatus==='accepted'?'bg':a.offerStatus==='rejected'?'br':a.offerStatus==='negotiated'?'ba':'bb'}">${a.offerStatus}</span>
-  ${a.offerStatus==='negotiated'?`<br><button class="btn btn-sm b-am" style="margin-top:4px" onclick="openNegotiationResponse('${a.email}')">${ic('message-square',11)} Respond</button>`:''}
+  ${a.offerStatus==='negotiated'?`<br><button class="btn btn-sm b-am" style="margin-top:4px" onclick="openNegotiationResponse('${escapeHTML(a.email)}')">${ic('message-square',11)} Respond</button>`:''}
 `:'—'}</td>
-        <td>${a.invited?`<span class="b bg">Interview</span>`:a.offerSent?`<span class="b bb">Offer Sent</span>`:a.testInvited?`<span class="b bl">Test Invited</span>`:a.score!==undefined?`<span class="b bn">Ranked</span>`:`<span class="b ba">Applied</span>`}</td>
-        <td>${a.invited?`<button class="btn btn-sm b-nv" onclick="openInterviewNotes('${a.email}')">${ic('edit',12)} Notes${a.interviewNotes?' ✓':''}</button>`:'—'}</td>
+        <td>${a.invited?`<span class="b bg">Interview</span>`:a.offerSent?`<span class="b bb">Offer Sent</span>`:a.testInvited?`<span class="b bl">Test Invited</span>`:typeof a.score === 'number'?`<span class="b bn">Ranked</span>`:`<span class="b ba">Applied</span>`}</td>
+        <td>${a.invited?`<button class="btn btn-sm b-nv" onclick="openInterviewNotes('${escapeHTML(a.email)}')">${ic('edit',12)} Notes${a.interviewNotes?' ✓':''}</button>`:'—'}</td>
         <td>
           ${(DB.g('employees')||[]).some(e=>e.email===a.email)
             ?`<span style="color:var(--accent);font-weight:700;font-size:11px">Hired</span>`
-            :a.testScore!==undefined
-              ?`<button class="btn b-nv btn-sm" onclick="manualCreateEmployee('${a.email}')">Generate User</button>`
+            :typeof a.testScore === 'number'
+              ?`<button class="btn b-nv btn-sm" onclick="manualCreateEmployee('${escapeHTML(a.email)}')">Generate User</button>`
               :`<span style="color:var(--text-muted);font-size:11px">${a.testInvited?'Awaiting Test':'Pending'}</span>`}
         </td>
       </tr>`).join('')}
@@ -1010,7 +1017,6 @@ function pRecruitment(el){
   </div>
   </div>`;
 }
-
 function resetRecruitment(){
   if(!confirm('Reset pipeline stage back to collecting? This does not delete applicants.')) return;
   DB.s('rec_stage','collecting');
