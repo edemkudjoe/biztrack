@@ -475,8 +475,8 @@ async function submitCPAptTest(){
   const msg=document.getElementById('cp-apt-msg');
   if(msg) msg.innerHTML='<div class="al al-b">Grading your test… AI is reviewing written answers. Please wait.</div>';
 
-  const cpToken=localStorage.getItem('cp_portal_jwt') || localStorage.getItem('cp_jwt');
-  let testScore=null; // Default to null (pending) instead of 0
+  const cpToken=localStorage.getItem('cp_jwt');
+  let testScore=null;
   let totalMax=qs.length;
   let breakdown=[];
   let isPending = false;
@@ -485,6 +485,7 @@ async function submitCPAptTest(){
     const gradeRes=await fetch(`${API}/grade-test`,{
       method:'POST',
       headers:{'Content-Type':'application/json','Authorization':`Bearer ${cpToken}`},
+      // Removed questions. Handled securely by the backend
       body:JSON.stringify({answers, applicantId: _cpUser.id})
     });
     const gradeData=await gradeRes.json();
@@ -494,16 +495,14 @@ async function submitCPAptTest(){
       totalMax=gradeData.totalMax||qs.length;
       breakdown=gradeData.breakdown||[];
     } else {
-      throw new Error("Invalid response from grading server");
+      throw new Error("Invalid response from server");
     }
   }catch(e){
-    // CRITICAL FIX: Do NOT try to grade locally. The answers are hidden by the security patch.
-    // If we grade locally, the user will automatically score 0.
     console.warn('Grade-test API failed, test saved for manual review:',e);
     isPending = true;
     testScore = null; 
     totalMax = qs.length;
-    breakdown = [{ q: "All", type: "system", awarded: 0, max: totalMax, feedback: "API Timeout/Error. Test saved for manual grading by Employer." }];
+    breakdown = [{ qIndex: -1, type: "system", earned: 0, max: totalMax, feedback: "API Timeout/Error. Test saved for manual grading by Employer." }];
   }
 
   // Save to local DB
