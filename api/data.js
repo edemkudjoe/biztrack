@@ -1,7 +1,4 @@
 const { getSupabase, cors, verifyToken, ALLOWED_TABLES, EMPLOYEE_FILTERED } = require('./lib/middleware');
-
-// Fields a portal applicant is allowed to update on their own record.
-// This prevents them from tampering with score, shortlisting, or offer fields.
 const APPLICANT_WRITABLE_FIELDS = ['testScore', 'testMax', 'testBreakdown', 'offerStatus', 'negotiation'];
 
 module.exports = async function (req, res) {
@@ -40,11 +37,23 @@ module.exports = async function (req, res) {
       }
 
       const { data, error } = await query;
-      return error ? res.status(500).json({ error: error.message }) : res.status(200).json({ records: data });
+      if (error) return res.status(500).json({ error: error.message });
+
+      // SECURITY: Strip correct answers from aptitude questions before sending to applicants
+      let safeData = data;
+      if (table === 'apt_questions' && decoded && decoded.role === 'applicant') {
+        safeData = data.map(q => {
+          const { ans, ...rest } = q;
+          return rest;
+        });
+        // Sort questions oldest first for applicants to match grade-test logic
+        safeData.sort((a,b) => new Date(a.created_at) - new Date(b.created_at)); 
+      }
+
+      return res.status(200).json({ records: safeData });
     }
 
     if (req.method === 'POST') {
-      // Portal applicants can create their own application record
       if (decoded.role === 'applicant' && table === 'applicants') {
         const body = { ...req.body, created_at: new Date().toISOString() };
         const { data, error } = await getSupabase().from(table).insert([body]).select().single();
@@ -57,27 +66,19 @@ module.exports = async function (req, res) {
     }
 
     if (req.method === 'PUT' && recordId) {
-      // Portal applicants can update only their own record, only allowed fields
       if (decoded.role === 'applicant' && table === 'applicants') {
-        // Verify this record belongs to the applicant making the request
-        const { data: existing, error: fetchErr } = await getSupabase()
-          .from('applicants').select('id, email').eq('id', recordId).single();
+        const { data: existing, error: fetchErr } = await getSupabase().from('applicants').select('id, email').eq('id', recordId).single();
         if (fetchErr || !existing) return res.status(404).json({ error: 'Record not found.' });
         if (existing.email !== decoded.email) return res.status(403).json({ error: 'Forbidden.' });
 
-        // Strip any fields the applicant is not allowed to write
         const safeBody = {};
         for (const key of APPLICANT_WRITABLE_FIELDS) {
           if (req.body[key] !== undefined) safeBody[key] = req.body[key];
         }
-        if (Object.keys(safeBody).length === 0) {
-          return res.status(400).json({ error: 'No writable fields provided.' });
-        }
-        const { data, error } = await getSupabase()
-          .from(table).update(safeBody).eq('id', recordId).select().single();
+        if (Object.keys(safeBody).length === 0) return res.status(400).json({ error: 'No writable fields provided.' });
+        const { data, error } = await getSupabase().from(table).update(safeBody).eq('id', recordId).select().single();
         return error ? res.status(400).json({ error: error.message }) : res.status(200).json({ record: data });
       }
-
       if (decoded.role !== 'employer') return res.status(403).json({ error: 'Forbidden' });
       const { data, error } = await getSupabase().from(table).update(req.body).eq('id', recordId).select().single();
       return error ? res.status(400).json({ error: error.message }) : res.status(200).json({ record: data });
@@ -87,10 +88,6 @@ module.exports = async function (req, res) {
       if (decoded.role !== 'employer') return res.status(403).json({ error: 'Forbidden' });
       const { error } = await getSupabase().from(table).delete().eq('id', recordId);
       return error ? res.status(400).json({ error: error.message }) : res.status(200).json({ success: true });
-    }
-
-    if (req.method === 'DELETE' && !recordId) {
-      return res.status(400).json({ error: 'Record ID is required for deletion.' });
     }
 
     return res.status(405).end();
