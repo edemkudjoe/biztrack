@@ -57,7 +57,6 @@ function pEDash(el){
   </div>`;
 }
 
-// ─── NOTIFICATIONS ───
 function pNotifications(el){
   if(ROLE==='employer'){
     const adv=(DB.g('advances')||[]).filter(a=>a.status==='pending');
@@ -83,34 +82,9 @@ function pNotifications(el){
           <span class="btn btn-sm ${n.cls}" style="flex-shrink:0">View</span>
         </div>`).join('')}
     </div>`}`;
-  } else {
-    const myTasks=(DB.g('tasks')||[]).filter(t=>t.empId===CU.id&&t.status==='pending');
-    const myLeaves=(DB.g('leaves')||[]).filter(l=>l.empId===CU.id&&(l.status==='approved'||l.status==='rejected')&&!l.empAccepted&&l.status!=='declined');
-    const myAdvances=(DB.g('advances')||[]).filter(a=>a.empId===CU.id&&(a.status==='approved'||a.status==='rejected'));
-    const myPromos=(DB.g('promos')||[]).filter(p=>p.empId===CU.id&&(p.status==='approved'||p.status==='rejected'));
-    const myComplaints=(DB.g('complaints')||[]).filter(c=>c.empId===CU.id&&c.resolved);
-    const items=[
-      ...myTasks.map(t=>({ico:'check-square',txt:`New task assigned: <strong>${t.title}</strong>`,sub:`Due: ${t.dueDate||'No due date'}`,go:'emp_tasks',cls:'b-am'})),
-      ...myLeaves.map(l=>({ico:'calendar',txt:`Your leave request has been <strong>${l.status}</strong>`,sub:`${l.fromDate} → ${l.toDate}`,go:'emp_leave',cls:l.status==='approved'?'b-gr':'b-rd'})),
-      ...myAdvances.map(a=>({ico:'credit-card',txt:`Your advance of ${fmt(a.amount)} was <strong>${a.status}</strong>`,sub:`Requested on ${a.date}`,go:'emp_finance',cls:a.status==='approved'?'b-gr':'b-rd'})),
-      ...myPromos.map(p=>({ico:'arrow-up',txt:`Your promotion request was <strong>${p.status}</strong>`,sub:`Applied for: ${p.desiredRole}`,go:'emp_promo',cls:p.status==='approved'?'b-gr':'b-rd'})),
-      ...myComplaints.map(c=>({ico:'check-circle',txt:`Your complaint has been <strong>resolved</strong>`,sub:`Subject: ${c.subject}`,go:'emp_complaints',cls:'b-gr'})),
-    ];
-    el.innerHTML=`
-    ${ph('My Notifications','Updates on your requests and assigned tasks.')}
-    ${items.length===0?`<div class="es"><div class="es-ico">${ic('bell',44)}</div><h3>All clear!</h3><p>No new notifications.</p></div>`:`
-    <div style="display:flex;flex-direction:column;gap:10px">
-      ${items.map(n=>`
-        <div style="display:flex;align-items:center;gap:12px;padding:14px;background:var(--card);border-radius:10px;border:1px solid var(--border);cursor:pointer" onclick="showPage('${n.go}')">
-          <div style="width:38px;height:38px;border-radius:10px;background:var(--bg);display:flex;align-items:center;justify-content:center;color:var(--navy-lighter);flex-shrink:0">${ic(n.ico,18)}</div>
-          <div style="flex:1"><div style="font-size:13px;color:var(--text)">${n.txt}</div><div style="font-size:11px;color:var(--text-muted);margin-top:2px">${n.sub||''}</div></div>
-          <span class="btn btn-sm ${n.cls}" style="flex-shrink:0">View</span>
-        </div>`).join('')}
-    </div>`}`;
   }
 }
 
-// ─── FINANCE ───
 function pFinance(el){
   const emps=DB.g('employees')||[];
   const costs=DB.g('costs')||[];
@@ -498,7 +472,6 @@ function resolvePromo(i,dec){
 }
 
 // ─── RECRUITMENT ───
-// Merit score: education (max 40) + experience (max 30) + cover letter (max 30)
 function calcMeritScore(app){
   const eduScore=Math.min(parseInt(app.eduScore)||0, 40);
   const expScore=Math.min(parseInt(app.expScore)||0, 30);
@@ -591,7 +564,6 @@ async function rankApplicants(){
   if(apps.length===0){toast('No applicants to rank.','e');return;}
   if(!confirm(`Rank ${apps.length} applicants using AI? This may take a moment.`)) return;
 
-  // Use only the active/most-recent job posting's requirements, not all postings
   const jobs=DB.g('job_postings')||[];
   const activeJob=jobs.find(j=>j.status==='active')||jobs[jobs.length-1]||null;
   const jobRequirements=activeJob
@@ -604,7 +576,6 @@ async function rankApplicants(){
   if(btn){btn.disabled=true;btn.textContent='Ranking…';}
   toast('AI ranking started — please wait…','i');
 
-  // Keep batches small (3) to avoid Vercel function timeouts given the per-call delay
   const BATCH=3;
   const batches=[];
   for(let i=0;i<apps.length;i+=BATCH) batches.push(apps.slice(i,i+BATCH));
@@ -626,15 +597,13 @@ async function rankApplicants(){
     }
   }
 
-  // Merge scores back using id (not email) to avoid collisions
   const ranked=preMerited.map(a=>{
     const r=allResults.find(x=>x.id===a.id);
-    if(!r || r.score===null || r.score===undefined) return a; // leave unscored as-is
+    if(!r || r.score===null || r.score===undefined) return a;
     return {...a, score:r.score, justification:r.justification};
   });
   DB.s('applicants',ranked);
 
-  // Only advance stage if ALL applicants were scored successfully
   const scoredCount=ranked.filter(a=>a.score!==null&&a.score!==undefined).length;
   if(scoredCount===apps.length){
     DB.s('rec_stage','shortlisted');
@@ -646,7 +615,6 @@ async function rankApplicants(){
     return;
   }
 
-  // Sync only validated scores to Supabase
   ranked.forEach(a=>{
     if(a.id && typeof a.score==='number' && a.score>=0 && a.score<=100){
       apiFetch('PUT',`/data/applicants/${a.id}`,{
@@ -703,11 +671,10 @@ function inviteTop50(){
 
 function selectTop10(){
   const apps=DB.g('applicants')||[];
-  const tested=apps.filter(a=>a.testScore!==undefined).sort((a,b)=>b.testScore-a.testScore);
+  const tested=apps.filter(a=>typeof a.testScore==='number').sort((a,b)=>b.testScore-a.testScore);
   if(tested.length===0){toast('No test scores yet. Wait for applicants to complete the test.','e');return;}
   if(!confirm('Send employment offers to the top 10 test scorers?')) return;
   const top10=tested.slice(0,10);
-  const top10ids=top10.map(a=>a.id||a.email);
   const updated=apps.map(a=>{
     const inTop=top10.some(t=>t.id?t.id===a.id:t.email===a.email);
     return inTop?{...a,invited:true,offerSent:true}:a;
@@ -721,7 +688,6 @@ function selectTop10(){
   toast(`Offer letters sent to top ${top10.length} candidates`,'s');
 }
 
-// AFTER
 function sendOffers(){
   const apps=DB.g('applicants')||[];
   const invited=apps.filter(a=>a.invited&&!a.offerSent);
@@ -735,7 +701,7 @@ function sendOffers(){
     <div style="display:flex;flex-direction:column;gap:12px">
       ${invited.map((a,i)=>`
         <div style="background:var(--bg);border-radius:8px;padding:12px;border:1px solid var(--border)">
-          <div style="font-size:13px;font-weight:500;margin-bottom:8px">${a.name} — <span style="color:var(--text-muted);font-weight:400">${a.position||'General Application'}</span></div>
+          <div style="font-size:13px;font-weight:500;margin-bottom:8px">${escapeHTML(a.name)} — <span style="color:var(--text-muted);font-weight:400">${escapeHTML(a.position)||'General Application'}</span></div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
             <div>
               <label style="font-size:12px;color:var(--text-muted);display:block;margin-bottom:3px">Offered Salary</label>
@@ -805,10 +771,10 @@ function _renderAptSetupModal(){
             <span class="b ${isSubj?'ba':'bb'}" style="font-size:10px">${isSubj?'Subjective':'Objective'}</span>
             <span style="font-size:11px;color:var(--text-muted)">${pts} pt${pts!==1?'s':''}</span>
           </div>
-          <div style="font-size:12.5px;font-weight:700;margin-bottom:6px">Q${i+1}: ${q.q}</div>
+          <div style="font-size:12.5px;font-weight:700;margin-bottom:6px">Q${i+1}: ${escapeHTML(q.q)}</div>
           ${isSubj
             ?'<div style="font-size:11.5px;color:var(--text-muted);font-style:italic">AI-graded written response</div>'
-            :`<div style="font-size:11.5px;color:var(--text-muted)">${(q.opts||[]).map((o,oi)=>`${String.fromCharCode(65+oi)}) ${o}${oi===q.ans?' ✓':''}`).join(' | ')}</div>`}
+            :`<div style="font-size:11.5px;color:var(--text-muted)">${(q.opts||[]).map((o,oi)=>`${String.fromCharCode(65+oi)}) ${escapeHTML(o)}${oi===q.ans?' ✓':''}`).join(' | ')}</div>`}
           <button class="btn b-rd btn-sm" style="margin-top:8px" onclick="deleteAptQuestion(${i})">Delete</button>
         </div>`;}).join('')}
     </div>
@@ -943,7 +909,7 @@ function pRecruitment(el){
           ?`<div class="es"><div class="es-ico">${ic('briefcase',44)}</div><h3>No job postings</h3><p>Add postings to show them on your Careers Portal.</p></div>`
           :`<div class="tw"><table><thead><tr><th>Role</th><th>Type</th><th>Status</th><th>Actions</th></tr></thead><tbody>
             ${(DB.g('job_postings')||[]).map((j,i)=>`<tr>
-              <td><strong>${j.title}</strong><br><small style="color:var(--text-muted)">${j.dept||'—'}</small></td>
+              <td><strong>${escapeHTML(j.title)}</strong><br><small style="color:var(--text-muted)">${escapeHTML(j.dept)||'—'}</small></td>
               <td>${j.type||'Full-time'}</td>
               <td><span class="b ${j.active?'bg':'ba'}">${j.active?'Active':'Paused'}</span></td>
               <td style="display:flex;gap:6px;flex-wrap:wrap">
@@ -992,7 +958,7 @@ function pRecruitment(el){
         <td style="font-size:11px">${escapeHTML(a.education)||'—'}</td>
         <td>${a.experience||0}y</td>
         
-        <!-- SAFE RENDER: Check strictly if score is a number, not just undefined/null -->
+        <!-- SAFE RENDER: Check strictly if score is a number -->
         <td>${typeof a.score === 'number' ? `<strong>${a.score}</strong>/100${a.justification?`<br><span style="font-size:11px;color:var(--text-muted)">${escapeHTML(a.justification)}</span>`:''}`
           : typeof a.merit === 'number' ? `<span style="color:var(--text-muted);font-size:12px">${a.merit}/100 (local)</span>`
           : `<span style="color:var(--text-muted)">—</span>`}</td>
@@ -1017,455 +983,10 @@ function pRecruitment(el){
   </div>
   </div>`;
 }
+
 function resetRecruitment(){
   if(!confirm('Reset pipeline stage back to collecting? This does not delete applicants.')) return;
   DB.s('rec_stage','collecting');
   showPage('e_recruitment');
   toast('Pipeline reset to collecting stage','i');
-}
-
-// ─── JOB POSTINGS ───
-function openAddJobPosting(){
-  openModal('Add Job Posting',`
-    <div class="fr"><div class="f"><label>Job Title *</label><input type="text" id="jp-title" placeholder="e.g. Marketing Officer"></div><div class="f"><label>Department</label><input type="text" id="jp-dept" placeholder="e.g. Sales"></div></div>
-    <div class="fr"><div class="f"><label>Employment Type</label>
-      <select id="jp-type"><option>Full-time</option><option>Part-time</option><option>Contract</option><option>Internship</option><option>Remote</option></select>
-    </div><div class="f"><label>Location</label><input type="text" id="jp-loc" placeholder="e.g. Accra, Ghana"></div></div>
-    <div class="fr"><div class="f"><label>Salary Range (optional)</label><input type="text" id="jp-sal" placeholder="e.g. ₵2,000 – ₵3,500/mo"></div><div class="f"><label>Deadline (optional)</label><input type="date" id="jp-dead"></div></div>
-    <div class="f"><label>Job Description *</label><textarea id="jp-desc" placeholder="Describe the role and responsibilities…" rows="4"></textarea></div>
-    <div class="f"><label>Requirements</label><textarea id="jp-req" placeholder="List qualifications, skills, experience required…" rows="3"></textarea></div>
-  `,[{l:'Post Job',c:'b-gr',fn:async()=>{
-    const title=document.getElementById('jp-title').value.trim();
-    const desc=document.getElementById('jp-desc').value.trim();
-    if(!title||!desc){toast('Title and Description required','e');return;}
-    const newJob={title,dept:document.getElementById('jp-dept').value,type:document.getElementById('jp-type').value,location:document.getElementById('jp-loc').value,salary:document.getElementById('jp-sal').value,deadline:document.getElementById('jp-dead').value,description:desc,requirements:document.getElementById('jp-req').value,active:true,postedDate:today()};
-    try{
-      const r=await apiFetch('POST','/data/job_postings',newJob);
-      if(r.record){const jobs=DB.g('job_postings')||[];jobs.push(r.record);DB.s('job_postings',jobs);closeModal();showPage('e_recruitment');toast('Job posted successfully!','s');}
-    }catch(err){alert('Database Error: '+err.message);}
-  }}]);
-}
-function openEditJobPosting(idx){
-  const jobs=DB.g('job_postings')||[];const j=jobs[idx];
-  openModal('Edit Job Posting',`
-    <div class="fr"><div class="f"><label>Job Title</label><input type="text" id="ep-title" value="${j.title}"></div><div class="f"><label>Department</label><input type="text" id="ep-dept" value="${j.dept||''}"></div></div>
-    <div class="fr"><div class="f"><label>Employment Type</label>
-      <select id="ep-type"><option ${j.type==='Full-time'?'selected':''}>Full-time</option><option ${j.type==='Part-time'?'selected':''}>Part-time</option><option ${j.type==='Contract'?'selected':''}>Contract</option><option ${j.type==='Internship'?'selected':''}>Internship</option><option ${j.type==='Remote'?'selected':''}>Remote</option></select>
-    </div><div class="f"><label>Location</label><input type="text" id="ep-loc" value="${j.location||''}"></div></div>
-    <div class="fr"><div class="f"><label>Salary Range</label><input type="text" id="ep-sal" value="${j.salary||''}"></div><div class="f"><label>Deadline</label><input type="date" id="ep-dead" value="${j.deadline||''}"></div></div>
-    <div class="f"><label>Job Description</label><textarea id="ep-desc" rows="4">${j.description}</textarea></div>
-    <div class="f"><label>Requirements</label><textarea id="ep-req" rows="3">${j.requirements||''}</textarea></div>
-  `,[{l:'Save Changes',c:'b-gr',fn:()=>{
-    jobs[idx]={...jobs[idx],title:document.getElementById('ep-title').value,dept:document.getElementById('ep-dept').value,type:document.getElementById('ep-type').value,location:document.getElementById('ep-loc').value,salary:document.getElementById('ep-sal').value,deadline:document.getElementById('ep-dead').value,description:document.getElementById('ep-desc').value,requirements:document.getElementById('ep-req').value};
-    DB.s('job_postings',jobs);
-    if(jobs[idx].id) apiFetch('PUT',`/data/job_postings/${jobs[idx].id}`,jobs[idx]).catch(()=>{});
-    closeModal();showPage('e_recruitment');toast('Job posting updated','s');
-  }}]);
-}
-function toggleJobPosting(idx){
-  const jobs=DB.g('job_postings')||[];
-  jobs[idx].active=!jobs[idx].active;
-  DB.s('job_postings',jobs);
-  if(jobs[idx].id) apiFetch('PUT',`/data/job_postings/${jobs[idx].id}`,{active:jobs[idx].active}).catch(()=>{});
-  showPage('e_recruitment');
-  toast(jobs[idx].active?'Job posting activated':'Job posting paused','i');
-}
-function deleteJobPosting(idx){
-  if(!confirm('Delete this job posting?')) return;
-  const jobs=DB.g('job_postings')||[];
-  const job=jobs[idx];
-  jobs.splice(idx,1);
-  DB.s('job_postings',jobs);
-  showPage('e_recruitment');
-  toast('Deleted','i');
-  if(job&&job.id) apiFetch('DELETE',`/data/job_postings/${job.id}`).catch(()=>{});
-}
-
-// ─── OFFER LETTER ───
-function openLetterSetup(){
-  const co=DB.g('company')||{};
-  openModal('Configure Employment Letter',`
-    <div class="fr">
-      <div class="f"><label>Default Hourly Rate (₵)</label><input type="number" id="ol-rate" value="${co.defaultRate||20}"></div>
-      <div class="f"><label>Probation Period</label><input type="text" id="ol-prob" value="${co.probation||'3 months'}"></div>
-    </div>
-    <div class="f"><label>Work Schedule</label><input type="text" id="ol-sched" value="${co.workSchedule||'Monday – Friday, 8:00 AM – 5:00 PM'}"></div>
-    <div class="fr">
-      <div class="f"><label>Offer Expiry (Days)</label><input type="number" id="ol-exp" value="${co.offerExpiry||7}"></div>
-      <div class="f"><label>Reporting Manager</label><input type="text" id="ol-mgr" value="${co.managerName||''}"></div>
-    </div>
-    <div class="f"><label>Benefits Summary</label><input type="text" id="ol-ben" value="${co.benefitsSummary||''}" placeholder="e.g. Health Insurance, PTO"></div>
-    <div class="f"><label>Company Tagline</label><input type="text" id="ol-tag" value="${co.tagline||''}"></div>
-    <div class="f"><label>Reg / TIN No.</label><input type="text" id="ol-reg" value="${co.regNumber||''}"></div>
-    <div class="f"><label>Letterhead Banner URL (optional)</label><input type="text" id="ol-head" value="${co.letterhead||''}"></div>
-    <div class="f"><label>Custom Opening Paragraph</label><textarea id="ol-intro" rows="2">${co.offerIntro||''}</textarea></div>
-    <div class="f"><label>Additional Terms</label><textarea id="ol-terms" rows="2">${co.offerTerms||''}</textarea></div>
-    <div class="fr">
-      <div class="f"><label>Signatory Name</label><input type="text" id="ol-sign" value="${co.signatory||'The Director'}"></div>
-      <div class="f"><label>Signatory Title</label><input type="text" id="ol-sigt" value="${co.sigTitle||'Managing Director'}"></div>
-    </div>
-  `,[{l:'Save Configuration',c:'b-nv',fn:()=>{
-    const co2={...DB.g('company')||{},letterhead:document.getElementById('ol-head').value,tagline:document.getElementById('ol-tag').value,regNumber:document.getElementById('ol-reg').value,defaultRate:parseFloat(document.getElementById('ol-rate').value)||20,workSchedule:document.getElementById('ol-sched').value,probation:document.getElementById('ol-prob').value,offerExpiry:parseInt(document.getElementById('ol-exp').value)||7,managerName:document.getElementById('ol-mgr').value,benefitsSummary:document.getElementById('ol-ben').value,offerIntro:document.getElementById('ol-intro').value,offerTerms:document.getElementById('ol-terms').value,signatory:document.getElementById('ol-sign').value,sigTitle:document.getElementById('ol-sigt').value};
-DB.s('company',co2);
-apiFetch('POST','/settings',{key:'company',value:JSON.stringify(co2)}).catch(()=>{});
-closeModal();showPage('e_recruitment');toast('Offer configuration saved','s');
-  }}]);
-}
-function previewOfferTemplate(){
-  const co=DB.g('company')||{};
-  openModal('Preview Employment Letter',generateOfferLetterHTML({name:'Jane Doe',position:'Software Engineer'},co),[]);
-}
-
-// ─── OFFER PORTAL ───
-function loadOfferPortal(email){
-  const apps=DB.g('applicants')||[];
-  const app=apps.find(a=>a.email===email)||{name:'Candidate',position:'Position',email};
-  const co=DB.g('company')||{};
-  document.getElementById('offer-details-wrap').innerHTML=generateOfferLetterHTML(app,co);
-  document.getElementById('offer-details-wrap').dataset.email=email;
-  document.getElementById('offer-portal-msg').innerHTML='';
-  document.getElementById('offer-neg-wrap').style.display='none';
-  document.getElementById('offer-action-btns').style.display='flex';
-}
-async function respondOffer(decision){
-  const email=document.getElementById('offer-details-wrap').dataset.email;
-  const apps=DB.g('applicants')||[];
-  const i=apps.findIndex(a=>a.email===email);
-  if(i>=0){apps[i].offerStatus=decision;DB.s('applicants',apps);}
-  const msg=document.getElementById('offer-portal-msg');
-  document.getElementById('offer-action-btns').style.display='none';
-  document.getElementById('offer-neg-wrap').style.display='none';
-  if(decision==='accept'){
-    await createEmployeeFromApplicant(apps[i],true);
-    msg.innerHTML=`<div class="al al-g"><strong>Offer Accepted!</strong> Welcome to the team. Your login credentials will be shared with you. ${ic('check-circle',15)}</div>`;
-  } else {
-    msg.innerHTML=`<div class="al al-r">You have declined this offer. Thank you for your time.</div>`;
-  }
-  setTimeout(()=>{if(window._portalReturn)backFromPortal();},4000);
-}
-async function createEmployeeFromApplicant(app,isSilent=false){
-  const emps=DB.g('employees')||[];
-  if(emps.find(e=>e.email===app.email)){if(!isSilent) toast('Account already exists for this candidate','i');return;}
-  const newId='EMP'+(emps.length+11).toString().padStart(3,'0');
-  const pw='pass'+Math.random().toString(36).substr(2,6);
-  const co=DB.g('company')||{};
-  const newEmp={id:newId,name:app.name,roleTitle:app.position,dept:'New Hire',hourlyRate:co.defaultRate||20,joinDate:today(),email:app.email,active:true,role:'employee',initials:app.name.split(' ').map(n=>n[0]).join('').toUpperCase()};
-  emps.push({...newEmp,tempPassword:pw});
-  DB.s('employees',emps);
-  try{await apiFetch('POST','/users',{...newEmp,password:pw});}catch(e){console.error('Failed to create Supabase account:',e);}
-  const newCreds=DB.g('new_hires')||[];
-  newCreds.push({id:newId,name:app.name,email:app.email,password:pw,date:today()});
-  DB.s('new_hires',newCreds);
-  if(!isSilent) toast(`Profile generated for ${app.name}! Check settings for credentials.`,'s');
-}
-function manualCreateEmployee(email){
-  const apps=DB.g('applicants')||[];
-  const app=apps.find(a=>a.email===email);
-  if(!app){toast('Applicant not found','e');return;}
-  createEmployeeFromApplicant(app,false);
-  showPage('e_recruitment');
-}
-function toggleNeg(){
-  const wrap=document.getElementById('offer-neg-wrap');
-  wrap.style.display=wrap.style.display==='none'?'block':'none';
-}
-function submitNegotiation(){
-  const email=document.getElementById('offer-details-wrap').dataset.email;
-  const rate=document.getElementById('neg-rate').value;
-  const hours=document.getElementById('neg-hours').value;
-  const benefits=Array.from(document.getElementById('neg-benefits').selectedOptions).map(o=>o.value);
-  const note=document.getElementById('neg-note').value;
-  const apps=DB.g('applicants')||[];
-  const i=apps.findIndex(a=>a.email===email);
-  if(i>=0){apps[i].offerStatus='negotiated';apps[i].negotiation={rate,hours,benefits,note};DB.s('applicants',apps);}
-  document.getElementById('offer-portal-msg').innerHTML='<div class="al al-b">Counter-offer sent to the employer. We will review and respond shortly.</div>';
-  document.getElementById('offer-neg-wrap').style.display='none';
-  document.getElementById('offer-action-btns').style.display='none';
-  updNotif();
-  setTimeout(()=>{if(window._portalReturn)backFromPortal();},3000);
-}
-
-// ─── LEAVES ───
-function pLeaves(el){
-  const leaves=DB.g('leaves')||[];
-  el.innerHTML=`
-  ${ph('Leave Management','Review, manage and respond to leave requests.')}
-  <div class="sg">
-    ${sc('calendar','Total Requests',leaves.length)}
-    ${sc('clock','Pending',leaves.filter(l=>l.status==='pending').length,'','dn')}
-    ${sc('check-circle','Approved',leaves.filter(l=>l.status==='approved').length,'','up')}
-    ${sc('alert-triangle','Rejected',leaves.filter(l=>l.status==='rejected').length)}
-  </div>
-  <div class="card mb">
-    <div class="ch"><span class="ct">${ic('calendar',15)} All Leave Requests</span></div>
-    <div class="cb">
-      ${leaves.length===0?`<div class="es"><div class="es-ico">${ic('calendar',44)}</div><h3>No leave requests</h3><p>Employee leave requests will appear here.</p></div>`:`
-      <div class="tw"><table><thead><tr><th>Employee</th><th>Type</th><th>From</th><th>To</th><th>Days</th><th>Reason</th><th>Status</th><th>Action</th></tr></thead><tbody>
-        ${leaves.map((l,i)=>`<tr>
-          <td><strong>${l.empName}</strong></td>
-          <td><span class="b bb">${l.type}</span></td>
-          <td>${l.fromDate}</td><td>${l.toDate}</td><td>${l.days||'—'}</td>
-          <td style="max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${l.reason}</td>
-          <td><span class="b ${l.status==='pending'?'ba':l.status==='approved'?'bg':'br'}">${l.status}</span></td>
-          <td>${l.status==='pending'?`<button class="btn b-gr btn-sm" onclick="respondLeave(${i})">Respond</button>`:`${l.payStatus?`<span class="b ${l.payStatus==='paid'?'bg':'ba'}">${l.payStatus}</span>`:'—'}`}</td>
-        </tr>`).join('')}
-      </tbody></table></div>`}
-    </div>
-  </div>`;
-}
-function respondLeave(i){
-  const leaves=DB.g('leaves')||[];const l=leaves[i];
-  const from=new Date(l.fromDate),to=new Date(l.toDate);
-  const days=Math.ceil((to-from)/(1000*3600*24))+1;
-  openModal(`Leave Response — ${l.empName}`,`
-    <div class="al al-b">Request: <strong>${l.type}</strong> | ${l.fromDate} to ${l.toDate} (${days} day${days>1?'s':''})</div>
-    <div class="f"><label>Decision</label><select id="lv-dec"><option value="approved">Approve</option><option value="rejected">Reject</option></select></div>
-    <div class="f"><label>Pay Status</label><select id="lv-pay"><option value="paid">Paid Leave</option><option value="unpaid">Unpaid Leave</option><option value="half-pay">Half Pay</option></select></div>
-    <div class="f"><label>Terms / Notes for Employee</label><textarea id="lv-terms" placeholder="e.g. Approved for 5 days paid leave…"></textarea></div>
-    <div class="f"><label>Conditions (optional)</label><input type="text" id="lv-cond" placeholder="e.g. Subject to project handover completion"></div>
-  `,[{l:'Send Response',c:'b-gr',fn:()=>{
-    const dec=document.getElementById('lv-dec').value;
-    const updated={...l,status:dec,payStatus:document.getElementById('lv-pay').value,terms:document.getElementById('lv-terms').value,conditions:document.getElementById('lv-cond').value,days,respondedDate:today()};
-    leaves[i]=updated;
-    DB.s('leaves',leaves);
-    if(updated.id) apiFetch('PUT',`/data/leaves/${updated.id}`,{status:dec,payStatus:updated.payStatus,terms:updated.terms,conditions:updated.conditions,days,respondedDate:updated.respondedDate}).catch(()=>{});
-    closeModal();showPage('e_leaves');toast(`Leave ${dec}`,'s');updNotif();
-  }}]);
-}
-
-// ─── BENEFITS ───
-function pBenefits(el){
-  const benefits=DB.g('benefits')||[];
-  const emps=DB.g('employees')||[];
-  el.innerHTML=`
-  ${ph('Benefits Management','Control which benefits are assigned to each employee.')}
-  <div class="card mb">
-    <div class="ch"><span class="ct">${ic('gift',15)} Benefits Catalog</span><button class="btn b-nv btn-sm" onclick="openAddBenefit()">+ Add Benefit</button></div>
-    <div class="cb">
-      ${benefits.length===0?`<div class="es"><div class="es-ico">${ic('gift',44)}</div><h3>No benefits yet</h3><p>Add benefits to assign to employees.</p></div>`:`
-      <div class="tw"><table><thead><tr><th>Benefit</th><th>Value / Description</th><th>Assigned To</th><th>Action</th></tr></thead><tbody>
-        ${benefits.map((b,i)=>`<tr>
-          <td><strong>${b.name}</strong></td>
-          <td>${b.value}</td>
-          <td>${b.empIds&&b.empIds.length>0?b.empIds.map(eid=>{const e=emps.find(x=>x.id===eid);return e?`<span class="b bn" style="margin:1px">${e.name.split(' ')[0]}</span>`:''}).join(' '):'<span style="color:var(--text-muted);font-size:12px">None assigned</span>'}</td>
-          <td><button class="btn b-ol btn-sm" onclick="openEditBenefit(${i})">Assign / Edit</button></td>
-        </tr>`).join('')}
-      </tbody></table></div>`}
-    </div>
-  </div>`;
-}
-function openAddBenefit(){
-  openModal('Add New Benefit',`
-    <div class="f"><label>Benefit Name</label><input type="text" id="nb-nm" placeholder="e.g. Meal Allowance"></div>
-    <div class="f"><label>Value / Description</label><input type="text" id="nb-vl" placeholder="e.g. ₵150/month"></div>
-  `,[{l:'Add Benefit',c:'b-nv',fn:()=>{
-    const benefits=DB.g('benefits')||[];
-    const newB={name:document.getElementById('nb-nm').value,value:document.getElementById('nb-vl').value,empIds:[]};
-apiFetch('POST','/data/benefits',newB).then(r=>{
-  if(r.record){benefits.push(r.record);DB.s('benefits',benefits);}
-  closeModal();showPage('e_benefits');toast('Benefit added','s');
-}).catch(()=>toast('Failed to save benefit','e'));
-  }}]);
-}
-function openEditBenefit(i){
-  const benefits=DB.g('benefits')||[];const b=benefits[i];
-  const emps=DB.g('employees')||[];
-  openModal(`${b.name} — Assign Employees`,`
-    <div class="f"><label>Benefit Value</label><input type="text" id="eb-vl" value="${b.value}"></div>
-    <div class="f"><label>Assign to Employees</label>
-      <select id="eb-emps" multiple style="height:130px">
-        ${emps.map(e=>`<option value="${e.id}" ${(b.empIds||[]).includes(e.id)?'selected':''}>${e.name} (${e.roleTitle})</option>`).join('')}
-      </select>
-      <small style="font-size:11px;color:var(--text-muted)">Hold Ctrl / ⌘ to select multiple</small>
-    </div>
-  `,[{l:'Save',c:'b-gr',fn:()=>{
-    const sel=Array.from(document.getElementById('eb-emps').selectedOptions).map(o=>o.value);
-    benefits[i]={...b,value:document.getElementById('eb-vl').value,empIds:sel};
-DB.s('benefits',benefits);
-if(b.id) apiFetch('PUT',`/data/benefits/${b.id}`,{value:benefits[i].value,empIds:sel}).catch(()=>{});
-closeModal();showPage('e_benefits');toast('Benefits updated','s');
-  }}]);
-}
-
-// ─── COMPLAINTS ───
-function pComplaints(el){
-  const complaints=DB.g('complaints')||[];
-  el.innerHTML=`
-  ${ph('Complaints & Suggestions','All submissions from employees.')}
-  ${complaints.length===0?`<div class="es"><div class="es-ico">${ic('message-square',44)}</div><h3>No submissions yet</h3><p>Employee complaints and suggestions will appear here.</p></div>`:`
-  <div class="card mb">
-    <div class="ch"><span class="ct">${ic('message-square',15)} All Submissions (${complaints.length})</span></div>
-    <div class="cb">
-      <div class="tw"><table><thead><tr><th>From</th><th>Type</th><th>Subject</th><th>Message</th><th>Date</th><th>Status</th><th>Action</th></tr></thead><tbody>
-        ${complaints.map((c,i)=>`<tr>
-          <td><strong>${c.empName}</strong></td>
-          <td><span class="b ${c.type==='Complaint'?'br':'bb'}">${c.type}</span></td>
-          <td>${c.subject}</td>
-          <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;color:var(--text-muted)">${c.message}</td>
-          <td>${c.date}</td>
-          <td><span class="b ${c.resolved?'bg':'ba'}">${c.resolved?'Resolved':'Pending'}</span></td>
-          <td>${!c.resolved?`<button class="btn b-gr btn-sm" onclick="resolveComp(${i})">Resolve</button>`:'—'}</td>
-        </tr>`).join('')}
-      </tbody></table></div>
-    </div>
-  </div>`}`;
-}
-function resolveComp(i){
-  const c=DB.g('complaints')||[];c[i].resolved=true;DB.s('complaints',c);
-  if(c[i].id) apiFetch('PUT',`/data/complaints/${c[i].id}`,{resolved:true}).catch(()=>{});
-  showPage('e_complaints');toast('Marked resolved','s');
-}
-
-// ─── SETTINGS ───
-function pSettings(el){
-  const co=DB.g('company')||{};
-  const as=DB.g('att_settings')||{};
-  el.innerHTML=`
-  ${ph('Settings','System configuration and preferences.')}
-  <div class="g2">
-    <div class="card mb">
-      <div class="ch"><span class="ct">${ic('briefcase',15)} Business Info</span></div>
-      <div class="cb">
-        <div class="f"><label>Business Name</label><input type="text" id="s-nm" value="${co.name||'My Business Ltd'}"></div>
-        <div class="f"><label>Email</label><input type="email" id="s-em" value="${co.email||''}"></div>
-        <div class="f"><label>Phone</label><input type="text" id="s-ph" value="${co.phone||''}"></div>
-        <div class="f"><label>Address</label><input type="text" id="s-ad" value="${co.address||''}"></div>
-        <button class="btn b-nv" onclick="saveBizInfo()">Save</button>
-      </div>
-    </div>
-    <div class="card mb">
-      <div class="ch"><span class="ct">${ic('lock',15)} Security</span></div>
-      <div class="cb">
-        <div class="f"><label>Current Password</label><input type="password" id="s-cp" placeholder="Current password"></div>
-        <div class="f"><label>New Password</label><input type="password" id="s-np" placeholder="New password"></div>
-        <div class="f"><label>Confirm Password</label><input type="password" id="s-cnp" placeholder="Confirm new password"></div>
-        <button class="btn b-am" onclick="changeAdminPw()">Update Password</button>
-        <div id="s-pw-msg" style="margin-top:9px"></div>
-      </div>
-    </div>
-  </div>
-  <div class="card mb">
-    <div class="ch"><span class="ct">${ic('shield',15)} Employee Credentials</span><button class="btn b-nv btn-sm" onclick="showCredentials()">View All</button></div>
-    <div class="cb">
-      <p style="font-size:12.5px;color:var(--text-muted)">View login credentials for all active employees.</p>
-      <div id="creds-table"></div>
-    </div>
-  </div>
-  <div class="card mb">
-    <div class="ch"><span class="ct">${ic('map-pin',15)} Attendance Settings</span></div>
-    <div class="cb">
-      <div class="f"><label>Office Address</label><input type="text" id="att-addr" placeholder="e.g. 12 Independence Ave, Accra" value="${as.work_address||''}"></div>
-      <div class="fr">
-        <div class="f"><label>Latitude</label><input type="number" step="any" id="att-lat" placeholder="e.g. 5.6037" value="${as.work_lat||''}"></div>
-        <div class="f"><label>Longitude</label><input type="number" step="any" id="att-lng" placeholder="e.g. -0.1870" value="${as.work_lng||''}"></div>
-        <div class="f"><label>Allowed Radius (metres)</label><input type="number" id="att-rad" placeholder="e.g. 100" value="${as.work_radius||'100'}"></div>
-      </div>
-      <div class="fr">
-        <div class="f"><label>Shift Start</label><input type="time" id="att-start" value="${as.shift_start||'08:00'}"></div>
-        <div class="f"><label>Shift End</label><input type="time" id="att-end" value="${as.shift_end||'17:00'}"></div>
-      </div>
-      <button class="btn b-nv" style="margin-top:4px" onclick="getCurrentLocation()">${ic('map-pin',14)} Use My Current Location</button>
-      <button class="btn b-gr" style="margin-top:4px;margin-left:8px" onclick="saveAttSettings()">${ic('save',14)} Save Settings</button>
-      <div id="att-msg" style="margin-top:10px"></div>
-    </div>
-  </div>
-  <div class="card mb">
-    <div class="ch"><span class="ct">${ic('alert-triangle',15)} Data Management</span></div>
-    <div class="cb" style="display:flex;gap:10px;flex-wrap:wrap">
-      <button class="btn b-ol" onclick="clearTable('applicants')">Clear Applicants</button>
-      <button class="btn b-ol" onclick="clearTable('complaints')">Clear Complaints</button>
-      <button class="btn b-ol" onclick="clearTable('attendance')">Clear Attendance</button>
-      <button class="btn b-rd" onclick="resetAllData()">Reset All Data</button>
-    </div>
-  </div>`;
-}
-async function resetAllData(){
-  if(!confirm('RESET ALL DATA? This cannot be undone.')) return;
-  const tables=['costs','revenue','tasks','attendance','leaves','advances','promos','complaints','applicants','benefits'];
-  for(const table of tables){
-    const records=DB.g(table)||[];
-    await Promise.all(records.filter(r=>r.id).map(r=>apiFetch('DELETE',`/data/${table}/${r.id}`).catch(()=>{})));
-    DB.s(table,[]);
-  }
-  localStorage.clear();
-  location.reload();
-}
-
-async function clearTable(table){
-  if(!confirm(`Clear all ${table} data? This cannot be undone.`)) return;
-  try{
-    const records=(DB.g(table)||[]).filter(r=>r.id);
-    if(records.length>0){
-      const results=await Promise.allSettled(
-        records.map(r=>apiFetch('DELETE',`/data/${table}/${r.id}`))
-      );
-      const failed=results.filter(r=>r.status==='rejected').length;
-      if(failed>0) toast(`${failed} record(s) could not be deleted from server.`,'w');
-    }
-    if(table==='applicants') DB.s('rec_stage','collecting');
-    DB.s(table,[]);
-    toast(`${table} cleared successfully`,'s');
-    showPage('e_settings');
-  }catch(e){toast('Clear failed: '+e.message,'e');}
-}
-function getCurrentLocation(){
-  const msg=document.getElementById('att-msg');
-  msg.innerHTML='<div class="al al-b">Getting your location…</div>';
-  if(!navigator.geolocation){msg.innerHTML='<div class="al al-r">Geolocation not supported.</div>';return;}
-  navigator.geolocation.getCurrentPosition(
-    pos=>{
-      document.getElementById('att-lat').value=pos.coords.latitude.toFixed(6);
-      document.getElementById('att-lng').value=pos.coords.longitude.toFixed(6);
-      msg.innerHTML=`<div class="al al-g">Location captured: ${pos.coords.latitude.toFixed(6)}, ${pos.coords.longitude.toFixed(6)}</div>`;
-    },
-    err=>{msg.innerHTML=`<div class="al al-r">Could not get location: ${err.message}</div>`;},
-    {enableHighAccuracy:true,timeout:10000}
-  );
-}
-async function saveAttSettings(){
-  const msg=document.getElementById('att-msg');
-  const lat=parseFloat(document.getElementById('att-lat').value)||0;
-  const lng=parseFloat(document.getElementById('att-lng').value)||0;
-  const rad=parseInt(document.getElementById('att-rad').value)||100;
-  const start=document.getElementById('att-start').value;
-  const end=document.getElementById('att-end').value;
-  const addr=document.getElementById('att-addr').value;
-  if(!start||!end){msg.innerHTML='<div class="al al-r">Please set shift times.</div>';return;}
-  try{
-    const attFields = {work_lat:String(lat), work_lng:String(lng), work_radius:String(rad), shift_start:start, shift_end:end, work_address:addr};
-await Promise.all(
-  Object.entries(attFields).map(([key, value]) =>
-    apiFetch('POST', '/settings', {key, value})
-  )
-);
-    DB.s('att_settings',{...DB.g('att_settings')||{},work_lat:String(lat),work_lng:String(lng),work_radius:String(rad),shift_start:start,shift_end:end,work_address:addr});
-    msg.innerHTML='<div class="al al-g">Attendance settings saved.</div>';
-  }catch(e){msg.innerHTML=`<div class="al al-r">Failed to save: ${e.message}</div>`;}
-}
-function saveBizInfo(){
-  const co=DB.g('company')||{};
-  const updated={...co,name:document.getElementById('s-nm').value,email:document.getElementById('s-em').value,phone:document.getElementById('s-ph').value,address:document.getElementById('s-ad').value};
-DB.s('company',updated);
-apiFetch('POST','/settings',{key:'company',value:JSON.stringify(updated)}).catch(()=>{});
-toast('Business info saved','s');
-}
-async function changeAdminPw(){
-  const cp=document.getElementById('s-cp').value;
-  const np=document.getElementById('s-np').value;
-  const cnp=document.getElementById('s-cnp').value;
-  const msg=document.getElementById('s-pw-msg');
-  if(!cp||!np){msg.innerHTML=`<div class="al al-r">Fill all fields.</div>`;return;}
-  if(np!==cnp){msg.innerHTML=`<div class="al al-r">Passwords do not match.</div>`;return;}
-  try{
-    await apiFetch('POST','/change-password',{currentPassword:cp,newPassword:np});
-    msg.innerHTML=`<div class="al al-g">Password updated successfully.</div>`;
-  }catch(e){msg.innerHTML=`<div class="al al-r">${e.message}</div>`;}
-}
-function showCredentials(){
-  const emps=DB.g('employees')||[];
-  document.getElementById('creds-table').innerHTML=`
-  <div class="tw" style="margin-top:14px"><table><thead><tr><th>Employee ID</th><th>Name</th><th>Email</th></tr></thead><tbody>
-    ${emps.map(e=>`<tr><td><span class="b bn">${e.id}</span></td><td>${e.name}</td><td>${e.email||'—'}</td></tr>`).join('')}
-  </tbody></table></div>
-  <div class="al al-b" style="margin-top:10px">Passwords are securely hidden. Reset via the database if needed.</div>`;
 }
