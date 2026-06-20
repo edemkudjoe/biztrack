@@ -1091,13 +1091,114 @@ window.resolveComplaint = function(i) {
 
 // ─── SETTINGS ───
 function pSettings(el){
+  const co = DB.g('company') || {};
+  const att = DB.g('att_settings') || {};
+
   el.innerHTML = `
-  ${ph('System Settings','Manage business configuration.')}
-  <div class="card mb">
-    <div class="ch"><span class="ct">${ic('settings',15)} Configuration</span></div>
-    <div class="cb"><p style="font-size:13px;color:var(--text-muted)">Settings module is currently under construction. Core functionalities are managed via code.</p></div>
+  ${ph('System Settings','Manage business configuration and security.')}
+  <div class="g2">
+    <div class="card mb">
+      <div class="ch"><span class="ct">${ic('briefcase',15)} Company Profile</span></div>
+      <div class="cb">
+        <div class="f"><label>Company Name</label><input type="text" id="st-co-name" value="${co.name || ''}" placeholder="e.g. My Business Ltd"></div>
+        <div class="fr">
+          <div class="f"><label>Email Address</label><input type="email" id="st-co-email" value="${co.email || ''}" placeholder="info@company.com"></div>
+          <div class="f"><label>Phone Number</label><input type="text" id="st-co-phone" value="${co.phone || ''}" placeholder="+233 XX XXX XXXX"></div>
+        </div>
+        <div class="f"><label>Physical Address</label><input type="text" id="st-co-address" value="${co.address || ''}" placeholder="Location"></div>
+        <div class="f"><label>Website / Portal</label><input type="text" id="st-co-web" value="${co.web || ''}" placeholder="www.company.com"></div>
+        <button class="btn b-nv btn-full" onclick="saveCompanySettings()">${ic('save', 15)} Save Profile</button>
+      </div>
+    </div>
+
+    <div class="card mb">
+      <div class="ch"><span class="ct">${ic('clock',15)} Shift Configuration</span></div>
+      <div class="cb">
+        <div class="fr">
+          <div class="f"><label>Shift Start Time</label><input type="time" id="st-shift-start" value="${att.shift_start || '08:00'}"></div>
+          <div class="f"><label>Shift End Time</label><input type="time" id="st-shift-end" value="${att.shift_end || '17:00'}"></div>
+        </div>
+        <div class="al al-b" style="margin-bottom:15px">${ic('activity',13)} Employees clocking in after the Start Time will automatically be marked as Late.</div>
+        <button class="btn b-nv btn-full" onclick="saveShiftSettings()">${ic('save', 15)} Save Shift Times</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="g2">
+    <div class="card mb">
+      <div class="ch"><span class="ct">${ic('lock',15)} Admin Security</span></div>
+      <div class="cb">
+        <div class="f"><label>Current Password</label><input type="password" id="st-cp" placeholder="Enter current admin password"></div>
+        <div class="f"><label>New Password</label><input type="password" id="st-np" placeholder="Enter new password (min. 6 chars)"></div>
+        <button class="btn b-am btn-full" onclick="changeAdminPw()">${ic('shield', 15)} Update Password</button>
+        <div id="st-pw-msg" style="margin-top:10px"></div>
+      </div>
+    </div>
+
+    <div class="card mb">
+      <div class="ch"><span class="ct">${ic('refresh-cw',15)} System Maintenance</span></div>
+      <div class="cb">
+        <p style="font-size:13px;color:var(--text-muted);margin-bottom:15px">If the app feels slow or data seems out of sync, you can clear the local cache to force a fresh download from the server.</p>
+        <button class="btn b-ol btn-full" onclick="clearLocalCache()">${ic('trash-2', 15)} Clear Local Cache & Resync</button>
+      </div>
+    </div>
   </div>`;
 }
+
+window.saveCompanySettings = async function() {
+  const co = {
+    name: document.getElementById('st-co-name').value,
+    email: document.getElementById('st-co-email').value,
+    phone: document.getElementById('st-co-phone').value,
+    address: document.getElementById('st-co-address').value,
+    web: document.getElementById('st-co-web').value
+  };
+  DB.s('company', co);
+  toast('Company profile saved', 's');
+  try {
+    await apiFetch('POST', '/settings', { key: 'company', value: JSON.stringify(co) });
+  } catch(e) { toast('Saved locally, sync failed', 'w'); }
+};
+
+window.saveShiftSettings = async function() {
+  const ss = document.getElementById('st-shift-start').value;
+  const se = document.getElementById('st-shift-end').value;
+  const att = DB.g('att_settings') || {};
+  att.shift_start = ss;
+  att.shift_end = se;
+  DB.s('att_settings', att);
+  toast('Shift settings saved', 's');
+  try {
+    await apiFetch('POST', '/settings', { key: 'shift_start', value: ss });
+    await apiFetch('POST', '/settings', { key: 'shift_end', value: se });
+  } catch(e) { toast('Saved locally, sync failed', 'w'); }
+};
+
+window.changeAdminPw = async function() {
+  const msg = document.getElementById('st-pw-msg');
+  const cp = document.getElementById('st-cp').value;
+  const np = document.getElementById('st-np').value;
+  if(!cp || !np) { msg.innerHTML = '<div class="al al-r">Please fill all fields.</div>'; return; }
+  msg.innerHTML = '<div class="al al-b">Updating...</div>';
+  try {
+    await apiFetch('POST', '/change-password', { currentPassword: cp, newPassword: np });
+    msg.innerHTML = '<div class="al al-g">Password updated successfully.</div>';
+    document.getElementById('st-cp').value = '';
+    document.getElementById('st-np').value = '';
+  } catch(e) { msg.innerHTML = `<div class="al al-r">${e.message}</div>`; }
+};
+
+window.clearLocalCache = function() {
+  if(!confirm('Clear local cache and force a full re-sync from the server?')) return;
+  const jwt = localStorage.getItem('bt_jwt');
+  const cu = localStorage.getItem('bt_cu');
+  const dk = localStorage.getItem('bt_dk');
+  localStorage.clear();
+  if(jwt) localStorage.setItem('bt_jwt', jwt);
+  if(cu) localStorage.setItem('bt_cu', cu);
+  if(dk) localStorage.setItem('bt_dk', dk);
+  location.reload();
+};
 
 // ─── MISSING RECRUITMENT FUNCTIONS ───
 window.openAddJobPosting = function() {
