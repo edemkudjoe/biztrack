@@ -1139,7 +1139,18 @@ function pSettings(el){
       <div class="ch"><span class="ct">${ic('refresh-cw',15)} System Maintenance</span></div>
       <div class="cb">
         <p style="font-size:13px;color:var(--text-muted);margin-bottom:15px">If the app feels slow or data seems out of sync, you can clear the local cache to force a fresh download from the server.</p>
-        <button class="btn b-ol btn-full" onclick="clearLocalCache()">${ic('trash-2', 15)} Clear Local Cache & Resync</button>
+        <button class="btn b-ol btn-full" onclick="clearLocalCache()">${ic('refresh-cw', 15)} Clear Local Cache & Resync</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card mb" style="border-color: rgba(231,76,60,.4);">
+    <div class="ch" style="border-bottom-color: rgba(231,76,60,.2);"><span class="ct" style="color: var(--red);">${ic('alert-triangle',15)} Danger Zone: System Data</span></div>
+    <div class="cb">
+      <p style="font-size:13px;color:var(--text-muted);margin-bottom:15px">Permanently wipe system data. <strong style="color:var(--red)">These actions cannot be undone.</strong></p>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn b-ol" style="color:var(--red);border-color:var(--red)" onclick="wipeRecruitmentData()">${ic('trash-2', 15)} Clear Recruitment Data Only</button>
+        <button class="btn b-rd" onclick="wipeSystemData()">${ic('trash-2', 15)} Clear All System Data</button>
       </div>
     </div>
   </div>`;
@@ -1198,6 +1209,44 @@ window.clearLocalCache = function() {
   if(cu) localStorage.setItem('bt_cu', cu);
   if(dk) localStorage.setItem('bt_dk', dk);
   location.reload();
+};
+
+window.wipeRecruitmentData = function() {
+  const confirmText = prompt('DANGER: Type "CLEAR" to confirm wiping all recruitment data. This deletes applicants, job postings, and aptitude questions.');
+  if (confirmText !== 'CLEAR') {
+    toast('Action cancelled.', 'i');
+    return;
+  }
+
+  DB.s('applicants', []);
+  DB.s('job_postings', []);
+  DB.s('apt_qs', []);
+  DB.s('rec_stage', 'collecting');
+  
+  toast('Recruitment data has been successfully cleared.', 's');
+  
+  setTimeout(() => location.reload(), 2000);
+};
+
+window.wipeSystemData = function() {
+  const confirmText = prompt('DANGER: Type "DELETE" to confirm wiping all system data. This will reset the application to a clean state.');
+  if (confirmText !== 'DELETE') {
+    toast('Action cancelled.', 'i');
+    return;
+  }
+
+  // Clear all operational tables
+  const tables = ['employees', 'tasks', 'attendance', 'costs', 'revenue', 'leaves', 'advances', 'promos', 'complaints', 'applicants', 'job_postings', 'apt_qs'];
+  tables.forEach(t => DB.s(t, []));
+  
+  // Reset stages and states
+  DB.s('rec_stage', 'collecting');
+  DB.s('att_settings', {});
+  
+  toast('System data has been successfully cleared.', 's');
+  
+  // Give the toast a moment to display before reloading
+  setTimeout(() => location.reload(), 2000);
 };
 
 // ─── MISSING RECRUITMENT FUNCTIONS ───
