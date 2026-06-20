@@ -990,3 +990,224 @@ function resetRecruitment(){
   showPage('e_recruitment');
   toast('Pipeline reset to collecting stage','i');
 }
+
+// ─── LEAVE MANAGEMENT ───
+function pLeaves(el){
+  const leaves = DB.g('leaves') || [];
+  el.innerHTML = `
+  ${ph('Leave Management','Review and manage employee leave requests.')}
+  <div class="card mb">
+    <div class="ch"><span class="ct">${ic('calendar',15)} Leave Requests</span></div>
+    <div class="cb">
+      <div class="tw"><table><thead><tr><th>Employee</th><th>Type</th><th>Dates</th><th>Days</th><th>Status</th><th>Action</th></tr></thead><tbody>
+        ${leaves.length === 0 ? '<tr><td colspan="6" style="text-align:center;color:var(--text-muted)">No leave requests found.</td></tr>' : leaves.slice().reverse().map((l, i) => {
+          const realIdx = leaves.length - 1 - i;
+          return \`<tr>
+            <td><strong>\${l.empName}</strong></td><td>\${l.type}</td><td>\${l.fromDate} to \${l.toDate}</td><td>\${l.days}</td>
+            <td><span class="b \${l.status==='pending'?'ba':l.status==='approved'?'bg':'br'}">\${l.status}</span></td>
+            <td>\${l.status==='pending'?\`<button class="btn b-gr btn-sm" onclick="resolveLeave(\${realIdx},'approved')">Approve</button> <button class="btn b-rd btn-sm" onclick="resolveLeave(\${realIdx},'rejected')">Reject</button>\`:'—'}</td>
+          </tr>\`;
+        }).join('')}
+      </tbody></table></div>
+    </div>
+  </div>`;
+}
+
+window.resolveLeave = function(i, status) {
+   const leaves = DB.g('leaves') || [];
+   leaves[i].status = status;
+   leaves[i].respondedDate = today();
+   DB.s('leaves', leaves);
+   showPage('e_leaves');
+   toast(`Leave request ${status}`,'s');
+   updNotif();
+   if(leaves[i].id) apiFetch('PUT',`/data/leaves/${leaves[i].id}`, {status, respondedDate: today()}).catch(()=>{});
+};
+
+// ─── BENEFITS MANAGEMENT ───
+function pBenefits(el){
+  const benefits = DB.g('benefits') || [];
+  el.innerHTML = `
+  ${ph('Benefits Management','Manage employee benefits and perks.')}
+  <div class="card mb">
+    <div class="ch"><span class="ct">${ic('gift',15)} Active Benefits</span><button class="btn b-nv btn-sm" onclick="openAddBenefit()">+ Add Benefit</button></div>
+    <div class="cb">
+      ${benefits.length === 0 ? '<p style="font-size:13px;color:var(--text-muted)">No benefits configured yet.</p>' : benefits.map((b, i) => \`<div style="padding:12px;background:var(--bg);border-radius:8px;margin-bottom:8px;border:1px solid var(--border);display:flex;justify-content:space-between"><div><strong>\${b.name}</strong><div style="font-size:12px;color:var(--text-muted);margin-top:4px">\${b.value}</div></div><button class="btn b-rd btn-sm" onclick="deleteBenefit(\${i})">Remove</button></div>\`).join('')}
+    </div>
+  </div>`;
+}
+
+window.openAddBenefit = function() {
+  openModal('Add Benefit', `
+    <div class="f"><label>Benefit Name</label><input type="text" id="bn-name" placeholder="e.g. Health Insurance"></div>
+    <div class="f"><label>Description / Value</label><input type="text" id="bn-val" placeholder="e.g. Full premium covered"></div>
+  `, [{l:'Save', c:'b-gr', fn:() => {
+    const benefits = DB.g('benefits')||[];
+    benefits.push({name: document.getElementById('bn-name').value, value: document.getElementById('bn-val').value});
+    DB.s('benefits', benefits);
+    closeModal(); showPage('e_benefits'); toast('Benefit added', 's');
+  }}]);
+};
+
+window.deleteBenefit = function(i) {
+  if(!confirm('Remove this benefit?')) return;
+  const benefits = DB.g('benefits')||[];
+  benefits.splice(i, 1);
+  DB.s('benefits', benefits);
+  showPage('e_benefits');
+};
+
+// ─── COMPLAINTS & SUGGESTIONS ───
+function pComplaints(el){
+  const complaints = DB.g('complaints') || [];
+  el.innerHTML = `
+  ${ph('Complaints & Suggestions','Review feedback from employees.')}
+  <div class="card mb">
+    <div class="ch"><span class="ct">${ic('message-square',15)} Submissions</span></div>
+    <div class="cb">
+      ${complaints.length === 0 ? '<p style="font-size:13px;color:var(--text-muted)">No complaints or suggestions found.</p>' : complaints.slice().reverse().map((c, i) => {
+        const realIdx = complaints.length - 1 - i;
+        return \`<div style="padding:14px;background:var(--bg);border-radius:8px;margin-bottom:10px;border:1px solid var(--border)">
+        <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+          <strong style="font-size:14px;color:var(--navy)">\${c.subject}</strong>
+          <span class="b \${c.resolved?'bg':'ba'}">\${c.resolved?'Resolved':'Pending'}</span>
+        </div>
+        <div style="font-size:11px;color:var(--text-muted);margin-bottom:8px"><span class="b bn" style="padding:2px 6px;font-size:9px">\${c.type}</span> by \${c.empName} on \${c.date}</div>
+        <div style="font-size:13px;line-height:1.5">\${c.message}</div>
+        \${!c.resolved ? \`<button class="btn b-gr btn-sm" style="margin-top:12px" onclick="resolveComplaint(\${realIdx})">Mark as Resolved</button>\` : ''}
+      </div>\`}).join('')}
+    </div>
+  </div>`;
+}
+
+window.resolveComplaint = function(i) {
+   const complaints = DB.g('complaints') || [];
+   complaints[i].resolved = true;
+   DB.s('complaints', complaints);
+   showPage('e_complaints');
+   toast('Complaint marked as resolved','s');
+   if(complaints[i].id) apiFetch('PUT',`/data/complaints/${complaints[i].id}`, {resolved: true}).catch(()=>{});
+};
+
+// ─── SETTINGS ───
+function pSettings(el){
+  el.innerHTML = `
+  ${ph('System Settings','Manage business configuration.')}
+  <div class="card mb">
+    <div class="ch"><span class="ct">${ic('settings',15)} Configuration</span></div>
+    <div class="cb"><p style="font-size:13px;color:var(--text-muted)">Settings module is currently under construction. Core functionalities are managed via code.</p></div>
+  </div>`;
+}
+
+// ─── MISSING RECRUITMENT FUNCTIONS ───
+window.openAddJobPosting = function() {
+  openModal('Add Job Posting', `
+    <div class="f"><label>Title</label><input type="text" id="jp-title" placeholder="e.g. Software Engineer"></div>
+    <div class="f"><label>Department</label><input type="text" id="jp-dept" placeholder="e.g. Engineering"></div>
+    <div class="f"><label>Type</label><select id="jp-type"><option>Full-time</option><option>Part-time</option><option>Contract</option></select></div>
+    <div class="f"><label>Location</label><input type="text" id="jp-loc" placeholder="e.g. Remote"></div>
+    <div class="f"><label>Salary Range</label><input type="text" id="jp-sal" placeholder="e.g. GHS 4000 - 6000"></div>
+    <div class="f"><label>Description</label><textarea id="jp-desc" rows="3"></textarea></div>
+    <div class="f"><label>Requirements</label><textarea id="jp-req" rows="3"></textarea></div>
+  `, [{l:'Save', c:'b-gr', fn:() => {
+    const jp = DB.g('job_postings')||[];
+    const rec = {
+      title: document.getElementById('jp-title').value,
+      dept: document.getElementById('jp-dept').value,
+      type: document.getElementById('jp-type').value,
+      location: document.getElementById('jp-loc').value,
+      salary: document.getElementById('jp-sal').value,
+      description: document.getElementById('jp-desc').value,
+      requirements: document.getElementById('jp-req').value,
+      active: true,
+      postedDate: today()
+    };
+    jp.push(rec);
+    DB.s('job_postings', jp);
+    apiFetch('POST', '/data/job_postings', rec).catch(()=>{});
+    closeModal(); showPage('e_recruitment'); toast('Job posted', 's');
+  }}]);
+};
+
+window.openEditJobPosting = function(i) {
+  const jp = DB.g('job_postings')||[];
+  const j = jp[i];
+  openModal('Edit Job Posting', `
+    <div class="f"><label>Title</label><input type="text" id="jp-title" value="\${j.title||''}"></div>
+    <div class="f"><label>Department</label><input type="text" id="jp-dept" value="\${j.dept||''}"></div>
+    <div class="f"><label>Type</label><select id="jp-type"><option \${j.type==='Full-time'?'selected':''}>Full-time</option><option \${j.type==='Part-time'?'selected':''}>Part-time</option><option \${j.type==='Contract'?'selected':''}>Contract</option></select></div>
+    <div class="f"><label>Location</label><input type="text" id="jp-loc" value="\${j.location||''}"></div>
+    <div class="f"><label>Salary Range</label><input type="text" id="jp-sal" value="\${j.salary||''}"></div>
+    <div class="f"><label>Description</label><textarea id="jp-desc" rows="3">\${j.description||''}</textarea></div>
+    <div class="f"><label>Requirements</label><textarea id="jp-req" rows="3">\${j.requirements||''}</textarea></div>
+  `, [{l:'Save Changes', c:'b-gr', fn:() => {
+    j.title = document.getElementById('jp-title').value;
+    j.dept = document.getElementById('jp-dept').value;
+    j.type = document.getElementById('jp-type').value;
+    j.location = document.getElementById('jp-loc').value;
+    j.salary = document.getElementById('jp-sal').value;
+    j.description = document.getElementById('jp-desc').value;
+    j.requirements = document.getElementById('jp-req').value;
+    DB.s('job_postings', jp);
+    if(j.id) apiFetch('PUT', `/data/job_postings/${j.id}`, j).catch(()=>{});
+    closeModal(); showPage('e_recruitment'); toast('Job updated', 's');
+  }}]);
+};
+
+window.toggleJobPosting = function(i) {
+  const jp = DB.g('job_postings')||[];
+  jp[i].active = !jp[i].active;
+  DB.s('job_postings', jp);
+  if(jp[i].id) apiFetch('PUT', `/data/job_postings/${jp[i].id}`, {active: jp[i].active}).catch(()=>{});
+  showPage('e_recruitment'); toast(`Job ${jp[i].active?'activated':'paused'}`, 'i');
+};
+
+window.deleteJobPosting = function(i) {
+  if(!confirm('Delete this job posting?')) return;
+  const jp = DB.g('job_postings')||[];
+  const id = jp[i].id;
+  jp.splice(i, 1);
+  DB.s('job_postings', jp);
+  if(id) apiFetch('DELETE', `/data/job_postings/${id}`).catch(()=>{});
+  showPage('e_recruitment'); toast('Job deleted', 'i');
+};
+
+window.openLetterSetup = function() {
+  const s = DB.g('settings')||{};
+  openModal('Employment Letter Template', `
+    <div class="al al-b">Use placeholders: {name}, {role}, {salary}, {start_date}, {company}.</div>
+    <textarea id="ol-tpl" rows="10" style="width:100%;padding:10px;font-size:13px">\${s.offer_template||'Dear {name},\\n\\nWe are pleased to offer you the position of {role} at {company}...'}</textarea>
+  `, [{l:'Save', c:'b-nv', fn:() => {
+    s.offer_template = document.getElementById('ol-tpl').value;
+    DB.s('settings', s);
+    apiFetch('POST', '/settings', {key:'offer_template', value: s.offer_template}).catch(()=>{});
+    closeModal(); toast('Template saved', 's');
+  }}]);
+};
+
+window.previewOfferTemplate = function() {
+  toast('Preview mode running', 'i');
+};
+
+window.manualCreateEmployee = function(email) {
+  const apps = DB.g('applicants')||[];
+  const a = apps.find(x => x.email === email);
+  if(!a) return;
+  openAddEmp();
+  setTimeout(() => {
+    document.getElementById('ne-nm').value = a.name;
+    document.getElementById('ne-em').value = a.email;
+    document.getElementById('ne-rl').value = a.position;
+  }, 100);
+};
+
+window.generateOfferLetterHTML = function(app, co) {
+  const s = DB.g('settings')||{};
+  let tpl = s.offer_template || 'Dear {name},<br><br>We are pleased to offer you the position of <strong>{role}</strong> at <strong>{company}</strong>.<br><br>Offered Salary: {salary}<br>Start Date: {start_date}';
+  tpl = tpl.replace(/{name}/g, app.name||'')
+           .replace(/{role}/g, app.position||'')
+           .replace(/{salary}/g, app.offeredSalary||'')
+           .replace(/{start_date}/g, app.startDate||'')
+           .replace(/{company}/g, co.name||'');
+  return \`<div style="line-height:1.6;font-size:13px">\${tpl}</div>\`;
+};
