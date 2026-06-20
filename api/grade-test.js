@@ -44,54 +44,66 @@ module.exports = async function (req, res) {
   const { data: realQuestions, error: qErr } = await getSupabase()
     .from('apt_questions')
     .select('*')
-    .order('created_at', { ascending: true }); // Must match applicant receiving order
+    .order('created_at', { ascending: true });
     
   if (qErr || !realQuestions) return res.status(500).json({ error: 'Failed to retrieve grading rubric.' });
 
   const apiKey = process.env.GEMINI_API_KEY;
   const genAI = apiKey ? new GoogleGenerativeAI(apiKey) : null;
-  const model = genAI ? genAI.getGenerativeModel({ model: "gemini-2.0-flash" }) : null;
+  
+  // Initialize with strict JSON output configuration
+  const model = genAI ? genAI.getGenerativeModel({ 
+    model: "gemini-2.0-flash",
+    generationConfig: { responseMimeType: "application/json" }
+  }) : null;
+
+  // Create an array of Promises to parallelize grading 
+  const gradingPromises = realQuestions.map(async (q, i) => {
+    const ans = answers[i];
+    const pts = typeof q.points === 'number' ? q.points : 1;
+
+    if (q.type === 'objective') {
+      const correct = (parseInt(ans) === parseInt(q.ans));
+      const earned = correct ? pts : 0;
+      return { type: 'objective', earned, max: pts, breakdown: { qIndex: i, type: 'objective', earned, max: pts, correct } };
+    } 
+    
+    if (q.type === 'subjective') {
+      if (!ans || String(ans).trim() === '') {
+        return { type: 'subjective', earned: 0, max: pts, breakdown: { qIndex: i, type: 'subjective', earned: 0, max: pts, feedback: 'No answer provided.' } };
+      }
+      if (!model) {
+        return { type: 'subjective', earned: 0, max: pts, breakdown: { qIndex: i, type: 'subjective', earned: 0, max: pts, feedback: 'AI grading offline.' } };
+      }
+      
+      const prompt = `Grade this answer out of ${pts} points. Question: "${q.q}" Answer: "${sanitizeField(ans)}". Return strictly JSON with schema: {"points": number, "feedback": "string"}`;
+      try {
+        const result = await callGeminiWithRetry(model, prompt);
+        const parsed = JSON.parse(result.response.text()); // No regex required
+        const earned = Math.min(Math.max(0, Number(parsed.points) || 0), pts);
+        return { type: 'subjective', earned, max: pts, breakdown: { qIndex: i, type: 'subjective', earned, max: pts, feedback: parsed.feedback || 'Graded by AI' } };
+      } catch (e) {
+        console.error('AI Grading failed for a question:', e);
+        return { type: 'subjective', earned: 0, max: pts, breakdown: { qIndex: i, type: 'subjective', earned: 0, max: pts, feedback: 'Manual review required.' } };
+      }
+    }
+    return null;
+  });
+
+  // Execute all questions concurrently (Significantly faster)
+  const gradedResults = await Promise.all(gradingPromises);
 
   let objectiveTotal = 0, objectiveMax = 0;
   let subjectiveTotal = 0, subjectiveMax = 0;
   const breakdown = [];
 
-  for (let i = 0; i < realQuestions.length; i++) {
-    const q = realQuestions[i];
-    const ans = answers[i];
-    const pts = typeof q.points === 'number' ? q.points : 1;
-
-    if (q.type === 'objective') {
-      objectiveMax += pts;
-      const correct = (parseInt(ans) === parseInt(q.ans));
-      const earned = correct ? pts : 0;
-      objectiveTotal += earned;
-      breakdown.push({ qIndex: i, type: 'objective', earned, max: pts, correct });
-    } else if (q.type === 'subjective') {
-      subjectiveMax += pts;
-      if (!ans || String(ans).trim() === '') {
-        breakdown.push({ qIndex: i, type: 'subjective', earned: 0, max: pts, feedback: 'No answer provided.' });
-        continue;
-      }
-      if (!model) {
-        breakdown.push({ qIndex: i, type: 'subjective', earned: 0, max: pts, feedback: 'AI grading offline.' });
-        continue;
-      }
-      
-      const prompt = `Grade this answer out of ${pts} points. Question: "${q.q}" Answer: "${sanitizeField(ans)}". Return strictly JSON: {"points": <number>, "feedback": "<string>"}`;
-      try {
-        const result = await callGeminiWithRetry(model, prompt);
-        const text = result.response.text().trim().replace(/```json|```/g, '').trim();
-        const parsed = JSON.parse(text);
-        const earned = Math.min(Math.max(0, Number(parsed.points) || 0), pts);
-        subjectiveTotal += earned;
-        breakdown.push({ qIndex: i, type: 'subjective', earned, max: pts, feedback: parsed.feedback || 'Graded by AI' });
-      } catch (e) {
-        console.error('AI Grading failed for a question:', e);
-        breakdown.push({ qIndex: i, type: 'subjective', earned: 0, max: pts, feedback: 'Manual review required.' });
-      }
-    }
-  }
+  // Tally up the results (Promise.all maintains original array order)
+  gradedResults.forEach(r => {
+    if (!r) return;
+    if (r.type === 'objective') { objectiveMax += r.max; objectiveTotal += r.earned; }
+    if (r.type === 'subjective') { subjectiveMax += r.max; subjectiveTotal += r.earned; }
+    breakdown.push(r.breakdown);
+  });
 
   const totalEarned = Math.round((objectiveTotal + subjectiveTotal) * 10) / 10;
   const totalMax = objectiveMax + subjectiveMax;
