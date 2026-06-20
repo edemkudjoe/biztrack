@@ -1002,11 +1002,11 @@ function pLeaves(el){
       <div class="tw"><table><thead><tr><th>Employee</th><th>Type</th><th>Dates</th><th>Days</th><th>Status</th><th>Action</th></tr></thead><tbody>
         ${leaves.length === 0 ? '<tr><td colspan="6" style="text-align:center;color:var(--text-muted)">No leave requests found.</td></tr>' : leaves.slice().reverse().map((l, i) => {
           const realIdx = leaves.length - 1 - i;
-          return \`<tr>
-            <td><strong>\${l.empName}</strong></td><td>\${l.type}</td><td>\${l.fromDate} to \${l.toDate}</td><td>\${l.days}</td>
-            <td><span class="b \${l.status==='pending'?'ba':l.status==='approved'?'bg':'br'}">\${l.status}</span></td>
-            <td>\${l.status==='pending'?\`<button class="btn b-gr btn-sm" onclick="resolveLeave(\${realIdx},'approved')">Approve</button> <button class="btn b-rd btn-sm" onclick="resolveLeave(\${realIdx},'rejected')">Reject</button>\`:'—'}</td>
-          </tr>\`;
+          return `<tr>
+            <td><strong>${l.empName}</strong></td><td>${l.type}</td><td>${l.fromDate} to ${l.toDate}</td><td>${l.days}</td>
+            <td><span class="b ${l.status==='pending'?'ba':l.status==='approved'?'bg':'br'}">${l.status}</span></td>
+            <td>${l.status==='pending'?`<button class="btn b-gr btn-sm" onclick="resolveLeave(${realIdx},'approved')">Approve</button> <button class="btn b-rd btn-sm" onclick="resolveLeave(${realIdx},'rejected')">Reject</button>`:'—'}</td>
+          </tr>`;
         }).join('')}
       </tbody></table></div>
     </div>
@@ -1032,7 +1032,7 @@ function pBenefits(el){
   <div class="card mb">
     <div class="ch"><span class="ct">${ic('gift',15)} Active Benefits</span><button class="btn b-nv btn-sm" onclick="openAddBenefit()">+ Add Benefit</button></div>
     <div class="cb">
-      ${benefits.length === 0 ? '<p style="font-size:13px;color:var(--text-muted)">No benefits configured yet.</p>' : benefits.map((b, i) => \`<div style="padding:12px;background:var(--bg);border-radius:8px;margin-bottom:8px;border:1px solid var(--border);display:flex;justify-content:space-between"><div><strong>\${b.name}</strong><div style="font-size:12px;color:var(--text-muted);margin-top:4px">\${b.value}</div></div><button class="btn b-rd btn-sm" onclick="deleteBenefit(\${i})">Remove</button></div>\`).join('')}
+      ${benefits.length === 0 ? '<p style="font-size:13px;color:var(--text-muted)">No benefits configured yet.</p>' : benefits.map((b, i) => `<div style="padding:12px;background:var(--bg);border-radius:8px;margin-bottom:8px;border:1px solid var(--border);display:flex;justify-content:space-between"><div><strong>${b.name}</strong><div style="font-size:12px;color:var(--text-muted);margin-top:4px">${b.value}</div></div><button class="btn b-rd btn-sm" onclick="deleteBenefit(${i})">Remove</button></div>`).join('')}
     </div>
   </div>`;
 }
@@ -1067,15 +1067,15 @@ function pComplaints(el){
     <div class="cb">
       ${complaints.length === 0 ? '<p style="font-size:13px;color:var(--text-muted)">No complaints or suggestions found.</p>' : complaints.slice().reverse().map((c, i) => {
         const realIdx = complaints.length - 1 - i;
-        return \`<div style="padding:14px;background:var(--bg);border-radius:8px;margin-bottom:10px;border:1px solid var(--border)">
+        return `<div style="padding:14px;background:var(--bg);border-radius:8px;margin-bottom:10px;border:1px solid var(--border)">
         <div style="display:flex;justify-content:space-between;margin-bottom:6px">
-          <strong style="font-size:14px;color:var(--navy)">\${c.subject}</strong>
-          <span class="b \${c.resolved?'bg':'ba'}">\${c.resolved?'Resolved':'Pending'}</span>
+          <strong style="font-size:14px;color:var(--navy)">${c.subject}</strong>
+          <span class="b ${c.resolved?'bg':'ba'}">${c.resolved?'Resolved':'Pending'}</span>
         </div>
-        <div style="font-size:11px;color:var(--text-muted);margin-bottom:8px"><span class="b bn" style="padding:2px 6px;font-size:9px">\${c.type}</span> by \${c.empName} on \${c.date}</div>
-        <div style="font-size:13px;line-height:1.5">\${c.message}</div>
-        \${!c.resolved ? \`<button class="btn b-gr btn-sm" style="margin-top:12px" onclick="resolveComplaint(\${realIdx})">Mark as Resolved</button>\` : ''}
-      </div>\`}).join('')}
+        <div style="font-size:11px;color:var(--text-muted);margin-bottom:8px"><span class="b bn" style="padding:2px 6px;font-size:9px">${c.type}</span> by ${c.empName} on ${c.date}</div>
+        <div style="font-size:13px;line-height:1.5">${c.message}</div>
+        ${!c.resolved ? `<button class="btn b-gr btn-sm" style="margin-top:12px" onclick="resolveComplaint(${realIdx})">Mark as Resolved</button>` : ''}
+      </div>`}).join('')}
     </div>
   </div>`;
 }
@@ -1133,13 +1133,13 @@ window.openEditJobPosting = function(i) {
   const jp = DB.g('job_postings')||[];
   const j = jp[i];
   openModal('Edit Job Posting', `
-    <div class="f"><label>Title</label><input type="text" id="jp-title" value="\${j.title||''}"></div>
-    <div class="f"><label>Department</label><input type="text" id="jp-dept" value="\${j.dept||''}"></div>
-    <div class="f"><label>Type</label><select id="jp-type"><option \${j.type==='Full-time'?'selected':''}>Full-time</option><option \${j.type==='Part-time'?'selected':''}>Part-time</option><option \${j.type==='Contract'?'selected':''}>Contract</option></select></div>
-    <div class="f"><label>Location</label><input type="text" id="jp-loc" value="\${j.location||''}"></div>
-    <div class="f"><label>Salary Range</label><input type="text" id="jp-sal" value="\${j.salary||''}"></div>
-    <div class="f"><label>Description</label><textarea id="jp-desc" rows="3">\${j.description||''}</textarea></div>
-    <div class="f"><label>Requirements</label><textarea id="jp-req" rows="3">\${j.requirements||''}</textarea></div>
+    <div class="f"><label>Title</label><input type="text" id="jp-title" value="${j.title||''}"></div>
+    <div class="f"><label>Department</label><input type="text" id="jp-dept" value="${j.dept||''}"></div>
+    <div class="f"><label>Type</label><select id="jp-type"><option ${j.type==='Full-time'?'selected':''}>Full-time</option><option ${j.type==='Part-time'?'selected':''}>Part-time</option><option ${j.type==='Contract'?'selected':''}>Contract</option></select></div>
+    <div class="f"><label>Location</label><input type="text" id="jp-loc" value="${j.location||''}"></div>
+    <div class="f"><label>Salary Range</label><input type="text" id="jp-sal" value="${j.salary||''}"></div>
+    <div class="f"><label>Description</label><textarea id="jp-desc" rows="3">${j.description||''}</textarea></div>
+    <div class="f"><label>Requirements</label><textarea id="jp-req" rows="3">${j.requirements||''}</textarea></div>
   `, [{l:'Save Changes', c:'b-gr', fn:() => {
     j.title = document.getElementById('jp-title').value;
     j.dept = document.getElementById('jp-dept').value;
@@ -1176,7 +1176,7 @@ window.openLetterSetup = function() {
   const s = DB.g('settings')||{};
   openModal('Employment Letter Template', `
     <div class="al al-b">Use placeholders: {name}, {role}, {salary}, {start_date}, {company}.</div>
-    <textarea id="ol-tpl" rows="10" style="width:100%;padding:10px;font-size:13px">\${s.offer_template||'Dear {name},\\n\\nWe are pleased to offer you the position of {role} at {company}...'}</textarea>
+    <textarea id="ol-tpl" rows="10" style="width:100%;padding:10px;font-size:13px">${s.offer_template||'Dear {name},\n\nWe are pleased to offer you the position of {role} at {company}...'}</textarea>
   `, [{l:'Save', c:'b-nv', fn:() => {
     s.offer_template = document.getElementById('ol-tpl').value;
     DB.s('settings', s);
@@ -1209,5 +1209,5 @@ window.generateOfferLetterHTML = function(app, co) {
            .replace(/{salary}/g, app.offeredSalary||'')
            .replace(/{start_date}/g, app.startDate||'')
            .replace(/{company}/g, co.name||'');
-  return \`<div style="line-height:1.6;font-size:13px">\${tpl}</div>\`;
+  return `<div style="line-height:1.6;font-size:13px">${tpl}</div>`;
 };
